@@ -68,11 +68,10 @@ class QListWidgetItemWidget(QtWidgets.QWidget):
 
     def mouseMoveEvent(self, event):
         name = self.label
-        print(name)
         drag = QtGui.QDrag(self)
         ba = bytearray(name, 'utf-8')
         drag_mime_data = QtCore.QMimeData()
-        drag_mime_data.setData(self.QMimeDataType, QtCore.QByteArray(name))
+        drag_mime_data.setData(self.QMimeDataType, QtCore.QByteArray(ba))
         drag.setMimeData(drag_mime_data)
         drag.exec_(QtCore.Qt.MoveAction)
 
