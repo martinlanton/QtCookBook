@@ -1,3 +1,7 @@
+# This comes from here : https://github.com/d1vanov/PyQt5-reorderable-list-model/blob/master/reorderable_list_model.py
+# Although it has been modified to use super method properly and to use Qt.py
+# Here's another potentially good resource : https://github.com/jimmykuu/PyQt-PySide-Cookbook/blob/master/tree/drop_indicator.md
+# TODO : read this from the official doc : https://doc.qt.io/qt-5/qtwidgets-itemviews-editabletreemodel-example.html
 import sys
 from Qt import QtWidgets, QtCore, QtGui
 
