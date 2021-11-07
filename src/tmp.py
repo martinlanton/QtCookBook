@@ -164,6 +164,7 @@ class ReorderableListModel(QtCore.QAbstractListModel):
         self.pendingRemoveRowsAfterDrop = True
         return True
 
+
 class SelectionModel(QtCore.QItemSelectionModel):
     def __init__(self, parent=None):
         QtCore.QItemSelectionModel.__init__(self, parent)
@@ -185,6 +186,7 @@ class SelectionModel(QtCore.QItemSelectionModel):
         self.select(new_selection, flags)
         self.setCurrentIndex(new_index, flags)
 
+
 class MainForm(QtWidgets.QMainWindow):
     def __init__(self, parent=None):
         QtWidgets.QMainWindow.__init__(self, parent)
@@ -198,11 +200,13 @@ class MainForm(QtWidgets.QMainWindow):
         self.view.setDragDropOverwriteMode(False)
         self.setCentralWidget(self.view)
 
+
 def main():
     app = QtWidgets.QApplication(sys.argv)
     form = MainForm()
     form.show()
     app.exec_()
+
 
 if __name__ == '__main__':
     main()

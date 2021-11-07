@@ -15,7 +15,7 @@ setup(
     packages=find_packages(where='src'),
     install_requires=[
         'pytest-cov',
-        'PySide2',
+        'PySide6',
         'Qt.py>=1.2',
     ]
 )

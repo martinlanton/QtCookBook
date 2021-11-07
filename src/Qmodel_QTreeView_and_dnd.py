@@ -8,7 +8,7 @@ class MainWindow(QtWidgets.QDialog):
 
         main_layout = QtWidgets.QHBoxLayout(self)
 
-        self._destination = DestinationTree()
+        self._destination = QtWidgets.QTreeView()
         main_layout.addWidget(self.destination)
 
         self.add_item_button = QtWidgets.QPushButton('Add Item')
@@ -19,15 +19,6 @@ class MainWindow(QtWidgets.QDialog):
     @property
     def destination(self):
         return self._destination
-
-    def item_count(self):
-        number_of_items = 0
-        iterator = QtWidgets.QTreeWidgetItemIterator(self)
-        while iterator.value():
-            number_of_items += 1
-            iterator += 1
-
-        return number_of_items
 
 
 class CustomModel(QtGui.QStandardItemModel):
@@ -70,7 +61,6 @@ def add_item():
     type_item = QtGui.QStandardItem(name)
     print(model, name_item, type_item)
     model.appendRow([name_item, type_item])
-    # pprint(dir(_MODEL))
 
 
 def startup():
@@ -80,20 +70,6 @@ def startup():
     main_window.destination.setModel(model)
     main_window.show()
     sys.exit(app.exec_())
-
-
-class DestinationTree(QtWidgets.QTreeView):
-    def __init__(self, parent=None):
-        super(DestinationTree, self).__init__(parent)
-        self.setDragDropMode(QtWidgets.QAbstractItemView.InternalMove)
-        # self.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
-        self.setDragEnabled(True)
-        self.setAcceptDrops(True)
-        self.setDropIndicatorShown(True)
-
-    def dragEnterEvent(self, drag_event):
-        mime_data = drag_event.mimeData()
-        print(drag_event, mime_data)
 
 
 class NumberTracker(object):
