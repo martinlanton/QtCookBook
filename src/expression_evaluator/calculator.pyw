@@ -1,5 +1,4 @@
 import sys
-import math
 from PySide6 import QtWidgets
 from PySide6 import QtCore
 
@@ -16,6 +15,19 @@ class Form(QtWidgets.QDialog):
         layout.addWidget(self.lineedit)
         self.setLayout(layout)
         self.lineedit.setFocus()
-        self.connect(self.lineedit, QtWidgets.SIGNAL("returnPressed()"),
+        self.connect(self.lineedit, QtCore.SIGNAL("returnPressed()"),
                      self.updateUi)
         self.setWindowTitle("Calculate")
+
+    def updateUi(self):
+        text = str(self.lineedit.text())
+        try:
+            self.browser.append("{} = <b>{}</b>".format(text, eval(text)))
+        except Exception:
+            self.browser.append("<font color=red>{} is invalid!</font>".format(text))
+
+
+app = QtWidgets.QApplication(sys.argv)
+form = Form()
+form.show()
+app.exec_()
