@@ -47,33 +47,43 @@ class Form(QtWidgets.QDialog):
 
     def getdata(self):  # Idea taken from the Python Cookbook
         try:
-            date = "Unknown"
-            today = datetime.date.today()
-            time_delta = datetime.timedelta(days=today.weekday(), weeks=1)
-            target_day = today - time_delta
-            target_date = target_day.strftime("%Y-%m-%d")
-            # Trying to get the date from there : https://www.bankofcanada.ca/rates/exchange/daily-exchange-rates/
-            with urllib.request.urlopen("https://www.bankofcanada.ca/valet/observations/group/FX_RATES_DAILY/csv?start_date={}".format(target_date)) as response:  # doc is here : https://docs.python.org/3/howto/urllib2.html
-                fh = response.read()
+            date, fh = self.download_file()
         except Exception as e:
             return "Failed to download:\n{}".format(e)
 
         try:
-            for line in fh:
-                if not line or line.startswith(("#", "Closing ")):
-                    continue
-                fields = line.split(",")
-                if line.startswith("Date "):
-                    date = fields[-1]
-                else:
-                    try:
-                        value = float(fields[-1])
-                        self.rates[str(fields[0])] = value
-                    except ValueError:
-                        pass
+            date = self.get_rates(date, fh)
             return "Exchange Rates Date: " + date
         except Exception as e:
             return "Error : {}\nData : {}".format(e, pformat(fh))
+
+    def get_rates(self, date, fh):
+        for line in fh:
+            if not line or line.startswith(("#", "Closing ")):
+                continue
+            fields = line.split(",")
+            if line.startswith("Date "):
+                date = fields[-1]
+            else:
+                try:
+                    value = float(fields[-1])
+                    self.rates[str(fields[0])] = value
+                except ValueError:
+                    pass
+        return date
+
+    def download_file(self):
+        date = "Unknown"
+        today = datetime.date.today()
+        time_delta = datetime.timedelta(days=today.weekday(), weeks=1)
+        target_day = today - time_delta
+        target_date = target_day.strftime("%Y-%m-%d")
+        # Trying to get the date from there : https://www.bankofcanada.ca/rates/exchange/daily-exchange-rates/
+        with urllib.request.urlopen(
+                "https://www.bankofcanada.ca/valet/observations/group/FX_RATES_DAILY/csv?start_date={}".format(
+                        target_date)) as response:  # doc is here : https://docs.python.org/3/howto/urllib2.html
+            fh = response.read()
+        return date, fh
 
 
 app = QtWidgets.QApplication(sys.argv)
