@@ -1,4 +1,5 @@
-from PySide6 import QtWidgets, QtCore, QtGui
+import sys
+from PySide6 import QtWidgets, QtCore
 
 
 class Form(QtWidgets.QDialog):
@@ -14,3 +15,9 @@ class Form(QtWidgets.QDialog):
         self.connect(dial, QtCore.SIGNAL("valueChanged(int)"), spinbox.setValue)
         self.connect(spinbox, QtCore.SIGNAL("valueChanged(int)"), dial.setValue)
         self.setWindowTitle("Signals and Slots")
+
+
+app = QtWidgets.QApplication(sys.argv)
+form = Form()
+form.show()
+app.exec()
