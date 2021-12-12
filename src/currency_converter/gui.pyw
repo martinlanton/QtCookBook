@@ -101,4 +101,4 @@ class Rates(object):
 app = QtWidgets.QApplication(sys.argv)
 form = Form()
 form.show()
-app.exec_()
+app.exec()
