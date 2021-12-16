@@ -68,8 +68,11 @@ class Rates(object):
         target_date = target_day.strftime("%Y-%m-%d")
         # Trying to get the date from there : https://www.bankofcanada.ca/rates/exchange/daily-exchange-rates/
         with urllib.request.urlopen(self.url.format(target_date)) as response:  # doc is here : https://docs.python.org/3/howto/urllib2.html
-            response = response.read().decode('utf-8')
-            data = response.split("\n")
+            decoded_response = response.read().decode('utf-8')
+            data = csv.reader(decoded_response, delimiter='\n', quotechar="\"")
+            for row in data:
+                print(",".join(row))
+
         return data
 
     def sort_data(self):
