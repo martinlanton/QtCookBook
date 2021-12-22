@@ -11,7 +11,7 @@ class MainWindow(QtWidgets.QDialog):
         self._destination = QtWidgets.QTreeView()
         main_layout.addWidget(self.destination)
 
-        self.add_item_button = QtWidgets.QPushButton('Add Item')
+        self.add_item_button = QtWidgets.QPushButton("Add Item")
         main_layout.addWidget(self.add_item_button)
 
         self.add_item_button.clicked.connect(add_item)
@@ -41,11 +41,11 @@ class CustomModel(QtGui.QStandardItemModel):
 
     def flags(self, index):
         return (
-                QtCore.Qt.ItemIsSelectable
-                | QtCore.Qt.ItemIsDragEnabled
-                | QtCore.Qt.ItemIsDropEnabled
-                | QtCore.Qt.ItemIsEditable
-                | QtCore.Qt.ItemIsEnabled
+            QtCore.Qt.ItemIsSelectable
+            | QtCore.Qt.ItemIsDragEnabled
+            | QtCore.Qt.ItemIsDropEnabled
+            | QtCore.Qt.ItemIsEditable
+            | QtCore.Qt.ItemIsEnabled
         )
 
     def supportedDropActions(self):
@@ -55,7 +55,7 @@ class CustomModel(QtGui.QStandardItemModel):
 def add_item():
     number = NumberTracker.instance()
     number.number += 1
-    name = 'test{}'.format(number)
+    name = "test{}".format(number)
     print(name)
     name_item = QtGui.QStandardItem(name)
     type_item = QtGui.QStandardItem(name)
@@ -65,7 +65,7 @@ def add_item():
 
 def startup():
     app = QtWidgets.QApplication(sys.argv)
-    model.setHorizontalHeaderLabels(['component_name', 'component_type'])
+    model.setHorizontalHeaderLabels(["component_name", "component_type"])
     main_window = MainWindow()
     main_window.destination.setModel(model)
     main_window.show()
@@ -97,6 +97,6 @@ class NumberTracker(object):
         return str(self._number)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     model = CustomModel()
     startup()

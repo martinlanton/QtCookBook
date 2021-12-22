@@ -7,7 +7,7 @@ _MODEL = QtGui.QStandardItemModel()
 def startup():
     _DELEGATE = NewNodeDelegate()
     app = QtWidgets.QApplication(sys.argv)
-    _MODEL.setHorizontalHeaderLabels(['component_name', 'component_type'])
+    _MODEL.setHorizontalHeaderLabels(["component_name", "component_type"])
     main_window = MainWindow()
     main_window.destination.setModel(_MODEL)
     main_window.destination.setItemDelegate(_DELEGATE)
@@ -24,7 +24,7 @@ class MainWindow(QtWidgets.QDialog):
         self._destination = DestinationTree()
         main_layout.addWidget(self.destination)
 
-        self.add_item_button = QtWidgets.QPushButton('Add Item')
+        self.add_item_button = QtWidgets.QPushButton("Add Item")
         main_layout.addWidget(self.add_item_button)
 
         self.add_item_button.clicked.connect(add_item)
@@ -44,7 +44,6 @@ class MainWindow(QtWidgets.QDialog):
 
 
 class NewNodeDelegate(QtWidgets.QStyledItemDelegate):
-
     def __init__(self, parent=None):
         super(NewNodeDelegate, self).__init__(parent)
 
@@ -67,13 +66,17 @@ class NewNodeDelegate(QtWidgets.QStyledItemDelegate):
             return
         rect = option.rect
         btn = QtWidgets.QPushButton()
-        btn.rect = QtCore.QRect(rect.left() + rect.width() - 30, rect.top(), 30, rect.height())
-        btn.text = '...'
-        QtWidgets.QApplication.style().drawControl(QtWidgets.QStyle.CE_PushButton, btn, painter)
+        btn.rect = QtCore.QRect(
+            rect.left() + rect.width() - 30, rect.top(), 30, rect.height()
+        )
+        btn.text = "..."
+        QtWidgets.QApplication.style().drawControl(
+            QtWidgets.QStyle.CE_PushButton, btn, painter
+        )
 
 
 class NewNodeWidget(QtWidgets.QWidget):
-    QMimeDataType = 'NewNodeQItem'
+    QMimeDataType = "NewNodeQItem"
 
     def __init__(self, label=None, parent=None):
         super(NewNodeWidget, self).__init__(parent)
@@ -97,7 +100,7 @@ class NewNodeWidget(QtWidgets.QWidget):
         name = self.label
         print(name)
         drag = QtGui.QDrag(self)
-        ba = bytearray(name, 'utf-8')
+        ba = bytearray(name, "utf-8")
         drag_mime_data = QtCore.QMimeData()
         drag_mime_data.setData(self.QMimeDataType, QtCore.QByteArray(name))
         drag.setMimeData(drag_mime_data)
@@ -105,7 +108,7 @@ class NewNodeWidget(QtWidgets.QWidget):
 
 
 def add_item():
-    name = 'test'
+    name = "test"
     print(name)
     print(_MODEL)
     name_item = QtGui.QStandardItem(name)
@@ -120,5 +123,5 @@ class DestinationTree(QtWidgets.QTreeView):
     pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     startup()

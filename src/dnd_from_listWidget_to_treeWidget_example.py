@@ -5,7 +5,7 @@ from Qt import QtWidgets, QtGui, QtCore
 def startup():
     app = QtWidgets.QApplication(sys.argv)
     tree_model = QtGui.QStandardItemModel()
-    tree_model.setHorizontalHeaderLabels(['component_name', 'component_type'])
+    tree_model.setHorizontalHeaderLabels(["component_name", "component_type"])
     main_window = MainWindow()
     main_window.destination.setModel(tree_model)
     main_window.show()
@@ -46,7 +46,7 @@ class SourceList(QtWidgets.QListWidget):
 
 
 class QListWidgetItemWidget(QtWidgets.QWidget):
-    QMimeDataType = 'AddComponentQItem'
+    QMimeDataType = "AddComponentQItem"
 
     def __init__(self, label=None):
         super(QListWidgetItemWidget, self).__init__()
@@ -69,7 +69,7 @@ class QListWidgetItemWidget(QtWidgets.QWidget):
     def mouseMoveEvent(self, event):
         name = self.label
         drag = QtGui.QDrag(self)
-        ba = bytearray(name, 'utf-8')
+        ba = bytearray(name, "utf-8")
         drag_mime_data = QtCore.QMimeData()
         drag_mime_data.setData(self.QMimeDataType, QtCore.QByteArray(ba))
         drag.setMimeData(drag_mime_data)
@@ -77,7 +77,7 @@ class QListWidgetItemWidget(QtWidgets.QWidget):
 
 
 class QTreeViewItemWidget(QListWidgetItemWidget):
-    QMimeDataType = 'MoveComponentQItem'
+    QMimeDataType = "MoveComponentQItem"
 
 
 class DestinationTree(QtWidgets.QTreeView):
@@ -97,9 +97,9 @@ class DestinationTree(QtWidgets.QTreeView):
         return
 
     def dropEvent(self, drop_event):
-        print('Entering Drop event')
+        print("Entering Drop event")
         byte_array = drop_event.mimeData().data(QListWidgetItemWidget.QMimeDataType)
-        name = byte_array.data().decode('utf8')
+        name = byte_array.data().decode("utf8")
 
         add_item_to_model(self.model(), name)
 
@@ -111,7 +111,7 @@ def add_items_to_list(list_widget):
     :type list_widget: QtWidget.QListWidget
     :return:
     """
-    names = ['model', 'skin', 'arm', 'spine', 'pelvis', 'torso', 'leg']
+    names = ["model", "skin", "arm", "spine", "pelvis", "torso", "leg"]
 
     for name in names:
         list_widget_item = QtWidgets.QListWidgetItem()
@@ -132,5 +132,5 @@ def add_item_to_model(model, name):
     model.appendRow([name_item, type_item])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     startup()

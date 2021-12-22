@@ -10,18 +10,18 @@ class Window(QtWidgets.QDialog):
 
         widget = QtWidgets.QWidget(self)
         layout = QtWidgets.QVBoxLayout(widget)
-        self.widget = QtWidgets.QPushButton('Check this')
+        self.widget = QtWidgets.QPushButton("Check this")
         layout.addWidget(self.widget)
 
         self.widget.clicked.connect(self.set_var)
 
     def set_var(self):
-        print('setting var')
-        self.var = 'Var has been set'
+        print("setting var")
+        self.var = "Var has been set"
 
 
 class DraggableWidget(QtWidgets.QWidget):
-    QMimeDataType = 'text/plain'
+    QMimeDataType = "text/plain"
 
     def __init__(self, label=None):
         super(DraggableWidget, self).__init__()
@@ -77,7 +77,7 @@ class TestGUIAvailableComponents:
         # QtTest.QTest.mouseRelease(destination_widget, QtCore.Qt.LeftButton)
 
         text = self.main_window.var
-        assert text == 'Var has been set'
+        assert text == "Var has been set"
 
 
 def startup():
@@ -87,5 +87,5 @@ def startup():
     sys.exit(app.exec_())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     startup()

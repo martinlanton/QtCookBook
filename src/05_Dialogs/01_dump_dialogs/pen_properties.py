@@ -42,9 +42,10 @@ class PenPropertiesDlg(QtWidgets.QDialog):
         styleLabel = QtWidgets.QLabel("&Style:")
         self.styleComboBox = QtWidgets.QComboBox()
         styleLabel.setBuddy(self.styleComboBox)
-        self.styleComboBox.addItems(["Solid", "Dashed", "Dotted",
-                                     "DashDotted", "DashDotDotted"])
-        okButton = QtWidgets. QPushButton("&OK")
+        self.styleComboBox.addItems(
+            ["Solid", "Dashed", "Dotted", "DashDotted", "DashDotDotted"]
+        )
+        okButton = QtWidgets.QPushButton("&OK")
         cancelButton = QtWidgets.QPushButton("Cancel")
 
         buttonLayout = QtWidgets.QHBoxLayout()

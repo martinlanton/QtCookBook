@@ -7,23 +7,24 @@ from Qt import QtWidgets, QtCore, QtGui
 
 
 class ReorderableListModel(QtCore.QAbstractListModel):
-    '''
+    """
     ReorderableListModel is a list model which implements reordering of its
     items via drag-n-drop
-    '''
+    """
+
     dragDropFinished = QtCore.Signal()
 
     def __init__(self, parent=None):
         super(ReorderableListModel, self).__init__(parent)
-        self.nodes = ['node0', 'node1', 'node2', 'node3', 'node4', 'node5']
+        self.nodes = ["node0", "node1", "node2", "node3", "node4", "node5"]
         self.lastDroppedItems = []
         self.pendingRemoveRowsAfterDrop = False
 
     def rowForItem(self, text):
-        '''
+        """
         rowForItem method returns the row corresponding to the passed in item
         or None if no such item exists in the model
-        '''
+        """
         try:
             row = self.nodes.index(text)
         except ValueError:
@@ -60,8 +61,12 @@ class ReorderableListModel(QtCore.QAbstractListModel):
     def flags(self, index):
         if not index.isValid():
             return QtCore.Qt.ItemIsEnabled
-        return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable | \
-               QtCore.Qt.ItemIsDragEnabled | QtCore.Qt.ItemIsDropEnabled
+        return (
+            QtCore.Qt.ItemIsEnabled
+            | QtCore.Qt.ItemIsSelectable
+            | QtCore.Qt.ItemIsDragEnabled
+            | QtCore.Qt.ItemIsDropEnabled
+        )
 
     def insertRows(self, row, count, index):
         if index.isValid():
@@ -71,7 +76,7 @@ class ReorderableListModel(QtCore.QAbstractListModel):
         # inserting 'count' empty rows starting at 'row'
         self.beginInsertRows(QtCore.QModelIndex(), row, row + count - 1)
         for i in range(0, count):
-            self.nodes.insert(row + i, '')
+            self.nodes.insert(row + i, "")
         self.endInsertRows()
         return True
 
@@ -87,10 +92,10 @@ class ReorderableListModel(QtCore.QAbstractListModel):
         self.endRemoveRows()
 
         if self.pendingRemoveRowsAfterDrop:
-            '''
+            """
             If we got here, it means this call to removeRows is the automatic
             'cleanup' action after drag-n-drop performed by Qt
-            '''
+            """
             self.pendingRemoveRowsAfterDrop = False
             self.dragDropFinished.emit()
 
@@ -106,7 +111,7 @@ class ReorderableListModel(QtCore.QAbstractListModel):
         return True
 
     def mimeTypes(self):
-        return ['application/vnd.treeviewdragdrop.list']
+        return ["application/vnd.treeviewdragdrop.list"]
 
     def mimeData(self, indexes):
         mimedata = QtCore.QMimeData()
@@ -115,14 +120,14 @@ class ReorderableListModel(QtCore.QAbstractListModel):
         for index in indexes:
             if index.isValid():
                 text = self.data(index, 0)
-        stream << QtCore.QByteArray(text.encode('utf-8'))
-        mimedata.setData('application/vnd.treeviewdragdrop.list', encoded_data)
+        stream << QtCore.QByteArray(text.encode("utf-8"))
+        mimedata.setData("application/vnd.treeviewdragdrop.list", encoded_data)
         return mimedata
 
     def dropMimeData(self, data, action, row, column, parent):
         if action == QtCore.Qt.IgnoreAction:
             return True
-        if not data.hasFormat('application/vnd.treeviewdragdrop.list'):
+        if not data.hasFormat("application/vnd.treeviewdragdrop.list"):
             return False
         if column > 0:
             return False
@@ -137,7 +142,7 @@ class ReorderableListModel(QtCore.QAbstractListModel):
             else:
                 return False
 
-        encoded_data = data.data('application/vnd.treeviewdragdrop.list')
+        encoded_data = data.data("application/vnd.treeviewdragdrop.list")
         stream = QtCore.QDataStream(encoded_data, QtCore.QIODevice.ReadOnly)
 
         new_items = []
@@ -145,7 +150,7 @@ class ReorderableListModel(QtCore.QAbstractListModel):
         while not stream.atEnd():
             text = QtCore.QByteArray()
             stream >> text
-            text = bytes(text).decode('utf-8')
+            text = bytes(text).decode("utf-8")
             index = self.nodes.index(text)
             new_items.append((text, index))
             rows += 1
@@ -180,9 +185,11 @@ class SelectionModel(QtCore.QItemSelectionModel):
             new_selection.select(new_index, new_index)
 
         self.clearSelection()
-        flags = QtCore.QItemSelectionModel.ClearAndSelect | \
-                QtCore.QItemSelectionModel.Rows | \
-                QtCore.QItemSelectionModel.Current
+        flags = (
+            QtCore.QItemSelectionModel.ClearAndSelect
+            | QtCore.QItemSelectionModel.Rows
+            | QtCore.QItemSelectionModel.Current
+        )
         self.select(new_selection, flags)
         self.setCurrentIndex(new_index, flags)
 
@@ -208,5 +215,5 @@ def main():
     app.exec_()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

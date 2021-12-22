@@ -21,10 +21,16 @@ class Form(QtWidgets.QDialog):
         layout.addWidget(self.label)
 
         self.connect(button1, QtCore.SIGNAL("clicked()"), self.one)
-        self.connect(button2, QtCore.SIGNAL("clicked()"), partial(self.any_button, "Two"))
+        self.connect(
+            button2, QtCore.SIGNAL("clicked()"), partial(self.any_button, "Two")
+        )
         button3_callback = lambda value="Three": self.any_button(value)
         self.connect(button3, QtCore.SIGNAL("clicked()"), button3_callback)
-        self.connect(button4, QtCore.SIGNAL("clicked()"), lambda value="Four": self.any_button(value))
+        self.connect(
+            button4,
+            QtCore.SIGNAL("clicked()"),
+            lambda value="Four": self.any_button(value),
+        )
         self.connect(button5, QtCore.SIGNAL("clicked()"), self.clicked)
 
     def one(self):
