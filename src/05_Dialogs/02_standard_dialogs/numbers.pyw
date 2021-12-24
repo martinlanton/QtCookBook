@@ -28,10 +28,12 @@ class Form(QtWidgets.QDialog):
         super(Form, self).__init__(parent)
 
         self.numberFormatDlg = None
-        self.format = dict(thousandsseparator=",",
-                           decimalmarker=".",
-                           decimalplaces=2,
-                           rednegatives=False)
+        self.format = dict(
+            thousandsseparator=",",
+            decimalmarker=".",
+            decimalplaces=2,
+            rednegatives=False,
+        )
         self.numbers = {}
         for x in range(self.X_MAX):
             for y in range(self.Y_MAX):
@@ -52,12 +54,9 @@ class Form(QtWidgets.QDialog):
         layout.addLayout(buttonLayout)
         self.setLayout(layout)
 
-        self.connect(formatButton1, QtCore.SIGNAL("clicked()"),
-                     self.setNumberFormat1)
-        self.connect(formatButton2, QtCore.SIGNAL("clicked()"),
-                     self.setNumberFormat2)
-        self.connect(formatButton3, QtCore.SIGNAL("clicked()"),
-                     self.setNumberFormat3)
+        self.connect(formatButton1, QtCore.SIGNAL("clicked()"), self.setNumberFormat1)
+        self.connect(formatButton2, QtCore.SIGNAL("clicked()"), self.setNumberFormat2)
+        self.connect(formatButton3, QtCore.SIGNAL("clicked()"), self.setNumberFormat3)
         self.setWindowTitle("Numbers")
         self.refreshTable()
 
@@ -65,8 +64,7 @@ class Form(QtWidgets.QDialog):
         self.table.clear()
         self.table.setColumnCount(self.X_MAX)
         self.table.setRowCount(self.Y_MAX)
-        self.table.setHorizontalHeaderLabels(
-                list(string.ascii_uppercase))
+        self.table.setHorizontalHeaderLabels(list(string.ascii_uppercase))
         for x in range(self.X_MAX):
             for y in range(self.Y_MAX):
                 fraction, whole = math.modf(self.numbers[(x, y)])
@@ -79,14 +77,15 @@ class Form(QtWidgets.QDialog):
                     digits.insert(0, digit)
                 if self.format["decimalplaces"]:
                     fraction = "{0:.7f}".format(abs(fraction))
-                    fraction = (self.format["decimalmarker"] +
-                            fraction[2:self.format["decimalplaces"] + 2])
+                    fraction = (
+                        self.format["decimalmarker"]
+                        + fraction[2 : self.format["decimalplaces"] + 2]
+                    )
                 else:
                     fraction = ""
                 text = "{}{}{}".format(sign, "".join(digits), fraction)
                 item = QtWidgets.QTableWidgetItem(text)
-                item.setTextAlignment(QtCore.Qt.AlignRight |
-                                      QtCore.Qt.AlignVCenter)
+                item.setTextAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
                 if sign and self.format["rednegatives"]:
                     item.setBackgroundColor(QtCore.Qt.red)
                 self.table.setItem(y, x, item)
@@ -105,7 +104,8 @@ class Form(QtWidgets.QDialog):
     def setNumberFormat3(self):
         if self.numberFormatDlg is None:
             self.numberFormatDlg = numberformatdlg3.NumberFormatDlg(
-                    self.format, self.refreshTable, self)
+                self.format, self.refreshTable, self
+            )
         self.numberFormatDlg.show()
         self.numberFormatDlg.raise_()
         self.numberFormatDlg.activateWindow()
@@ -115,4 +115,3 @@ app = QtWidgets.QApplication(sys.argv)
 form = Form()
 form.show()
 app.exec_()
-
