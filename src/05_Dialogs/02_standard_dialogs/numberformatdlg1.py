@@ -20,3 +20,72 @@ class NumberFormatDlg(QtWidgets.QDialog):
         buttonBox = QtWidgets.QDialogButtonBox(
             QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel
         )
+
+        self.format = format.copy()
+
+        grid = QtWidgets.QGridLayout()
+        grid.addWidget(thousandsLabel, 0, 0)
+        grid.addWidget(self.thousandsEdit, 0, 1)
+        grid.addWidget(decimalMarkerLabel, 1, 0)
+        grid.addWidget(self.decimalMarkerEdit, 1, 1)
+        grid.addWidget(decimalPlacesLabel, 2, 0)
+        grid.addWidget(self.decimalPlacesSpinBox, 2, 1)
+        grid.addWidget(self.redNegativesCheckBox, 3, 0, 1, 2)
+        grid.addWidget(buttonBox, 4, 0, 1, 2)
+        self.setLayout(grid)
+
+        self.connect(buttonBox, QtCore.SIGNAL("accepted()"),
+                     self, QtCore.SLOT("accept()"))
+        self.connect(buttonBox, QtCore.SIGNAL("rejected()"),
+                     self, QtCore.SLOT("reject()"))
+        self.setWindowTitle("Set Number Format (Modal)")
+
+    def numberFormat(self):
+        return self.format
+
+    def accept(self):
+        class ThousandsError(Exception):
+            pass
+
+        class DecimalError(Exception):
+            pass
+
+        punctuation = frozenset(" ,;:.")
+
+        thousands = str(self.thousandsEdit.text())
+        decimal = str(self.decimalMarkerEdit.text())
+        try:
+            if len(decimal) == 0:
+                raise DecimalError("The decimal marker may not be "
+                                   "empty.")
+            if len(thousands) > 1:
+                raise ThousandsError("The thousands separator may "
+                                     "only be empty or one character.")
+            if len(decimal) > 1:
+                raise DecimalError("The decimal marker must be "
+                                   "one character.")
+            if thousands == decimal:
+                raise ThousandsError("The thousands separator and "
+                                     "the decimal marker must be different.")
+            if thousands and thousands not in punctuation:
+                raise ThousandsError("The thousands separator must "
+                                     "be a punctuation symbol.")
+            if decimal not in punctuation:
+                raise DecimalError("The decimal marker must be a "
+                                   "punctuation symbol.")
+        except ThousandsError as e:
+            QtWidgets.QMessageBox.warning(self, "Thousands Separator Error", str(e))
+            self.thousandsEdit.selectAll()
+            self.thousandsEdit.setFocus()
+            return
+        except DecimalError as e:
+            QtWidgets.QMessageBox.warning(self, "Decimal Marker Error", str(e))
+            self.decimalMarkerEdit.selectAll()
+            self.decimalMarkerEdit.setFocus()
+            return
+
+        self.format["thousandsseparator"] = thousands
+        self.format["decimalmarker"] = decimal
+        self.format["decimalplaces"] = self.decimalPlacesSpinBox.value()
+        self.format["rednegatives"] = self.redNegativesCheckBox.isChecked()
+        QtWidgets.QDialog.accept(self)
