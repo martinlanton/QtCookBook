@@ -15,7 +15,7 @@ import string
 import sys
 from PySide6 import QtWidgets, QtCore
 import numberformatdlg1
-# import numberformatdlg2
+import numberformatdlg2
 # import numberformatdlg3
 
 
@@ -92,7 +92,7 @@ class Form(QtWidgets.QDialog):
 
     def setNumberFormat1(self):
         dialog = numberformatdlg1.NumberFormatDlg(self.format, self)
-        if dialog.exec_():
+        if dialog.exec():
             self.format = dialog.numberFormat()
             self.refreshTable()
 
