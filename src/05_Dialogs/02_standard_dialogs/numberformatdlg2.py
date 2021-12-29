@@ -2,22 +2,25 @@ from PySide6 import QtWidgets, QtCore, QtGui
 
 
 class NumberFormatDlg(QtWidgets.QDialog):
+
+    changed = QtCore.Signal()
+
     def __init__(self, format, parent=None):
         super(NumberFormatDlg, self).__init__(parent)
 
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-        punctuationRe = QtWidgets.QRegExp(r"[ ,;:.]")
+        punctuationRe = QtCore.QRegularExpression(r"[ ,;:.]")
         thousandsLabel = QtWidgets.QLabel("&Thousands separator")
         self.thousandsEdit = QtWidgets.QLineEdit(format["thousandsseparator"])
         thousandsLabel.setBuddy(self.thousandsEdit)
         self.thousandsEdit.setMaxLength(1)
-        self.thousandsEdit.setValidator(QtGui.QRegExpValidator(punctuationRe, self))
+        self.thousandsEdit.setValidator(QtGui.QRegularExpressionValidator(punctuationRe, self))
 
         decimalMarkerLabel = QtWidgets.QLabel("Decimal &marker")
         self.decimalMarkerEdit = QtWidgets.QLineEdit(format["decimalmarker"])
         decimalMarkerLabel.setBuddy(self.decimalMarkerEdit)
         self.decimalMarkerEdit.setMaxLength(1)
-        self.decimalMarkerEdit.setValidator(QtGui.QRegExpValidator(punctuationRe, self))
+        self.decimalMarkerEdit.setValidator(QtGui.QRegularExpressionValidator(punctuationRe, self))
         self.decimalMarkerEdit.setInputMask("X")
 
         decimalPlacesLabel = QtWidgets.QLabel("&Decimal places")
@@ -45,20 +48,16 @@ class NumberFormatDlg(QtWidgets.QDialog):
         grid.addWidget(buttonBox, 4, 0, 1, 2)
         self.setLayout(grid)
 
-        self.connect(
-            buttonBox.button(QtWidgets.QDialogButtonBox.Apply),
-            QtCore.SIGNAL("clicked()"),
+        buttonBox.button(QtWidgets.QDialogButtonBox.Apply).clicked.connect(
             self.apply,
         )
-        self.connect(
-            buttonBox, QtCore.SIGNAL("rejected()"), self, QtCore.SLOT("reject()")
-        )
+        buttonBox.rejected.connect(self.reject)
         self.setWindowTitle("Set Number Format (Modeless)")
 
     def apply(self):
         thousands = str(self.thousandsEdit.text())
-
         decimal = str(self.decimalMarkerEdit.text())
+
         if thousands == decimal:
             QtWidgets.QMessageBox.warning(
                 self,
@@ -81,4 +80,4 @@ class NumberFormatDlg(QtWidgets.QDialog):
         self.format["decimalmarker"] = decimal
         self.format["decimalplaces"] = self.decimalPlacesSpinBox.value()
         self.format["rednegatives"] = self.redNegativesCheckBox.isChecked()
-        self.emit(QtCore.SIGNAL("changed"))
+        self.changed.emit()

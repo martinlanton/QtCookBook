@@ -37,10 +37,8 @@ class NumberFormatDlg(QtWidgets.QDialog):
         grid.addWidget(buttonBox, 4, 0, 1, 2)
         self.setLayout(grid)
 
-        self.connect(buttonBox, QtCore.SIGNAL("accepted()"),
-                     self, QtCore.SLOT("accept()"))
-        self.connect(buttonBox, QtCore.SIGNAL("rejected()"),
-                     self, QtCore.SLOT("reject()"))
+        buttonBox.accepted.connect(self.accept)
+        buttonBox.rejected.connect(self.reject)
         self.setWindowTitle("Set Number Format (Modal)")
 
     def numberFormat(self):

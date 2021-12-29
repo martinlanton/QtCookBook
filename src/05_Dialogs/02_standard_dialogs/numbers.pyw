@@ -16,7 +16,7 @@ import sys
 from PySide6 import QtWidgets, QtCore
 import numberformatdlg1
 import numberformatdlg2
-# import numberformatdlg3
+import numberformatdlg3
 
 
 class Form(QtWidgets.QDialog):
@@ -79,7 +79,7 @@ class Form(QtWidgets.QDialog):
                     fraction = "{0:.7f}".format(abs(fraction))
                     fraction = (
                         self.format["decimalmarker"]
-                        + fraction[2 : self.format["decimalplaces"] + 2]
+                        + fraction[2: self.format["decimalplaces"] + 2]
                     )
                 else:
                     fraction = ""
@@ -98,7 +98,7 @@ class Form(QtWidgets.QDialog):
 
     def setNumberFormat2(self):
         dialog = numberformatdlg2.NumberFormatDlg(self.format, self)
-        self.connect(dialog, QtCore.SIGNAL("changed"), self.refreshTable)
+        dialog.changed.connect(self.refreshTable)
         dialog.show()
 
     def setNumberFormat3(self):
