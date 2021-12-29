@@ -87,7 +87,7 @@ class Form(QtWidgets.QDialog):
                 item = QtWidgets.QTableWidgetItem(text)
                 item.setTextAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
                 if sign and self.format["rednegatives"]:
-                    item.setBackgroundColor(QtCore.Qt.red)
+                    item.setBackground(QtCore.Qt.red)
                 self.table.setItem(y, x, item)
 
     def setNumberFormat1(self):
