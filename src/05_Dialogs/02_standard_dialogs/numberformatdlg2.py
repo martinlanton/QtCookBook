@@ -28,5 +28,57 @@ class NumberFormatDlg(QtWidgets.QDialog):
 
         self.redNegativesCheckBox = QtWidgets.QCheckBox("&Red negative numbers")
         self.redNegativesCheckBox.setChecked(format["rednegatives"])
-        buttonBox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Apply |
-                                               QtWidgets.QDialogButtonBox.Close)
+        buttonBox = QtWidgets.QDialogButtonBox(
+            QtWidgets.QDialogButtonBox.Apply | QtWidgets.QDialogButtonBox.Close
+        )
+
+        self.format = format
+
+        grid = QtWidgets.QGridLayout()
+        grid.addWidget(thousandsLabel, 0, 0)
+        grid.addWidget(self.thousandsEdit, 0, 1)
+        grid.addWidget(decimalMarkerLabel, 1, 0)
+        grid.addWidget(self.decimalMarkerEdit, 1, 1)
+        grid.addWidget(decimalPlacesLabel, 2, 0)
+        grid.addWidget(self.decimalPlacesSpinBox, 2, 1)
+        grid.addWidget(self.redNegativesCheckBox, 3, 0, 1, 2)
+        grid.addWidget(buttonBox, 4, 0, 1, 2)
+        self.setLayout(grid)
+
+        self.connect(
+            buttonBox.button(QtWidgets.QDialogButtonBox.Apply),
+            QtCore.SIGNAL("clicked()"),
+            self.apply,
+        )
+        self.connect(
+            buttonBox, QtCore.SIGNAL("rejected()"), self, QtCore.SLOT("reject()")
+        )
+        self.setWindowTitle("Set Number Format (Modeless)")
+
+    def apply(self):
+        thousands = str(self.thousandsEdit.text())
+
+        decimal = str(self.decimalMarkerEdit.text())
+        if thousands == decimal:
+            QtWidgets.QMessageBox.warning(
+                self,
+                "Format Error",
+                "The thousands separator and the decimal marker " "must be different.",
+            )
+            self.thousandsEdit.selectAll()
+            self.thousandsEdit.setFocus()
+            return
+
+        if len(decimal) == 0:
+            QtWidgets.QMessageBox.warning(
+                self, "Format Error", "The decimal marker may not be empty."
+            )
+            self.decimalMarkerEdit.selectAll()
+            self.decimalMarkerEdit.setFocus()
+            return
+
+        self.format["thousandsseparator"] = thousands
+        self.format["decimalmarker"] = decimal
+        self.format["decimalplaces"] = self.decimalPlacesSpinBox.value()
+        self.format["rednegatives"] = self.redNegativesCheckBox.isChecked()
+        self.emit(QtCore.SIGNAL("changed"))
