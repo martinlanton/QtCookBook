@@ -12,6 +12,7 @@
 import os
 import platform
 import sys
+import PySide6
 from PySide6 import QtWidgets, QtCore, QtGui, QtPrintSupport
 import helpform
 import newimagedlg
@@ -115,7 +116,7 @@ class MainWindow(QtWidgets.QMainWindow):
         editZoomAction = self.createAction(
             "&Zoom...", self.editZoom, "Alt+Z", "editzoom", "Zoom the image"
         )
-        mirrorGroup = QtWidgets.QtGui.QActionGroup(self)
+        mirrorGroup = QtGui.QActionGroup(self)
         editUnMirrorAction = self.createAction(
             "&Unmirror",
             self.editUnMirror,
@@ -275,7 +276,9 @@ class MainWindow(QtWidgets.QMainWindow):
                 self,
                 "Image Changer - Unsaved Changes",
                 "Save unsaved changes?",
-                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No | QtWidgets.QMessageBox.Cancel,
+                QtWidgets.QMessageBox.Yes
+                | QtWidgets.QMessageBox.No
+                | QtWidgets.QMessageBox.Cancel,
             )
             if reply == QtWidgets.QMessageBox.Cancel:
                 return False
@@ -348,7 +351,7 @@ class MainWindow(QtWidgets.QMainWindow):
         dir = os.path.dirname(self.filename) if self.filename is not None else "."
         formats = [
             "*.{}".format(format.data().decode("ascii").lower())
-            for format in QImageReader.supportedImageFormats()
+            for format in QtGui.QImageReader.supportedImageFormats()
         ]
         fname = QtCore.QFileDialog.getOpenFileName(
             self,
@@ -432,7 +435,9 @@ class MainWindow(QtWidgets.QMainWindow):
         if self.image.isNull():
             return
         if self.printer is None:
-            self.printer = QtPrintSupport.QPrinter(QtPrintSupport.QPrinter.HighResolution)
+            self.printer = QtPrintSupport.QPrinter(
+                QtPrintSupport.QPrinter.HighResolution
+            )
             self.printer.setPageSize(QtPrintSupport.QPrinter.Letter)
         form = QtPrintSupport.QPrintDialog(self.printer, self)
         if form.exec_():
@@ -519,8 +524,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 <p>Python {1} - Qt {2} - PyQt {3} on {4}""".format(
                 __version__,
                 platform.python_version(),
-                QT_VERSION_STR,
-                PYQT_VERSION_STR,
+                PySide6.QtCore.__version__,
+                PySide6.__version__,
                 platform.system(),
             ),
         )
