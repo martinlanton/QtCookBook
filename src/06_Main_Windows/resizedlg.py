@@ -9,33 +9,29 @@
 # warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
 # the GNU General Public License for more details.
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PySide6 import QtWidgets, QtCore
 
 
-class ResizeDlg(QDialog):
-
+class ResizeDlg(QtWidgets.QDialog):
     def __init__(self, width, height, parent=None):
         super(ResizeDlg, self).__init__(parent)
 
-        widthLabel = QLabel("&Width:")
-        self.widthSpinBox = QSpinBox()
+        widthLabel = QtWidgets.QLabel("&Width:")
+        self.widthSpinBox = QtWidgets.QSpinBox()
         widthLabel.setBuddy(self.widthSpinBox)
-        self.widthSpinBox.setAlignment(Qt.AlignRight|Qt.AlignVCenter)
+        self.widthSpinBox.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self.widthSpinBox.setRange(4, width * 4)
         self.widthSpinBox.setValue(width)
-        heightLabel = QLabel("&Height:")
-        self.heightSpinBox = QSpinBox()
+        heightLabel = QtWidgets.QLabel("&Height:")
+        self.heightSpinBox = QtWidgets.QSpinBox()
         heightLabel.setBuddy(self.heightSpinBox)
-        self.heightSpinBox.setAlignment(Qt.AlignRight|
-                                        Qt.AlignVCenter)
+        self.heightSpinBox.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self.heightSpinBox.setRange(4, height * 4)
         self.heightSpinBox.setValue(height)
 
-        buttonBox = QDialogButtonBox(QDialogButtonBox.Ok|
-                                     QDialogButtonBox.Cancel)
+        buttonBox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
 
-        layout = QGridLayout()
+        layout = QtWidgets.QGridLayout()
         layout.addWidget(widthLabel, 0, 0)
         layout.addWidget(self.widthSpinBox, 0, 1)
         layout.addWidget(heightLabel, 1, 0)
@@ -43,11 +39,10 @@ class ResizeDlg(QDialog):
         layout.addWidget(buttonBox, 2, 0, 1, 2)
         self.setLayout(layout)
 
-        self.connect(buttonBox, SIGNAL("accepted()"), self.accept)
-        self.connect(buttonBox, SIGNAL("rejected()"), self.reject)
+        self.connect(buttonBox, QtCore.SIGNAL("accepted()"), self.accept)
+        self.connect(buttonBox, QtCore.SIGNAL("rejected()"), self.reject)
 
         self.setWindowTitle("Image Changer - Resize")
-
 
     def result(self):
         return self.widthSpinBox.value(), self.heightSpinBox.value()
@@ -56,8 +51,7 @@ class ResizeDlg(QDialog):
 if __name__ == "__main__":
     import sys
 
-    app = QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     form = ResizeDlg(64, 128)
     form.show()
     app.exec_()
-
