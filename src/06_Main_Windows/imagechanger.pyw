@@ -17,10 +17,12 @@ from PySide6 import QtWidgets, QtCore, QtGui, QtPrintSupport
 import helpform
 import newimagedlg
 
-# TODO : Since pyrcc is no longer provided with PyQt or PySide, we
+#  Since pyrcc is no longer provided with PyQt or PySide, we
 #  need to change resources location using the information from this thread :
 #  https://stackoverflow.com/questions/66099225/how-can-resources-be-provided-in-pyqt6-which-has-no-pyrcc
-import qrc_resources  # this means this needs to go and we need to adjust all the resources calls
+# import qrc_resources  # this means this needs to go and we need to adjust all the resources calls
+
+QtCore.QDir.addSearchPath('resources', '06_Main_Windows/images/')
 
 
 __version__ = "1.0.1"
@@ -172,7 +174,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.addActions(
             editMenu, (editInvertAction, editSwapRedAndBlueAction, editZoomAction)
         )
-        mirrorMenu = editMenu.addMenu(QtGui.QIcon(":/editmirror.png"), "&Mirror")
+        mirrorMenu = editMenu.addMenu(QtGui.QIcon("resources:editmirror.png"), "&Mirror")
         self.addActions(
             mirrorMenu,
             (editUnMirrorAction, editMirrorHorizontalAction, editMirrorVerticalAction),
@@ -245,7 +247,7 @@ class MainWindow(QtWidgets.QMainWindow):
     ):
         action = QtGui.QAction(text, self)
         if icon is not None:
-            action.setIcon(QtGui.QIcon(":/{}.png".format(icon)))
+            action.setIcon(QtGui.QIcon("resources:{}.png".format(icon)))
         if shortcut is not None:
             action.setShortcut(shortcut)
         if tip is not None:
@@ -321,7 +323,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.fileMenu.addSeparator()
             for i, fname in enumerate(recentFiles):
                 action = QtGui.QAction(
-                    QtGui.QIcon(":/icon.png"),
+                    QtGui.QIcon("resources:icon.png"),
                     "&{} {}".format(i + 1, QtCore.QFileInfo(fname).fileName()),
                     self,
                 )
@@ -544,7 +546,7 @@ def main():
     app.setOrganizationName("Qtrac Ltd.")
     app.setOrganizationDomain("qtrac.eu")
     app.setApplicationName("Image Changer")
-    app.setWindowIcon(QtGui.QIcon(":/icon.png"))
+    app.setWindowIcon(QtGui.QIcon("resources:icon.png"))
     form = MainWindow()
     form.show()
     app.exec_()
