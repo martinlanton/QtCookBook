@@ -541,6 +541,7 @@ class MainWindow(QtWidgets.QMainWindow):
         form.show()
 
 
+# TODO : check that this is running properly when running the program
 def main():
     app = QtWidgets.QApplication(sys.argv)
     app.setOrganizationName("Qtrac Ltd.")
