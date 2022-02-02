@@ -16,6 +16,5 @@ setup(
     install_requires=[
         'pytest-cov',
         'PySide6',
-        'Qt.py>=1.2',
     ]
 )
