@@ -26,6 +26,7 @@ class Form(QtWidgets.QDialog):
 
     def __init__(self, parent=None):
         super(Form, self).__init__(parent)
+        pass
 
         self.numberFormatDlg = None
         self.format = dict(
@@ -114,4 +115,4 @@ class Form(QtWidgets.QDialog):
 app = QtWidgets.QApplication(sys.argv)
 form = Form()
 form.show()
-app.exec_()
+app.exec()
