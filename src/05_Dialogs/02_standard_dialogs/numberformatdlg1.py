@@ -57,23 +57,26 @@ class NumberFormatDlg(QtWidgets.QDialog):
         decimal = str(self.decimalMarkerEdit.text())
         try:
             if len(decimal) == 0:
-                raise DecimalError("The decimal marker may not be "
-                                   "empty.")
+                raise DecimalError("The decimal marker may not be " "empty.")
             if len(thousands) > 1:
-                raise ThousandsError("The thousands separator may "
-                                     "only be empty or one character.")
+                raise ThousandsError(
+                    "The thousands separator may " "only be empty or one character."
+                )
             if len(decimal) > 1:
-                raise DecimalError("The decimal marker must be "
-                                   "one character.")
+                raise DecimalError("The decimal marker must be " "one character.")
             if thousands == decimal:
-                raise ThousandsError("The thousands separator and "
-                                     "the decimal marker must be different.")
+                raise ThousandsError(
+                    "The thousands separator and "
+                    "the decimal marker must be different."
+                )
             if thousands and thousands not in punctuation:
-                raise ThousandsError("The thousands separator must "
-                                     "be a punctuation symbol.")
+                raise ThousandsError(
+                    "The thousands separator must " "be a punctuation symbol."
+                )
             if decimal not in punctuation:
-                raise DecimalError("The decimal marker must be a "
-                                   "punctuation symbol.")
+                raise DecimalError(
+                    "The decimal marker must be a " "punctuation symbol."
+                )
         except ThousandsError as e:
             QtWidgets.QMessageBox.warning(self, "Thousands Separator Error", str(e))
             self.thousandsEdit.selectAll()

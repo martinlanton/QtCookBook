@@ -29,7 +29,9 @@ class ResizeDlg(QtWidgets.QDialog):
         self.heightSpinBox.setRange(4, height * 4)
         self.heightSpinBox.setValue(height)
 
-        buttonBox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
+        buttonBox = QtWidgets.QDialogButtonBox(
+            QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel
+        )
 
         layout = QtWidgets.QGridLayout()
         layout.addWidget(widthLabel, 0, 0)

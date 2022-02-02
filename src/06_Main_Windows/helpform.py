@@ -13,7 +13,6 @@ from PySide6 import QtWidgets, QtCore, QtGui
 
 
 class HelpForm(QtWidgets.QDialog):
-
     def __init__(self, page, parent=None):
         super(HelpForm, self).__init__(parent)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
@@ -36,18 +35,26 @@ class HelpForm(QtWidgets.QDialog):
         layout.addWidget(self.textBrowser, 1)
         self.setLayout(layout)
 
-        self.connect(backAction, QtCore.SIGNAL("triggered()"),
-                     self.textBrowser, QtCore.SLOT("backward()"))
-        self.connect(homeAction, QtCore.SIGNAL("triggered()"),
-                     self.textBrowser, QtCore.SLOT("home()"))
-        self.connect(self.textBrowser, QtCore.SIGNAL("sourceChanged(QUrl)"),
-                     self.updatePageTitle)
+        self.connect(
+            backAction,
+            QtCore.SIGNAL("triggered()"),
+            self.textBrowser,
+            QtCore.SLOT("backward()"),
+        )
+        self.connect(
+            homeAction,
+            QtCore.SIGNAL("triggered()"),
+            self.textBrowser,
+            QtCore.SLOT("home()"),
+        )
+        self.connect(
+            self.textBrowser, QtCore.SIGNAL("sourceChanged(QUrl)"), self.updatePageTitle
+        )
 
         self.textBrowser.setSearchPaths([":/help"])
         self.textBrowser.setSource(QtCore.QUrl(page))
         self.resize(400, 600)
-        self.setWindowTitle("{} Help".format(
-                QtWidgets.QApplication.applicationName()))
+        self.setWindowTitle("{} Help".format(QtWidgets.QApplication.applicationName()))
 
     def updatePageTitle(self):
         self.pageLabel.setText(self.textBrowser.documentTitle())
@@ -60,4 +67,3 @@ if __name__ == "__main__":
     form = HelpForm("index.html")
     form.show()
     app.exec_()
-

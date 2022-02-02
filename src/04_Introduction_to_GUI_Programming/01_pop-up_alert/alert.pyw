@@ -17,7 +17,7 @@ try:
     if len(sys.argv) > 2:
         message = " ".join(sys.argv[2:])
 except ValueError:
-    message = "Usage: alert.pyw HH:MM [optional message]" # 24hr clock
+    message = "Usage: alert.pyw HH:MM [optional message]"  # 24hr clock
 
 while QtCore.QTime.currentTime() < due:
     time.sleep(20)  # 20 seconds
@@ -25,5 +25,5 @@ while QtCore.QTime.currentTime() < due:
 label = QtWidgets.QLabel("<font color=red size=72><b>" + message + "</b></font>")
 label.setWindowFlags(QtCore.Qt.SplashScreen)
 label.show()
-QtCore.QTimer.singleShot(60000, app.quit) # 1 minute
+QtCore.QTimer.singleShot(60000, app.quit)  # 1 minute
 app.exec()

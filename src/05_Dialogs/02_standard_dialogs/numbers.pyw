@@ -80,7 +80,7 @@ class Form(QtWidgets.QDialog):
                     fraction = "{0:.7f}".format(abs(fraction))
                     fraction = (
                         self.format["decimalmarker"]
-                        + fraction[2: self.format["decimalplaces"] + 2]
+                        + fraction[2 : self.format["decimalplaces"] + 2]
                     )
                 else:
                     fraction = ""
