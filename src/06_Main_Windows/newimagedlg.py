@@ -10,6 +10,7 @@
 # the GNU General Public License for more details.
 
 from PySide6 import QtWidgets, QtCore, QtGui
+# TODO : create this properly from newimagedlg.ui
 import ui_newimagedlg
 
 

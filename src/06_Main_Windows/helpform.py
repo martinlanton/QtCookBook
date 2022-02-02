@@ -10,7 +10,6 @@
 # the GNU General Public License for more details.
 
 from PySide6 import QtWidgets, QtCore, QtGui
-import qrc_resources
 
 
 class HelpForm(QtWidgets.QDialog):
@@ -20,9 +19,9 @@ class HelpForm(QtWidgets.QDialog):
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.setAttribute(QtCore.Qt.WA_GroupLeader)
 
-        backAction = QtGui.QAction(QtGui.QIcon(":/back.png"), "&Back", self)
+        backAction = QtGui.QAction(QtGui.QIcon("resources:back.png"), "&Back", self)
         backAction.setShortcut(QtCore.QKeySequence.Back)
-        homeAction = QtGui.QAction(QtGui.QIcon(":/home.png"), "&Home", self)
+        homeAction = QtGui.QAction(QtGui.QIcon("resources:home.png"), "&Home", self)
         homeAction.setShortcut("Home")
         self.pageLabel = QtWidgets.QLabel()
 
