@@ -28,6 +28,8 @@ QtCore.QDir.addSearchPath("resources", "06_Main_Windows/images/")
 __version__ = "1.0.1"
 
 
+# TODO : fix icon loading
+
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
@@ -339,7 +341,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if not self.okToContinue():
             return
         dialog = newimagedlg.NewImageDlg(self)
-        if dialog.exec_():
+        if dialog.exec():
             self.addRecentFile(self.filename)
             self.image = QtGui.QImage()
             for action, check in self.resetableActions:
@@ -361,7 +363,7 @@ class MainWindow(QtWidgets.QMainWindow):
             "*.{}".format(format.data().decode("ascii").lower())
             for format in QtGui.QImageReader.supportedImageFormats()
         ]
-        fname = QtCore.QFileDialog.getOpenFileName(
+        fname = QtWidgets.QFileDialog.getOpenFileName(
             self,
             "Image Changer - Choose Image",
             dir,
@@ -425,7 +427,7 @@ class MainWindow(QtWidgets.QMainWindow):
             "*.{}".format(format.data().decode("ascii").lower())
             for format in QtGui.QImageWriter.supportedImageFormats()
         ]
-        fname = QtCore.QFileDialog.getSaveFileName(
+        fname = QtWidgets.QFileDialog.getSaveFileName(
             self,
             "Image Changer - Save Image",
             fname,
@@ -446,9 +448,9 @@ class MainWindow(QtWidgets.QMainWindow):
             self.printer = QtPrintSupport.QPrinter(
                 QtPrintSupport.QPrinter.HighResolution
             )
-            self.printer.setPageSize(QtPrintSupport.QPrinter.Letter)
+            self.printer.setPageSize(QtGui.QPageSize.Letter)
         form = QtPrintSupport.QPrintDialog(self.printer, self)
-        if form.exec_():
+        if form.exec():
             painter = QtGui.QPainter(self.printer)
             rect = painter.viewport()
             size = self.image.size()
@@ -503,7 +505,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def editZoom(self):
         if self.image.isNull():
             return
-        percent, ok = QtWidgets.QInputDialog.getInteger(
+        percent, ok = QtWidgets.QInputDialog.getInt(
             self, "Image Changer - Zoom", "Percent:", self.zoomSpinBox.value(), 1, 400
         )
         if ok:
@@ -543,7 +545,6 @@ class MainWindow(QtWidgets.QMainWindow):
         form.show()
 
 
-# TODO : check that this is running properly when running the program
 def main():
     app = QtWidgets.QApplication(sys.argv)
     app.setOrganizationName("Qtrac Ltd.")

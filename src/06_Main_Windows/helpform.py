@@ -16,10 +16,10 @@ class HelpForm(QtWidgets.QDialog):
     def __init__(self, page, parent=None):
         super(HelpForm, self).__init__(parent)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-        self.setAttribute(QtCore.Qt.WA_GroupLeader)
+        self.setWindowModality(QtCore.Qt.WindowModal)
 
         backAction = QtGui.QAction(QtGui.QIcon("resources:back.png"), "&Back", self)
-        backAction.setShortcut(QtCore.QKeySequence.Back)
+        backAction.setShortcut(QtGui.QKeySequence.Back)
         homeAction = QtGui.QAction(QtGui.QIcon("resources:home.png"), "&Home", self)
         homeAction.setShortcut("Home")
         self.pageLabel = QtWidgets.QLabel()
@@ -66,4 +66,4 @@ if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     form = HelpForm("index.html")
     form.show()
-    app.exec_()
+    app.exec()
