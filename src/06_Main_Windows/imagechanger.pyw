@@ -67,21 +67,21 @@ class MainWindow(QtWidgets.QMainWindow):
         fileNewAction = self.createAction(
             "&New...",
             self.fileNew,
-            QtCore.QKeySequence.New,
+            QtGui.QKeySequence.New,
             "filenew",
             "Create an image file",
         )
         fileOpenAction = self.createAction(
             "&Open...",
             self.fileOpen,
-            QtCore.QKeySequence.Open,
+            QtGui.QKeySequence.Open,
             "fileopen",
             "Open an existing image file",
         )
         fileSaveAction = self.createAction(
             "&Save",
             self.fileSave,
-            QtCore.QKeySequence.Save,
+            QtGui.QKeySequence.Save,
             "filesave",
             "Save the image",
         )
@@ -94,7 +94,7 @@ class MainWindow(QtWidgets.QMainWindow):
         filePrintAction = self.createAction(
             "&Print",
             self.filePrint,
-            QtCore.QKeySequence.Print,
+            QtGui.QKeySequence.Print,
             "fileprint",
             "Print the image",
         )
@@ -156,7 +156,7 @@ class MainWindow(QtWidgets.QMainWindow):
         editUnMirrorAction.setChecked(True)
         helpAboutAction = self.createAction("&About Image Changer", self.helpAbout)
         helpHelpAction = self.createAction(
-            "&Help", self.helpHelp, QtCore.QKeySequence.HelpContents
+            "&Help", self.helpHelp, QtGui.QKeySequence.HelpContents
         )
 
         self.fileMenu = self.menuBar().addMenu("&File")
@@ -552,7 +552,7 @@ def main():
     app.setWindowIcon(QtGui.QIcon("resources:icon.png"))
     form = MainWindow()
     form.show()
-    app.exec_()
+    app.exec()
 
 
 main()
