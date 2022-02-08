@@ -20,9 +20,9 @@ import newimagedlg
 #  Since pyrcc is no longer provided with PyQt or PySide, we
 #  need to change resources location using the information from this thread :
 #  https://stackoverflow.com/questions/66099225/how-can-resources-be-provided-in-pyqt6-which-has-no-pyrcc
-# import qrc_resources  # this means this needs to go and we need to adjust all the resources calls
+# import qrc_resources  # this means this needs to go, and we need to adjust all the resources calls
 
-QtCore.QDir.addSearchPath("resources", "06_Main_Windows/images/")
+QtCore.QDir.addSearchPath("resources", "images/")
 
 
 __version__ = "1.0.1"
