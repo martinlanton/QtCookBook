@@ -28,8 +28,6 @@ QtCore.QDir.addSearchPath("resources", "images/")
 __version__ = "1.0.1"
 
 
-# TODO : fix icon loading
-
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
