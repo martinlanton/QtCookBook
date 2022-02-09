@@ -9,14 +9,12 @@
 # warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
 # the GNU General Public License for more details.
 
-from PySide6 import QtWidgets, QtCore, QtGui
+from PySide6 import QtWidgets, QtCore
 import moviedata
 import ui_addeditmoviedlg
 
 
-class AddEditMovieDlg(QtWidgets.QDialog,
-        ui_addeditmoviedlg.Ui_AddEditMovieDlg):
-
+class AddEditMovieDlg(QtWidgets.QDialog, ui_addeditmoviedlg.Ui_AddEditMovieDlg):
     def __init__(self, movies, movie=None, parent=None):
         super(AddEditMovieDlg, self).__init__(parent)
         self.setupUi(self)
@@ -32,13 +30,11 @@ class AddEditMovieDlg(QtWidgets.QDialog,
             self.acquiredDateEdit.setEnabled(False)
             self.notesTextEdit.setPlainText(movie.notes)
             self.notesTextEdit.setFocus()
-            self.buttonBox.button(QtWidgets.QDialogButtonBox.Ok).setText(
-                                  "&Accept")
+            self.buttonBox.button(QtWidgets.QDialogButtonBox.Ok).setText("&Accept")
             self.setWindowTitle("My Movies - Edit Movie")
         else:
             today = QtCore.QDate.currentDate()
-            self.acquiredDateEdit.setDateRange(today.addDays(-5),
-                                               today)
+            self.acquiredDateEdit.setDateRange(today.addDays(-5), today)
             self.acquiredDateEdit.setDate(today)
             self.titleLineEdit.setFocus()
         self.on_titleLineEdit_textEdited("")
@@ -46,7 +42,8 @@ class AddEditMovieDlg(QtWidgets.QDialog,
     @QtCore.Slot("QString")
     def on_titleLineEdit_textEdited(self, text):
         self.buttonBox.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(
-                bool(self.titleLineEdit.text()))
+            bool(self.titleLineEdit.text())
+        )
 
     def accept(self):
         title = self.titleLineEdit.text()
@@ -55,12 +52,10 @@ class AddEditMovieDlg(QtWidgets.QDialog,
         notes = self.notesTextEdit.toPlainText()
         if self.movie is None:
             acquired = self.acquiredDateEdit.date()
-            self.movie = moviedata.Movie(title, year, minutes,
-                                         acquired, notes)
+            self.movie = moviedata.Movie(title, year, minutes, acquired, notes)
             self.movies.add(self.movie)
         else:
-            self.movies.updateMovie(self.movie, title, year,
-                                    minutes, notes)
+            self.movies.updateMovie(self.movie, title, year, minutes, notes)
         QtWidgets.QDialog.accept(self)
 
 
@@ -71,4 +66,3 @@ if __name__ == "__main__":
     form = AddEditMovieDlg(0)
     form.show()
     app.exec_()
-
