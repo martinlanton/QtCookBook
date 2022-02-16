@@ -9,15 +9,12 @@
 # warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
 # the GNU General Public License for more details.
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PySide6 import QtWidgets, QtCore
 import moviedata_ans as moviedata
 import ui_addeditmoviedlg_ans as ui_addeditmoviedlg
 
 
-class AddEditMovieDlg(QDialog,
-        ui_addeditmoviedlg.Ui_AddEditMovieDlg):
-
+class AddEditMovieDlg(QtWidgets.QDialog, ui_addeditmoviedlg.Ui_AddEditMovieDlg):
     def __init__(self, movies, movie=None, parent=None):
         super(AddEditMovieDlg, self).__init__(parent)
         self.setupUi(self)
@@ -34,23 +31,20 @@ class AddEditMovieDlg(QDialog,
             self.locationLineEdit.setText(movie.location)
             self.notesTextEdit.setPlainText(movie.notes)
             self.notesTextEdit.setFocus()
-            self.buttonBox.button(QDialogButtonBox.Ok).setText(
-                                  "&Accept")
+            self.buttonBox.button(QtWidgets.QDialogButtonBox.Ok).setText("&Accept")
             self.setWindowTitle("My Movies - Edit Movie")
         else:
-            today = QDate.currentDate()
-            self.acquiredDateEdit.setDateRange(today.addDays(-5),
-                                               today)
+            today = QtCore.QDate.currentDate()
+            self.acquiredDateEdit.setDateRange(today.addDays(-5), today)
             self.acquiredDateEdit.setDate(today)
             self.titleLineEdit.setFocus()
         self.on_titleLineEdit_textEdited("")
 
-
-    @pyqtSignature("QString")
+    @QtCore.Slot("QString")
     def on_titleLineEdit_textEdited(self, text):
-        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(
-                bool(self.titleLineEdit.text()))
-
+        self.buttonBox.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(
+            bool(self.titleLineEdit.text())
+        )
 
     def accept(self):
         title = self.titleLineEdit.text()
@@ -60,20 +54,19 @@ class AddEditMovieDlg(QDialog,
         notes = self.notesTextEdit.toPlainText()
         if self.movie is None:
             acquired = self.acquiredDateEdit.date()
-            self.movie = moviedata.Movie(title, year, minutes,
-                                         acquired, location, notes)
+            self.movie = moviedata.Movie(
+                title, year, minutes, acquired, location, notes
+            )
             self.movies.add(self.movie)
         else:
-            self.movies.updateMovie(self.movie, title, year,
-                                    minutes, location, notes)
-        QDialog.accept(self)
+            self.movies.updateMovie(self.movie, title, year, minutes, location, notes)
+        QtWidgets.QDialog.accept(self)
 
 
 if __name__ == "__main__":
     import sys
 
-    app = QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     form = AddEditMovieDlg(0)
     form.show()
     app.exec_()
-
