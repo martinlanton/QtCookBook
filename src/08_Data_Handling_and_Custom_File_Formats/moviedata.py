@@ -515,6 +515,7 @@ class MovieContainer(object):
             )
 
     def exportXml(self, fname):
+        # TODO : fix the xml export
         error = None
         fh = None
         try:
@@ -631,15 +632,31 @@ class MovieContainer(object):
         error = None
         fh = None
         try:
-            handler = SaxMovieHandler(self)
-            parser = QtXml.QXmlSimpleReader()
-            parser.setContentHandler(handler)
-            parser.setErrorHandler(handler)
             fh = QtCore.QFile(fname)
-            input = QtXml.QXmlInputSource(fh)
+            stream = QtCore.QXmlStreamReader(fh)
+            stream.readNext()
+            magic = int(stream.tokenString())
+            if magic != MovieContainer.MAGIC_NUMBER:
+                raise IOError("unrecognized file type")
+            stream.readNext()
+            version = int(stream.tokenString())
+            if version < MovieContainer.FILE_VERSION:
+                raise IOError("old and unreadable file format")
+            elif version > MovieContainer.FILE_VERSION:
+                raise IOError("new and unreadable file format")
             self.clear(False)
-            if not parser.parse(input):
-                raise ValueError(handler.error)
+            while not stream.atEnd():
+                stream.readNext()
+                title = stream.tokenString()
+                stream.readNext()
+                year = int(stream.tokenString())
+                stream.readNext()
+                minutes = int(stream.tokenString())
+                stream.readNext()
+                acquired = QtCore.QDate.fromString(stream.tokenString(), QtCore.Qt.ISODate)
+                stream.readNext()
+                notes = stream.tokenString()
+                self.add(Movie(title, year, minutes, acquired, notes))
         except (IOError, OSError, ValueError) as e:
             error = "Failed to import: {}".format(e)
         finally:
@@ -655,69 +672,3 @@ class MovieContainer(object):
                     len(self.__movies), QtCore.QFileInfo(fname).fileName()
                 ),
             )
-
-
-class SaxMovieHandler(QtXml.QXmlDefaultHandler):
-    def __init__(self, movies):
-        super(SaxMovieHandler, self).__init__()
-        self.movies = movies
-        self.text = ""
-        self.error = None
-
-    def clear(self):
-        self.year = None
-        self.minutes = None
-        self.acquired = None
-        self.title = None
-        self.notes = None
-
-    def startElement(self, namespaceURI, localName, qName, attributes):
-        if qName == "MOVIE":
-            self.clear()
-            self.year = int(attributes.value("YEAR"))
-            self.minutes = int(attributes.value("MINUTES"))
-            ymd = attributes.value("ACQUIRED").split("-")
-            if len(ymd) != 3:
-                raise ValueError(
-                    "invalid acquired date {}".format(attributes.value("ACQUIRED"))
-                )
-            self.acquired = QtCore.QDate(int(ymd[0]), int(ymd[1]), int(ymd[2]))
-        elif qName in ("TITLE", "NOTES"):
-            self.text = ""
-        return True
-
-    def characters(self, text):
-        self.text += text
-        return True
-
-    def endElement(self, namespaceURI, localName, qName):
-        if qName == "MOVIE":
-            if (
-                self.year is None
-                or self.minutes is None
-                or self.acquired is None
-                or self.title is None
-                or self.notes is None
-            ):
-                raise ValueError("incomplete movie record")
-            self.movies.add(
-                Movie(
-                    self.title,
-                    self.year,
-                    self.minutes,
-                    self.acquired,
-                    decodedNewlines(self.notes),
-                )
-            )
-            self.clear()
-        elif qName == "TITLE":
-            self.title = self.text.strip()
-        elif qName == "NOTES":
-            self.notes = self.text.strip()
-        return True
-
-    def fatalError(self, exception):
-        self.error = "parse error at line {} column {}: {}".format(
-            exception.lineNumber(), exception.columnNumber(), exception.message()
-        )
-        return False

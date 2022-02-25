@@ -116,34 +116,34 @@ class Ui_AddEditMovieDlg(object):
 
     def retranslateUi(self, AddEditMovieDlg):
         AddEditMovieDlg.setWindowTitle(
-            QtWidgets.QCoreApplication.translate(
+            QtWidgets.QApplication.translate(
                 "AddEditMovieDlg", u"My Movies - Add Movie", None
             )
         )
         self.label_5.setText(
-            QtWidgets.QCoreApplication.translate("AddEditMovieDlg", u"&Notes:", None)
+            QtWidgets.QApplication.translate("AddEditMovieDlg", u"&Notes:", None)
         )
         self.label_2.setText(
-            QtWidgets.QCoreApplication.translate("AddEditMovieDlg", u"&Year:", None)
+            QtWidgets.QApplication.translate("AddEditMovieDlg", u"&Year:", None)
         )
         self.yearSpinBox.setSpecialValueText(
-            QtWidgets.QCoreApplication.translate("AddEditMovieDlg", u"Unknown", None)
+            QtWidgets.QApplication.translate("AddEditMovieDlg", u"Unknown", None)
         )
         self.label_3.setText(
-            QtWidgets.QCoreApplication.translate("AddEditMovieDlg", u"&Minutes:", None)
+            QtWidgets.QApplication.translate("AddEditMovieDlg", u"&Minutes:", None)
         )
         self.minutesSpinBox.setSpecialValueText(
-            QtWidgets.QCoreApplication.translate("AddEditMovieDlg", u"Unknown", None)
+            QtWidgets.QApplication.translate("AddEditMovieDlg", u"Unknown", None)
         )
         self.label_4.setText(
-            QtWidgets.QCoreApplication.translate("AddEditMovieDlg", u"A&cquired:", None)
+            QtWidgets.QApplication.translate("AddEditMovieDlg", u"A&cquired:", None)
         )
         self.acquiredDateEdit.setDisplayFormat(
-            QtWidgets.QCoreApplication.translate(
+            QtWidgets.QApplication.translate(
                 "AddEditMovieDlg", u"ddd MMM d, yyyy", None
             )
         )
         self.label.setText(
-            QtWidgets.QCoreApplication.translate("AddEditMovieDlg", u"&Title:", None)
+            QtWidgets.QApplication.translate("AddEditMovieDlg", u"&Title:", None)
         )
         # retranslateUi

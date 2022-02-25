@@ -31,7 +31,7 @@ class MainWindow(QtWidgets.QMainWindow):
         super(MainWindow, self).__init__(parent)
 
         self.movies = moviedata.MovieContainer()
-        self.table = QtWidgets.QtWidgets.QTableWidget()
+        self.table = QtWidgets.QTableWidget()
         self.setCentralWidget(self.table)
         status = self.statusBar()
         status.setSizeGripEnabled(False)
@@ -128,7 +128,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.addActions(editToolbar, (editAddAction, editEditAction, editRemoveAction))
 
         self.connect(
-            self.table, QtCore.SIGNAL("itemDoubleClicked(QtWidgets.QtWidgets.QTableWidgetItem*)"), self.editEdit
+            self.table,
+            QtCore.SIGNAL("itemDoubleClicked(QtWidgets.QTableWidgetItem*)"),
+            self.editEdit,
         )
         QtGui.QShortcut(QtGui.QKeySequence("Return"), self.table, self.editEdit)
 
@@ -185,7 +187,9 @@ class MainWindow(QtWidgets.QMainWindow):
                 self,
                 "My Movies - Unsaved Changes",
                 "Save unsaved changes?",
-                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No | QtWidgets.QMessageBox.Cancel,
+                QtWidgets.QMessageBox.Yes
+                | QtWidgets.QMessageBox.No
+                | QtWidgets.QMessageBox.Cancel,
             )
             if reply == QtWidgets.QMessageBox.Cancel:
                 return False
@@ -214,28 +218,30 @@ class MainWindow(QtWidgets.QMainWindow):
         self.table.setSelectionMode(QtWidgets.QTableWidget.SingleSelection)
         selected = None
         for row, movie in enumerate(self.movies):
-            item = QtWidgets.QtWidgets.QTableWidgetItem(movie.title)
+            item = QtWidgets.QTableWidgetItem(movie.title)
             if current is not None and current == id(movie):
                 selected = item
-            item.setData(QtCore.QtCore.Qt.UserRole, int(id(movie)))
+            item.setData(QtCore.Qt.UserRole, int(id(movie)))
             self.table.setItem(row, 0, item)
             year = movie.year
             if year != movie.UNKNOWNYEAR:
-                item = QtWidgets.QtWidgets.QTableWidgetItem("{}".format(year))
-                item.setTextAlignment(QtCore.QtCore.Qt.AlignCenter)
+                item = QtWidgets.QTableWidgetItem("{}".format(year))
+                item.setTextAlignment(QtCore.Qt.AlignCenter)
                 self.table.setItem(row, 1, item)
             minutes = movie.minutes
             if minutes != movie.UNKNOWNMINUTES:
-                item = QtWidgets.QtWidgets.QTableWidgetItem("{}".format(minutes))
-                item.setTextAlignment(QtCore.QtCore.Qt.AlignRight | QtCore.QtCore.Qt.AlignVCenter)
+                item = QtWidgets.QTableWidgetItem("{}".format(minutes))
+                item.setTextAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
                 self.table.setItem(row, 2, item)
-            item = QtWidgets.QtWidgets.QTableWidgetItem(movie.acquired.toString(moviedata.DATEFORMAT))
-            item.setTextAlignment(QtCore.QtCore.Qt.AlignRight | QtCore.QtCore.Qt.AlignVCenter)
+            item = QtWidgets.QTableWidgetItem(
+                movie.acquired.toString(moviedata.DATEFORMAT)
+            )
+            item.setTextAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
             self.table.setItem(row, 3, item)
             notes = movie.notes
             if len(notes) > 40:
                 notes = notes[:39] + "..."
-            self.table.setItem(row, 4, QtWidgets.QtWidgets.QTableWidgetItem(notes))
+            self.table.setItem(row, 4, QtWidgets.QTableWidgetItem(notes))
         self.table.resizeColumnsToContents()
         if selected is not None:
             selected.setSelected(True)
@@ -253,9 +259,11 @@ class MainWindow(QtWidgets.QMainWindow):
         if not self.okToContinue():
             return
         path = (
-            QtCore.QFileInfo(self.movies.filename()).path() if self.movies.filename() else "."
+            QtCore.QFileInfo(self.movies.filename()).path()
+            if self.movies.filename()
+            else "."
         )
-        fname = QtWidgets.QtWidgets.QFileDialog.getOpenFileName(
+        fname, filter = QtWidgets.QFileDialog.getOpenFileName(
             self,
             "My Movies - Load Movie Data",
             path,
@@ -276,7 +284,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def fileSaveAs(self):
         fname = self.movies.filename() if self.movies.filename() else "."
-        fname = QtWidgets.QtWidgets.QFileDialog.getSaveFileName(
+        fname, filter = QtWidgets.QFileDialog.getSaveFileName(
             self,
             "My Movies - Save Movie Data",
             fname,
@@ -300,9 +308,11 @@ class MainWindow(QtWidgets.QMainWindow):
         if not self.okToContinue():
             return
         path = (
-            QtCore.QFileInfo(self.movies.filename()).path() if self.movies.filename() else "."
+            QtCore.QFileInfo(self.movies.filename()).path()
+            if self.movies.filename()
+            else "."
         )
-        fname = QtWidgets.QtWidgets.QFileDialog.getOpenFileName(
+        fname, filter = QtWidgets.QFileDialog.getOpenFileName(
             self, "My Movies - Import Movie Data", path, "My Movies XML files (*.xml)"
         )
         if fname:
@@ -322,7 +332,7 @@ class MainWindow(QtWidgets.QMainWindow):
             if i > 0:
                 fname = fname[:i]
             fname += ".xml"
-        fname = QtWidgets.QtWidgets.QFileDialog.getSaveFileName(
+        fname, filter = QtWidgets.QFileDialog.getSaveFileName(
             self, "My Movies - Export Movie Data", fname, "My Movies XML files (*.xml)"
         )
         if fname:
@@ -333,14 +343,14 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def editAdd(self):
         form = addeditmoviedlg.AddEditMovieDlg(self.movies, None, self)
-        if form.exec_():
+        if form.exec():
             self.updateTable(id(form.movie))
 
     def editEdit(self):
         movie = self.currentMovie()
         if movie is not None:
             form = addeditmoviedlg.AddEditMovieDlg(self.movies, movie, self)
-            if form.exec_():
+            if form.exec():
                 self.updateTable(id(movie))
 
     def editRemove(self):
@@ -363,7 +373,7 @@ class MainWindow(QtWidgets.QMainWindow):
         row = self.table.currentRow()
         if row > -1:
             item = self.table.item(row, 0)
-            id = int(item.data(QtCore.QtCore.Qt.UserRole))
+            id = int(item.data(QtCore.Qt.UserRole))
             return self.movies.movieFromId(id)
         return None
 
@@ -377,7 +387,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 <p>This application can be used to view some basic
                 information about movies and to load and save the 
                 movie data in a variety of custom file formats.
-                <p>Python {1} - QtCore.QtCore.Qt {2} - PyQt {3} on {4}""".format(
+                <p>Python {1} - QtCore.Qt {2} - PyQt {3} on {4}""".format(
                 __version__,
                 platform.python_version(),
                 PySide6.QtCore.__version__,
@@ -395,7 +405,7 @@ def main():
     app.setWindowIcon(QtGui.QIcon("resources:icon.png"))
     form = MainWindow()
     form.show()
-    app.exec_()
+    app.exec()
 
 
 main()
