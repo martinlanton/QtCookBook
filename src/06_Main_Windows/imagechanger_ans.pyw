@@ -344,7 +344,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if not self.okToContinue():
             return
         dialog = newimagedlg.NewImageDlg(self)
-        if dialog.exec_():
+        if dialog.exec():
             self.addRecentFile(self.filename)
             self.image = QtGui.QImage()
             for action, check in self.resetableActions:
@@ -453,7 +453,7 @@ class MainWindow(QtWidgets.QMainWindow):
             )
             self.printer.setPageSize(QtPrintSupport.QPrinter.Letter)
         form = QtPrintSupport.QPrintDialog(self.printer, self)
-        if form.exec_():
+        if form.exec():
             painter = QtGui.QPainter(self.printer)
             rect = painter.viewport()
             size = self.image.size()
@@ -518,7 +518,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if self.image.isNull():
             return
         form = resizedlg.ResizeDlg(self.image.width(), self.image.height(), self)
-        if form.exec_():
+        if form.exec():
             width, height = form.result()
             if width == self.image.width() and height == self.image.height():
                 self.statusBar().showMessage("Resized to the same size", 5000)
@@ -572,7 +572,7 @@ def main():
     app.setWindowIcon(QtGui.QIcon("resources:icon.png"))
     form = MainWindow()
     form.show()
-    app.exec_()
+    app.exec()
 
 
 main()

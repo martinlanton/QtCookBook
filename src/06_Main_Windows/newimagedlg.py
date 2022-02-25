@@ -74,4 +74,4 @@ if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     form = NewImageDlg()
     form.show()
-    app.exec_()
+    app.exec()

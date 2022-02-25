@@ -56,4 +56,4 @@ if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     form = ResizeDlg(64, 128)
     form.show()
-    app.exec_()
+    app.exec()
