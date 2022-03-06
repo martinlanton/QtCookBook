@@ -14,7 +14,7 @@ import pickle
 import gzip
 from PySide6 import QtCore, QtXml
 
-CODEC = "utf-8"
+CODEC = QtCore.QStringConverter.Utf8
 NEWPARA = chr(0x2029)
 NEWLINE = chr(0x2028)
 DATEFORMAT = "ddd MMM d, yyyy"
@@ -318,7 +318,7 @@ class MovieContainer(object):
             if not fh.open(QtCore.QIODevice.WriteOnly):
                 raise IOError(fh.errorString())
             stream = QtCore.QTextStream(fh)
-            stream.setCodec(CODEC)
+            stream.setEncoding(CODEC)
             for key, movie in self.__movies:
                 stream << "{{MOVIE}} " << movie.title << "\n" << movie.year << " " << movie.minutes << " " << movie.acquired.toString(
                     QtCore.Qt.ISODate
@@ -349,7 +349,7 @@ class MovieContainer(object):
             if not fh.open(QtCore.QIODevice.ReadOnly):
                 raise IOError(fh.errorString())
             stream = QtCore.QTextStream(fh)
-            stream.setCodec(CODEC)
+            stream.setEncoding(CODEC)
             self.clear(False)
             lino = 0
             while not stream.atEnd():
@@ -515,7 +515,6 @@ class MovieContainer(object):
             )
 
     def exportXml(self, fname):
-        # TODO : fix the xml export
         error = None
         fh = None
         try:
@@ -523,7 +522,7 @@ class MovieContainer(object):
             if not fh.open(QtCore.QIODevice.WriteOnly):
                 raise IOError(fh.errorString())
             stream = QtCore.QTextStream(fh)
-            stream.setCodec(CODEC)
+            stream.setEncoding(CODEC)
             stream << (
                 "<?xml version='1.0' encoding='{}'?>\n"
                 "<!DOCTYPE MOVIES>\n"
@@ -535,9 +534,9 @@ class MovieContainer(object):
                     "ACQUIRED='{}'>\n".format(
                         movie.year, movie.minutes, movie.acquired.toString(QtCore.Qt.ISODate)
                     )
-                ) << "<TITLE>" << QtCore.Qt.escape(movie.title) << "</TITLE>\n<NOTES>"
+                ) << "<TITLE>" << QtCore.QRegularExpression.escape(movie.title) << "</TITLE>\n<NOTES>"
                 if movie.notes:
-                    stream << "\n" << QtCore.Qt.escape(encodedNewlines(movie.notes))
+                    stream << "\n" << QtCore.QRegularExpression.escape(encodedNewlines(movie.notes))
                 stream << "\n</NOTES>\n</MOVIE>\n"
             stream << "</MOVIES>\n"
         except EnvironmentError as e:
@@ -556,15 +555,21 @@ class MovieContainer(object):
             )
 
     def importDOM(self, fname):
+        # TODO : fix import from DOM
+        print(fname)
         dom = QtXml.QDomDocument()
+        print(dom)
         error = None
         fh = None
         try:
             fh = QtCore.QFile(fname)
+            print(fh)
             if not fh.open(QtCore.QIODevice.ReadOnly):
                 raise IOError(fh.errorString())
+            print(fh)
             if not dom.setContent(fh):
                 raise ValueError("could not parse XML")
+            print(fh)
         except (IOError, OSError, ValueError) as e:
             error = "Failed to import: {}".format(e)
         finally:
