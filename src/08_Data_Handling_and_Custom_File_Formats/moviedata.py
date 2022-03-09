@@ -562,6 +562,7 @@ class MovieContainer(object):
         error = None
         fh = None
         try:
+            # TODO : find out the content of fh to see if it contains the right data
             fh = QtCore.QFile(fname)
             print(fh)
             if not fh.open(QtCore.QIODevice.ReadOnly):
