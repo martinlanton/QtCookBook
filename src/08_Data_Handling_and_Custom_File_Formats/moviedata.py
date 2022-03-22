@@ -526,7 +526,7 @@ class MovieContainer(object):
             stream << (
                 "<?xml version='1.0' encoding='{}'?>\n"
                 "<!DOCTYPE MOVIES>\n"
-                "<MOVIES VERSION='1.0'>\n".format(CODEC)
+                "<MOVIES VERSION='1.0'>\n".format(str(CODEC).split(".")[-1])
             )
             for key, movie in self.__movies:
                 stream << (
@@ -534,9 +534,9 @@ class MovieContainer(object):
                     "ACQUIRED='{}'>\n".format(
                         movie.year, movie.minutes, movie.acquired.toString(QtCore.Qt.ISODate)
                     )
-                ) << "<TITLE>" << QtCore.QRegularExpression.escape(movie.title) << "</TITLE>\n<NOTES>"
+                ) << "<TITLE>" << QtCore.QRegularExpression.escape(movie.title).replace("\\&\\", "\\&amp;\\") << "</TITLE>\n<NOTES>"
                 if movie.notes:
-                    stream << "\n" << QtCore.QRegularExpression.escape(encodedNewlines(movie.notes))
+                    stream << "\n" << QtCore.QRegularExpression.escape(encodedNewlines(movie.notes)).replace("\\&\\", "\\&amp;\\")
                 stream << "\n</NOTES>\n</MOVIE>\n"
             stream << "</MOVIES>\n"
         except EnvironmentError as e:
