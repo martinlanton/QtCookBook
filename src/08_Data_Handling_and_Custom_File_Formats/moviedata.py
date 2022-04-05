@@ -524,9 +524,9 @@ class MovieContainer(object):
             stream = QtCore.QTextStream(fh)
             stream.setEncoding(CODEC)
             stream << (
-                "<?xml version='1.0' encoding='{}'?>\n"
+                "<?xml version='1.0' encoding='UTF-8'?>\n"
                 "<!DOCTYPE MOVIES>\n"
-                "<MOVIES VERSION='1.0'>\n".format(str(CODEC).split(".")[-1])
+                "<MOVIES VERSION='1.0'>\n"
             )
             for key, movie in self.__movies:
                 stream << (
@@ -534,9 +534,9 @@ class MovieContainer(object):
                     "ACQUIRED='{}'>\n".format(
                         movie.year, movie.minutes, movie.acquired.toString(QtCore.Qt.ISODate)
                     )
-                ) << "<TITLE>" << QtCore.QRegularExpression.escape(movie.title).replace("\\&\\", "\\&amp;\\") << "</TITLE>\n<NOTES>"
+                ) << "<TITLE>" << movie.title.replace("\\&\\", "\\&amp;\\") << "</TITLE>\n<NOTES>"
                 if movie.notes:
-                    stream << "\n" << QtCore.QRegularExpression.escape(encodedNewlines(movie.notes)).replace("\\&\\", "\\&amp;\\")
+                    stream << "\n" << encodedNewlines(movie.notes).replace("\\&\\", "\\&amp;\\")
                 stream << "\n</NOTES>\n</MOVIE>\n"
             stream << "</MOVIES>\n"
         except EnvironmentError as e:
@@ -555,22 +555,16 @@ class MovieContainer(object):
             )
 
     def importDOM(self, fname):
-        # TODO : fix import from DOM
-        print(fname)
         dom = QtXml.QDomDocument()
-        print(dom)
         error = None
         fh = None
         try:
             # TODO : find out the content of fh to see if it contains the right data
             fh = QtCore.QFile(fname)
-            print(fh)
             if not fh.open(QtCore.QIODevice.ReadOnly):
                 raise IOError(fh.errorString())
-            print(fh)
             if not dom.setContent(fh):
                 raise ValueError("could not parse XML")
-            print(fh)
         except (IOError, OSError, ValueError) as e:
             error = "Failed to import: {}".format(e)
         finally:
