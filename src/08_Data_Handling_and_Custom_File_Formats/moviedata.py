@@ -629,17 +629,28 @@ class MovieContainer(object):
         self.add(Movie(title, year, minutes, acquired, decodedNewlines(notes)))
 
     def importSAX(self, fname):
+        # todo : fix sax import
+        print(fname)
         error = None
         fh = None
         try:
             fh = QtCore.QFile(fname)
+            print(fh)
+            if not fh.open(QtCore.QIODevice.ReadOnly):
+                raise IOError(fh.errorString())
             stream = QtCore.QXmlStreamReader(fh)
+            print(stream)
             stream.readNext()
-            magic = int(stream.tokenString())
+            token = stream.tokenString()
+            print(token)
+            magic = int(token)
+            print(magic)
             if magic != MovieContainer.MAGIC_NUMBER:
                 raise IOError("unrecognized file type")
+
             stream.readNext()
             version = int(stream.tokenString())
+            print(version)
             if version < MovieContainer.FILE_VERSION:
                 raise IOError("old and unreadable file format")
             elif version > MovieContainer.FILE_VERSION:
@@ -648,14 +659,19 @@ class MovieContainer(object):
             while not stream.atEnd():
                 stream.readNext()
                 title = stream.tokenString()
+                print(title)
                 stream.readNext()
                 year = int(stream.tokenString())
+                print(year)
                 stream.readNext()
                 minutes = int(stream.tokenString())
+                print(minutes)
                 stream.readNext()
                 acquired = QtCore.QDate.fromString(stream.tokenString(), QtCore.Qt.ISODate)
+                print(acquired)
                 stream.readNext()
                 notes = stream.tokenString()
+                print(notes)
                 self.add(Movie(title, year, minutes, acquired, notes))
         except (IOError, OSError, ValueError) as e:
             error = "Failed to import: {}".format(e)
