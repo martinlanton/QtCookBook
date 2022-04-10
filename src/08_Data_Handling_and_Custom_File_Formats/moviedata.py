@@ -534,9 +534,9 @@ class MovieContainer(object):
                     "ACQUIRED='{}'>\n".format(
                         movie.year, movie.minutes, movie.acquired.toString(QtCore.Qt.ISODate)
                     )
-                ) << "<TITLE>" << movie.title.replace("\\&\\", "\\&amp;\\") << "</TITLE>\n<NOTES>"
+                ) << "<TITLE>" << movie.title.replace("&", "&amp;") << "</TITLE>\n<NOTES>"
                 if movie.notes:
-                    stream << "\n" << encodedNewlines(movie.notes).replace("\\&\\", "\\&amp;\\")
+                    stream << "\n" << encodedNewlines(movie.notes).replace("&", "&amp;")
                 stream << "\n</NOTES>\n</MOVIE>\n"
             stream << "</MOVIES>\n"
         except EnvironmentError as e:
