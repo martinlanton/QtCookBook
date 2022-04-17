@@ -526,7 +526,7 @@ class MovieContainer(object):
             stream << (
                 "<?xml version='1.0' encoding='UTF-8'?>\n"
                 "<!DOCTYPE MOVIES>\n"
-                "<MOVIES VERSION='1.0'>\n"
+                "<MOVIES VERSION='{}'>\n".format(MovieContainer.FILE_VERSION)
             )
             for key, movie in self.__movies:
                 stream << (
@@ -629,50 +629,89 @@ class MovieContainer(object):
         self.add(Movie(title, year, minutes, acquired, decodedNewlines(notes)))
 
     def importSAX(self, fname):
-        # todo : fix sax import
         print(fname)
         error = None
         fh = None
         try:
             fh = QtCore.QFile(fname)
-            print(fh)
             if not fh.open(QtCore.QIODevice.ReadOnly):
                 raise IOError(fh.errorString())
             stream = QtCore.QXmlStreamReader(fh)
-            print(stream)
+
+            # Get to document start
             stream.readNext()
-            token = stream.tokenString()
-            print(token)
-            magic = int(token)
-            print(magic)
-            if magic != MovieContainer.MAGIC_NUMBER:
+            print("StartDocument : %s" % stream.isStartDocument())
+
+            # Get to DTD
+            stream.readNext()
+            file_type = stream.dtdName()
+            if file_type != "MOVIES":
                 raise IOError("unrecognized file type")
 
+            # Get to MOVIES start
             stream.readNext()
-            version = int(stream.tokenString())
-            print(version)
+            version = int(stream.attributes().value("VERSION"))
+            print("Version is : %s, %s\n\n" % (type(version), version))
             if version < MovieContainer.FILE_VERSION:
                 raise IOError("old and unreadable file format")
             elif version > MovieContainer.FILE_VERSION:
                 raise IOError("new and unreadable file format")
+
+            # Get to MOVIES start character
+            stream.readNext()
+
             self.clear(False)
+
             while not stream.atEnd():
+                # Get to movie start
                 stream.readNext()
-                title = stream.tokenString()
-                print(title)
+                # Check if we encountered an end element
+                # if yes, that means it's the end of the file
+                if stream.tokenString() == "EndElement":
+                    print("At end")
+                    break
+                attr = stream.attributes()
+                year = int(attr.value("YEAR"))
+                minutes = int(attr.value("MINUTES"))
+                acquired = QtCore.QDate.fromString(attr.value("ACQUIRED"), QtCore.Qt.ISODate)
+                # Get to movie start character
                 stream.readNext()
-                year = int(stream.tokenString())
-                print(year)
+
+                # Get to title start
                 stream.readNext()
-                minutes = int(stream.tokenString())
-                print(minutes)
+
+                # Get to title start character
                 stream.readNext()
-                acquired = QtCore.QDate.fromString(stream.tokenString(), QtCore.Qt.ISODate)
-                print(acquired)
+                title = stream.text()
+
+                # Get to title end
                 stream.readNext()
-                notes = stream.tokenString()
-                print(notes)
+
+                # Get to title end character
+                stream.readNext()
+
+                # Get to notes start
+                stream.readNext()
+
+                # Get to notes start character
+                stream.readNext()
+                # using strip to remove white spaces added at export for xml formatting
+                notes = stream.text().strip()
+
+                # Get to nodes end
+                stream.readNext()
+
+                # Get to nodes end characters
+                stream.readNext()
+
+                # Get to movie end
+                stream.readNext()
+
+                # Get to movie end characters
+                stream.readNext()
+
                 self.add(Movie(title, year, minutes, acquired, notes))
+
         except (IOError, OSError, ValueError) as e:
             error = "Failed to import: {}".format(e)
         finally:
