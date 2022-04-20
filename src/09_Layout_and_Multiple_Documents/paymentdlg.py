@@ -59,4 +59,4 @@ if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     form = PaymentDlg()
     form.show()
-    app.exec_()
+    app.exec()

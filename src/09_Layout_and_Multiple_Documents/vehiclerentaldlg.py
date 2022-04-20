@@ -10,36 +10,29 @@
 # the GNU General Public License for more details.
 
 import sys
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PySide6 import QtWidgets, QtCore
 import ui_vehiclerentaldlg
 
 
-class VehicleRentalDlg(QDialog,
-        ui_vehiclerentaldlg.Ui_VehicleRentalDlg):
-
+class VehicleRentalDlg(QtWidgets.QDialog, ui_vehiclerentaldlg.Ui_VehicleRentalDlg):
     def __init__(self, parent=None):
         super(VehicleRentalDlg, self).__init__(parent)
         self.setupUi(self)
         self.vehicleComboBox.setFocus()
 
-
-    @pyqtSignature("QString")
+    @QtCore.Slot("QString")
     def on_vehicleComboBox_currentIndexChanged(self, text):
         if text == "Car":
             self.mileageLabel.setText("1000 miles")
         else:
-            self.on_weightSpinBox_valueChanged(
-                    self.weightSpinBox.value())
+            self.on_weightSpinBox_valueChanged(self.weightSpinBox.value())
 
-
-    @pyqtSignature("int")
+    @QtCore.Slot("int")
     def on_weightSpinBox_valueChanged(self, amount):
         self.mileageLabel.setText("{} miles".format(8000 / amount))
 
 
-app = QApplication(sys.argv)
+app = QtWidgets.QApplication(sys.argv)
 form = VehicleRentalDlg()
 form.show()
-app.exec_()
-
+app.exec()
