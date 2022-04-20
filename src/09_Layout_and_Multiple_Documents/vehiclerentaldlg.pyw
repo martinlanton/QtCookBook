@@ -99,11 +99,11 @@ class VehicleRentalDlg(QtWidgets.QDialog):
     def setWidgetStack(self, index):
         if index == 0:
             print("It's a car, switching to Van.")
-            self.stackedWidget.setCurrentIndex(0)
+            self.stackedWidget.setCurrentIndex(index)
             self.mileageLabel.setText("1000 miles")
         else:
             print("It's a van, switching to car.")
-            self.stackedWidget.setCurrentIndex(1)
+            self.stackedWidget.setCurrentIndex(index)
             self.weightChanged(self.weightSpinBox.value())
 
     def weightChanged(self, amount):
