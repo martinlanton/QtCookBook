@@ -58,6 +58,7 @@ class VehicleRentalDlg(QtWidgets.QDialog):
         )
 
         self.stackedWidget = QtWidgets.QStackedWidget()
+
         carWidget = QtWidgets.QWidget()
         carLayout = QtWidgets.QGridLayout()
         carLayout.addWidget(colorLabel, 0, 0)
@@ -66,6 +67,7 @@ class VehicleRentalDlg(QtWidgets.QDialog):
         carLayout.addWidget(self.seatsSpinBox, 1, 1)
         carWidget.setLayout(carLayout)
         self.stackedWidget.addWidget(carWidget)
+
         vanWidget = QtWidgets.QWidget()
         vanLayout = QtWidgets.QGridLayout()
         vanLayout.addWidget(weightLabel, 0, 0)
