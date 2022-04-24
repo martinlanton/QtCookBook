@@ -9,53 +9,51 @@
 # warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
 # the GNU General Public License for more details.
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PySide6 import QtWidgets, QtCore
 import ui_findandreplacedlg
 
 
-class FindAndReplaceDlg(QDialog,
-        ui_findandreplacedlg.Ui_FindAndReplaceDlg):
-
+class FindAndReplaceDlg(QtWidgets.QDialog, ui_findandreplacedlg.Ui_FindAndReplaceDlg):
     def __init__(self, parent=None):
         super(FindAndReplaceDlg, self).__init__(parent)
         self.setupUi(self)
         self.moreFrame.hide()
-        self.layout().setSizeConstraint(QLayout.SetFixedSize)
+        self.layout().setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
         self.updateUi()
 
-
-    @pyqtSignature("QString")
+    @QtCore.Slot("QString")
     def on_findLineEdit_textEdited(self, text):
         self.updateUi()
 
-
-    @pyqtSignature("")
+    @QtCore.Slot("QString")
     def on_findButton_clicked(self):
-        self.emit(SIGNAL("find"), self.findLineEdit.text(),
-                self.caseCheckBox.isChecked(),
-                self.wholeCheckBox.isChecked(),
-                self.backwardsCheckBox.isChecked(),
-                self.regexCheckBox.isChecked(),
-                self.ignoreNotesCheckBox.isChecked())
-        
-        
-    @pyqtSignature("")
+        self.emit(
+            QtCore.SIGNAL("find"),
+            self.findLineEdit.text(),
+            self.caseCheckBox.isChecked(),
+            self.wholeCheckBox.isChecked(),
+            self.backwardsCheckBox.isChecked(),
+            self.regexCheckBox.isChecked(),
+            self.ignoreNotesCheckBox.isChecked(),
+        )
+
+    @QtCore.Slot("QString")
     def on_replaceButton_clicked(self):
-        self.emit(SIGNAL("replace"), self.findLineEdit.text(),
-                self.replaceLineEdit.text(),
-                self.caseCheckBox.isChecked(),
-                self.wholeCheckBox.isChecked(),
-                self.backwardsCheckBox.isChecked(),
-                self.regexCheckBox.isChecked(),
-                self.ignoreNotesCheckBox.isChecked())
-        
+        self.emit(
+            QtCore.SIGNAL("replace"),
+            self.findLineEdit.text(),
+            self.replaceLineEdit.text(),
+            self.caseCheckBox.isChecked(),
+            self.wholeCheckBox.isChecked(),
+            self.backwardsCheckBox.isChecked(),
+            self.regexCheckBox.isChecked(),
+            self.ignoreNotesCheckBox.isChecked(),
+        )
 
     def updateUi(self):
         enable = bool(self.findLineEdit.text())
         self.findButton.setEnabled(enable)
         self.replaceButton.setEnabled(enable)
-
 
 
 if __name__ == "__main__":
@@ -65,13 +63,11 @@ if __name__ == "__main__":
         print("Find {} {}".format(what, [x for x in args]))
 
     def replace(old, new, *args):
-        print("Replace {} with {} {}".format(
-              old, new, [x for x in args]))
+        print("Replace {} with {} {}".format(old, new, [x for x in args]))
 
-    app = QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     form = FindAndReplaceDlg()
-    form.connect(form, SIGNAL("find"), find)
-    form.connect(form, SIGNAL("replace"), replace)
+    form.connect(form, QtCore.SIGNAL("find"), find)
+    form.connect(form, QtCore.SIGNAL("replace"), replace)
     form.show()
-    app.exec_()
-
+    app.exec()
