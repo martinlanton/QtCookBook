@@ -10,26 +10,29 @@
 # the GNU General Public License for more details.
 
 import sys
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-import qrc_resources
+from PySide6 import QtWidgets, QtCore, QtGui
+
+#  Since pyrcc is no longer provided with PyQt or PySide, we
+#  need to change resources location using the information from this thread :
+#  https://stackoverflow.com/questions/66099225/how-can-resources-be-provided-in-pyqt6-which-has-no-pyrcc
+# import qrc_resources  # this means this needs to go, and we need to adjust all the resources calls
+QtCore.QDir.addSearchPath("resources", "images/")
 
 
 __version__ = "1.0.0"
 
 
-class MainWindow(QMainWindow):
-
+class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
-        self.groupsList = QListWidget()
-        self.messagesList = QListWidget()
-        self.messageView = QTextBrowser()
+        self.groupsList = QtWidgets.QListWidget()
+        self.messagesList = QtWidgets.QListWidget()
+        self.messageView = QtWidgets.QTextBrowser()
 
-        self.messageSplitter = QSplitter(Qt.Vertical)
+        self.messageSplitter = QtWidgets.QSplitter(QtCore.Qt.Vertical)
         self.messageSplitter.addWidget(self.messagesList)
         self.messageSplitter.addWidget(self.messageView)
-        self.mainSplitter = QSplitter(Qt.Horizontal)
+        self.mainSplitter = QtWidgets.QSplitter(QtCore.Qt.Horizontal)
         self.mainSplitter.addWidget(self.groupsList)
         self.mainSplitter.addWidget(self.messageSplitter)
         self.setCentralWidget(self.mainSplitter)
@@ -41,15 +44,15 @@ class MainWindow(QMainWindow):
 
         self.createMenusAndToolbars()
 
-        settings = QSettings()
-        self.restoreGeometry(settings.value("MainWindow/Geometry",
-                QByteArray()))
-        self.restoreState(settings.value("MainWindow/State",
-                QByteArray()))
-        self.messageSplitter.restoreState(settings.value("MessageSplitter",
-                QByteArray()))
-        self.mainSplitter.restoreState(settings.value("MainSplitter",
-                QByteArray()))
+        settings = QtCore.QSettings()
+        self.restoreGeometry(settings.value("MainWindow/Geometry", QtCore.QByteArray()))
+        self.restoreState(settings.value("MainWindow/State", QtCore.QByteArray()))
+        self.messageSplitter.restoreState(
+            settings.value("MessageSplitter", QtCore.QByteArray())
+        )
+        self.mainSplitter.restoreState(
+            settings.value("MainSplitter", QtCore.QByteArray())
+        )
 
         status = self.statusBar()
         status.setSizeGripEnabled(False)
@@ -57,22 +60,26 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("News Reader")
         self.generateFakeData()
 
-
     def createMenusAndToolbars(self):
         fileMenu = self.menuBar().addMenu("&File")
         fileToolbar = self.addToolBar("File")
         fileToolbar.setObjectName("FileToolbar")
-        for icon, text in (("new", "&New..."), ("open", "&Open..."),
-                ("save", "&Save"), ("save", "Save &As..."),
-                (None, None), ("quit", "&Quit")):
+        for icon, text in (
+            ("new", "&New..."),
+            ("open", "&Open..."),
+            ("save", "&Save"),
+            ("save", "Save &As..."),
+            (None, None),
+            ("quit", "&Quit"),
+        ):
             if icon is None:
                 fileMenu.addSeparator()
             else:
-                action = QAction(QIcon(":/file{}.png".format(icon)),
-                                 text, self)
+                action = QtGui.QAction(
+                    QtGui.QIcon("resources:file{}.png".format(icon)), text, self
+                )
                 if icon == "quit":
-                    self.connect(action, SIGNAL("triggered()"),
-                                 self.close)
+                    self.connect(action, QtCore.SIGNAL("triggered()"), self.close)
                 elif text != "Save &As...":
                     fileToolbar.addAction(action)
                 fileMenu.addAction(action)
@@ -80,87 +87,133 @@ class MainWindow(QMainWindow):
         editMenu = self.menuBar().addMenu("&Edit")
         editToolbar = self.addToolBar("Edit")
         editToolbar.setObjectName("EditToolbar")
-        for icon, text in (("add", "&Add..."), ("edit", "&Edit..."),
-                           ("delete", "&Remove")):
-            action = QAction(QIcon(":/edit{}.png".format(icon)),
-                             text, self)
+        for icon, text in (
+            ("add", "&Add..."),
+            ("edit", "&Edit..."),
+            ("delete", "&Remove"),
+        ):
+            action = QtGui.QAction(QtGui.QIcon("resources:edit{}.png".format(icon)), text, self)
             editToolbar.addAction(action)
             editMenu.addAction(action)
 
-
     def closeEvent(self, event):
         if self.okToContinue():
-            settings = QSettings()
+            settings = QtCore.QSettings()
             settings.setValue("MainWindow/Geometry", self.saveGeometry())
             settings.setValue("MainWindow/State", self.saveState())
-            settings.setValue("MessageSplitter",
-                    self.messageSplitter.saveState())
+            settings.setValue("MessageSplitter", self.messageSplitter.saveState())
             settings.setValue("MainSplitter", self.mainSplitter.saveState())
         else:
             event.ignore()
 
-
     def okToContinue(self):
         return True
 
-    
     def generateFakeData(self):
-        for group in ("ada", "apl", "asm.*", "asm370", "awk", "basic.*",
-                "beta", "c.*", "c++.*", "clarion", "clipper.*", "clos",
-                "clu", "cobol", "dylan", "eiffel", "forth.*",
-                "fortran.*", "functional", "haskell", "hermes", "icon",
-                "idl", "idl-pvwave", "java.*", "javascript", "labview",
-                "limbo", "lisp.*", "logo", "misc", "ml.*", "modula2",
-                "modula3", "mumps", "oberon", "objective-c", "pascal.*",
-                "perl.*", "php.*", "pl1", "pop", "postscript",
-                "prograph", "prolog", "python.*", "rexx.*", "ruby",
-                "sathe", "scheme.*", "sigplan", "smalltalk.*", "tcl.*",
-                "verilog", "vhdl", "visual.*", "vrml"):
+        for group in (
+            "ada",
+            "apl",
+            "asm.*",
+            "asm370",
+            "awk",
+            "basic.*",
+            "beta",
+            "c.*",
+            "c++.*",
+            "clarion",
+            "clipper.*",
+            "clos",
+            "clu",
+            "cobol",
+            "dylan",
+            "eiffel",
+            "forth.*",
+            "fortran.*",
+            "functional",
+            "haskell",
+            "hermes",
+            "icon",
+            "idl",
+            "idl-pvwave",
+            "java.*",
+            "javascript",
+            "labview",
+            "limbo",
+            "lisp.*",
+            "logo",
+            "misc",
+            "ml.*",
+            "modula2",
+            "modula3",
+            "mumps",
+            "oberon",
+            "objective-c",
+            "pascal.*",
+            "perl.*",
+            "php.*",
+            "pl1",
+            "pop",
+            "postscript",
+            "prograph",
+            "prolog",
+            "python.*",
+            "rexx.*",
+            "ruby",
+            "sathe",
+            "scheme.*",
+            "sigplan",
+            "smalltalk.*",
+            "tcl.*",
+            "verilog",
+            "vhdl",
+            "visual.*",
+            "vrml",
+        ):
             self.groupsList.addItem("comp.lang.{}".format(group))
         for topic, author in (
-                ("ANN: Einf\u00FChrung in die Programmierung mit Python",
-                 "Ian Ozsvald",),
-                ("SQLObject 0.7.3", "Oleg Broytmann",),
-                ("ANN: Pyrex 0.9.5.1", "greg",),
-                ("ANN: gozerbot IRC and JABBER bot", "bthate",),
-                ("Extended deadline: CfP IEEE Software Special Issue on "
-                 "Rapid Application Development with Dynamically Typed "
-                 "Languages", "Laurence Tratt",),
-                ("ANN: New python software community website in Chinese, "
-                 "PythonNet.com", "Wenshan Du",),
-                ("ANN: Plex 1.1.5 (Repost)", "greg",),
-                ("ANN: Pyrex 0.9.5", "greg",),
-                ("ftputil 2.2.1", "Stefan Schwarzer",),
-                ("FlightFeather Social Networking Platform 0.3.1",
-                 "George Belotsky",),
-                ("OSCON 2007 Call for Participation Ends Soon",
-                 "Kevin Altis",),
-                ("ANN: tl.googlepagerank", "Thomas Lotze",),
-                ("Dejavu 1.5.0RC1", "Robert Brewer",),
-                ("PyCon: one week left for hotel registration",
-                 "A.M. Kuchling",),
-                ("FlightFeather Social Networking Platform 0.3.0",
-                "George Belotsky",),
-                ("SQLObject 0.8.0b2", "Oleg Broytmann",),
-                ("SQLObject 0.7.3b1", "Oleg Broytmann",),
-                ("ANN: Updated TkTreectrl wrapper module", "klappnase",),
-                ("PyPy Trillke Sprints Feb/March 2007", "holger krekel",),
-                ("wxPython 2.8.1.1", "Robin Dunn",),
-                ("Movable Python 2.0.0 Final Available", "Fuzzyman",),
-                ("ANN: Phebe 0.1.1", "Thomas Lotze",),
-                ("Exception #03. Python seminar in Kiev city (Ukraine).",
-                 "Mkdir",),
-                ("FlightFeather Social Networking Platform 0.2.8",
-                "George Belotsky",),
-                ("ANN: Python Installation", "Ian Ozsvald",),
-                ("ANN: pyGame Basics", "Ian Ozsvald",),
-                ("PythonTidy 1.10", "Chuck Rhode",),
-                ("Shed Skin Optimizing Python-to-C++ Compiler 0.0.10",
-                 "Mark Dufour",),
-                ("ANN : Karrigell 2.3.3", "Pierre Quentel",),
-                ("ANN: amplee 0.4.0", "Sylvain Hellegouarch")):
+            ("ANN: Einf\u00FChrung in die Programmierung mit Python", "Ian Ozsvald",),
+            ("SQLObject 0.7.3", "Oleg Broytmann",),
+            ("ANN: Pyrex 0.9.5.1", "greg",),
+            ("ANN: gozerbot IRC and JABBER bot", "bthate",),
+            (
+                "Extended deadline: CfP IEEE Software Special Issue on "
+                "Rapid Application Development with Dynamically Typed "
+                "Languages",
+                "Laurence Tratt",
+            ),
+            (
+                "ANN: New python software community website in Chinese, "
+                "PythonNet.com",
+                "Wenshan Du",
+            ),
+            ("ANN: Plex 1.1.5 (Repost)", "greg",),
+            ("ANN: Pyrex 0.9.5", "greg",),
+            ("ftputil 2.2.1", "Stefan Schwarzer",),
+            ("FlightFeather Social Networking Platform 0.3.1", "George Belotsky",),
+            ("OSCON 2007 Call for Participation Ends Soon", "Kevin Altis",),
+            ("ANN: tl.googlepagerank", "Thomas Lotze",),
+            ("Dejavu 1.5.0RC1", "Robert Brewer",),
+            ("PyCon: one week left for hotel registration", "A.M. Kuchling",),
+            ("FlightFeather Social Networking Platform 0.3.0", "George Belotsky",),
+            ("SQLObject 0.8.0b2", "Oleg Broytmann",),
+            ("SQLObject 0.7.3b1", "Oleg Broytmann",),
+            ("ANN: Updated TkTreectrl wrapper module", "klappnase",),
+            ("PyPy Trillke Sprints Feb/March 2007", "holger krekel",),
+            ("wxPython 2.8.1.1", "Robin Dunn",),
+            ("Movable Python 2.0.0 Final Available", "Fuzzyman",),
+            ("ANN: Phebe 0.1.1", "Thomas Lotze",),
+            ("Exception #03. Python seminar in Kiev city (Ukraine).", "Mkdir",),
+            ("FlightFeather Social Networking Platform 0.2.8", "George Belotsky",),
+            ("ANN: Python Installation", "Ian Ozsvald",),
+            ("ANN: pyGame Basics", "Ian Ozsvald",),
+            ("PythonTidy 1.10", "Chuck Rhode",),
+            ("Shed Skin Optimizing Python-to-C++ Compiler 0.0.10", "Mark Dufour",),
+            ("ANN : Karrigell 2.3.3", "Pierre Quentel",),
+            ("ANN: amplee 0.4.0", "Sylvain Hellegouarch"),
+        ):
             self.messagesList.addItem("{} from {}".format(topic, author))
-        self.messageView.setHtml("""<table bgcolor=yellow>
+        self.messageView.setHtml(
+            """<table bgcolor=yellow>
 <tr><td>Groups:</td><td>comp.lang.python.announce</td></tr>
 <tr><td>From:</td><td>"Fuzzyman" &lt;fuzzy...@gmail.com&gt;</td></tr>
 <tr><td>Subject:</td><td><b>[ANN] Movable Python 2.0.0 Final
@@ -218,18 +271,18 @@ SPE
 <a href="http://developer.berlios.de/projects/python/">
 http://developer.berlios.de/projects/python/</a>.
 <p>
-Plus many other features and bundled libraries.""")
+Plus many other features and bundled libraries."""
+        )
 
 
 def main():
-    app = QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     app.setOrganizationName("Qtrac Ltd.")
     app.setOrganizationDomain("qtrac.eu")
     app.setApplicationName("News Reader")
     form = MainWindow()
     form.show()
-    app.exec_()
+    app.exec()
 
 
 main()
-
