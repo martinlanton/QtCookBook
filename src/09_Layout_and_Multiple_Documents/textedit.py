@@ -9,61 +9,68 @@
 # warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
 # the GNU General Public License for more details.
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PySide6 import QtWidgets, QtCore
+
+CODEC = QtCore.QStringConverter.Utf8
 
 
-class TextEdit(QTextEdit):
+class TextEdit(QtWidgets.QTextEdit):
 
     NextId = 1
 
     def __init__(self, filename="", parent=None):
         super(TextEdit, self).__init__(parent)
-        self.setAttribute(Qt.WA_DeleteOnClose)
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.filename = filename
         if not self.filename:
             self.filename = "Unnamed-{}.txt".format(TextEdit.NextId)
             TextEdit.NextId += 1
         self.document().setModified(False)
-        self.setWindowTitle(QFileInfo(self.filename).fileName())
+        self.setWindowTitle(QtCore.QFileInfo(self.filename).fileName())
 
-    
     def closeEvent(self, event):
-        if (self.document().isModified() and 
-            QMessageBox.question(self,
-                   "Text Editor - Unsaved Changes",
-                   "Save unsaved changes in {}?".format(self.filename),
-                   QMessageBox.Yes|QMessageBox.No) ==
-                QMessageBox.Yes):
+        if (
+            self.document().isModified()
+            and QtWidgets.QMessageBox.question(
+                self,
+                "Text Editor - Unsaved Changes",
+                "Save unsaved changes in {}?".format(self.filename),
+                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+            )
+            == QtWidgets.QMessageBox.Yes
+        ):
             try:
                 self.save()
             except EnvironmentError as e:
-                QMessageBox.warning(self,
-                        "Text Editor -- Save Error",
-                        "Failed to save {}: {}".format(self.filename, e))
-
+                QtWidgets.QMessageBox.warning(
+                    self,
+                    "Text Editor -- Save Error",
+                    "Failed to save {}: {}".format(self.filename, e),
+                )
 
     def isModified(self):
         return self.document().isModified()
 
-
     def save(self):
         if self.filename.startswith("Unnamed"):
-            filename = QFileDialog.getSaveFileName(self,
-                    "Text Editor -- Save File As", self.filename,
-                    "Text files (*.txt *.*)")
+            filename, filter = QtWidgets.QFileDialog.getSaveFileName(
+                self,
+                "Text Editor -- Save File As",
+                self.filename,
+                "Text files (*.txt *.*)",
+            )
             if not filename:
                 return
             self.filename = filename
-        self.setWindowTitle(QFileInfo(self.filename).fileName())
+        self.setWindowTitle(QtCore.QFileInfo(self.filename).fileName())
         exception = None
         fh = None
         try:
-            fh = QFile(self.filename)
-            if not fh.open(QIODevice.WriteOnly):
+            fh = QtCore.QFile(self.filename)
+            if not fh.open(QtCore.QIODevice.WriteOnly):
                 raise IOError(fh.errorString())
-            stream = QTextStream(fh)
-            stream.setCodec("UTF-8")
+            stream = QtCore.QTextStream(fh)
+            stream.setEncoding(CODEC)
             stream << self.toPlainText()
             self.document().setModified(False)
         except EnvironmentError as e:
@@ -74,16 +81,15 @@ class TextEdit(QTextEdit):
             if exception is not None:
                 raise exception
 
-
     def load(self):
         exception = None
         fh = None
         try:
-            fh = QFile(self.filename)
-            if not fh.open(QIODevice.ReadOnly):
+            fh = QtCore.QFile(self.filename)
+            if not fh.open(QtCore.QIODevice.ReadOnly):
                 raise IOError(fh.errorString())
-            stream = QTextStream(fh)
-            stream.setCodec("UTF-8")
+            stream = QtCore.QTextStream(fh)
+            stream.setEncoding(CODEC)
             self.setPlainText(stream.readAll())
             self.document().setModified(False)
         except EnvironmentError as e:
@@ -93,4 +99,3 @@ class TextEdit(QTextEdit):
                 fh.close()
             if exception is not None:
                 raise exception
-
