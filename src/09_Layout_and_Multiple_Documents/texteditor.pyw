@@ -93,7 +93,9 @@ class MainWindow(QtWidgets.QMainWindow):
             self.mdi.activatePreviousSubWindow,
             QtGui.QKeySequence.PreviousChild,
         )
-        self.windowCascadeAction = self.createAction("Casca&de", self.mdi.cascadeSubWindows)
+        self.windowCascadeAction = self.createAction(
+            "Casca&de", self.mdi.cascadeSubWindows
+        )
         self.windowTileAction = self.createAction("&Tile", self.mdi.tileSubWindows)
         self.windowRestoreAction = self.createAction(
             "&Restore All", self.windowRestoreAll
