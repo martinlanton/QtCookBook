@@ -10,43 +10,44 @@
 # the GNU General Public License for more details.
 
 import sys
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PySide6 import QtWidgets, QtCore
 
 LEFT, ABOVE = range(2)
 
-class LabelledLineEdit(QWidget):
 
-    def __init__(self, labelText="", position=LEFT,
-                 parent=None):
+class LabelledLineEdit(QtWidgets.QWidget):
+    def __init__(self, labelText="", position=LEFT, parent=None):
         super(LabelledLineEdit, self).__init__(parent)
-        self.label = QLabel(labelText)
-        self.lineEdit = QLineEdit()
+        self.label = QtWidgets.QLabel(labelText)
+        self.lineEdit = QtWidgets.QLineEdit()
         self.label.setBuddy(self.lineEdit)
-        layout = QBoxLayout(QBoxLayout.LeftToRight
-                if position == LEFT else QBoxLayout.TopToBottom)
+        layout = QtWidgets.QBoxLayout(
+            QtWidgets.QBoxLayout.LeftToRight
+            if position == LEFT
+            else QtWidgets.QBoxLayout.TopToBottom
+        )
         layout.addWidget(self.label)
         layout.addWidget(self.lineEdit)
         self.setLayout(layout)
 
 
-class LabelledTextEdit(QWidget):
-
-    def __init__(self, labelText="", position=LEFT,
-                 parent=None):
+class LabelledTextEdit(QtWidgets.QWidget):
+    def __init__(self, labelText="", position=LEFT, parent=None):
         super(LabelledTextEdit, self).__init__(parent)
-        self.label = QLabel(labelText)
-        self.textEdit = QTextEdit()
+        self.label = QtWidgets.QLabel(labelText)
+        self.textEdit = QtWidgets.QTextEdit()
         self.label.setBuddy(self.textEdit)
-        layout = QBoxLayout(QBoxLayout.LeftToRight
-                if position == LEFT else QBoxLayout.TopToBottom)
+        layout = QtWidgets.QBoxLayout(
+            QtWidgets.QBoxLayout.LeftToRight
+            if position == LEFT
+            else QtWidgets.QBoxLayout.TopToBottom
+        )
         layout.addWidget(self.label)
         layout.addWidget(self.textEdit)
         self.setLayout(layout)
 
 
-class Dialog(QDialog):
-
+class Dialog(QtWidgets.QDialog):
     def __init__(self, address=None, parent=None):
         super(Dialog, self).__init__(parent)
 
@@ -61,37 +62,40 @@ class Dialog(QDialog):
             self.state.lineEdit.setText(address.get("state", ""))
             self.zipcode.lineEdit.setText(address.get("zipcode", ""))
             self.notes.textEdit.setPlainText(address.get("notes", ""))
-        buttonBox = QDialogButtonBox(QDialogButtonBox.Ok|
-                                     QDialogButtonBox.Cancel)
+        buttonBox = QtWidgets.QDialogButtonBox(
+            QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel
+        )
 
-        grid = QGridLayout()
+        grid = QtWidgets.QGridLayout()
         grid.addWidget(self.street, 0, 0)
         grid.addWidget(self.city, 0, 1)
         grid.addWidget(self.state, 1, 0)
         grid.addWidget(self.zipcode, 1, 1)
         grid.addWidget(self.notes, 2, 0, 1, 2)
-        layout = QVBoxLayout()
+        layout = QtWidgets.QVBoxLayout()
         layout.addLayout(grid)
         layout.addWidget(buttonBox)
         self.setLayout(layout)
-        
-        self.connect(buttonBox, SIGNAL("accepted()"), self.accept)
-        self.connect(buttonBox, SIGNAL("rejected()"), self.reject)
+
+        self.connect(buttonBox, QtCore.SIGNAL("accepted()"), self.accept)
+        self.connect(buttonBox, QtCore.SIGNAL("rejected()"), self.reject)
 
         self.setWindowTitle("Labelled Widgets")
 
 
 if __name__ == "__main__":
-    fakeAddress = dict(street="3200 Mount Vernon Memorial Highway",
-                       city="Mount Vernon", state="Virginia",
-                       zipcode="22121")
-    app = QApplication(sys.argv)
+    fakeAddress = dict(
+        street="3200 Mount Vernon Memorial Highway",
+        city="Mount Vernon",
+        state="Virginia",
+        zipcode="22121",
+    )
+    app = QtWidgets.QApplication(sys.argv)
     form = Dialog(fakeAddress)
     form.show()
-    app.exec_()
+    app.exec()
     print("Street:", form.street.lineEdit.text())
     print("City:", form.city.lineEdit.text())
     print("State:", form.state.lineEdit.text())
     print("Notes:")
     print(form.notes.textEdit.toPlainText())
-
