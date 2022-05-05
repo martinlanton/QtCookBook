@@ -10,11 +10,10 @@
 # the GNU General Public License for more details.
 
 import sys
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PySide6 import QtWidgets, QtCore
 
 
-class ContactDlg(QDialog):
+class ContactDlg(QtWidgets.QDialog):
 
     StyleSheet = """
 QComboBox { color: darkblue; }
@@ -28,42 +27,42 @@ QLineEdit[mandatory="1"] {
     def __init__(self, parent=None):
         super(ContactDlg, self).__init__(parent)
 
-        forenameLabel = QLabel("&Forename:")
-        self.forenameEdit = QLineEdit()
+        forenameLabel = QtWidgets.QLabel("&Forename:")
+        self.forenameEdit = QtWidgets.QLineEdit()
         forenameLabel.setBuddy(self.forenameEdit)
-        surnameLabel = QLabel("&Surname:")
-        self.surnameEdit = QLineEdit()
+        surnameLabel = QtWidgets.QLabel("&Surname:")
+        self.surnameEdit = QtWidgets.QLineEdit()
         surnameLabel.setBuddy(self.surnameEdit)
-        categoryLabel = QLabel("&Category:")
-        self.categoryComboBox = QComboBox()
+        categoryLabel = QtWidgets.QLabel("&Category:")
+        self.categoryComboBox = QtWidgets.QComboBox()
         categoryLabel.setBuddy(self.categoryComboBox)
-        self.categoryComboBox.addItems(["Business", "Domestic",
-                                        "Personal"])
-        companyLabel = QLabel("C&ompany:")
-        self.companyEdit = QLineEdit()
+        self.categoryComboBox.addItems(["Business", "Domestic", "Personal"])
+        companyLabel = QtWidgets.QLabel("C&ompany:")
+        self.companyEdit = QtWidgets.QLineEdit()
         companyLabel.setBuddy(self.companyEdit)
-        addressLabel = QLabel("A&ddress:")
-        self.addressEdit = QLineEdit()
+        addressLabel = QtWidgets.QLabel("A&ddress:")
+        self.addressEdit = QtWidgets.QLineEdit()
         addressLabel.setBuddy(self.addressEdit)
-        phoneLabel = QLabel("&Phone:")
-        self.phoneEdit = QLineEdit()
+        phoneLabel = QtWidgets.QLabel("&Phone:")
+        self.phoneEdit = QtWidgets.QLineEdit()
         phoneLabel.setBuddy(self.phoneEdit)
-        mobileLabel = QLabel("&Mobile:")
-        self.mobileEdit = QLineEdit()
+        mobileLabel = QtWidgets.QLabel("&Mobile:")
+        self.mobileEdit = QtWidgets.QLineEdit()
         mobileLabel.setBuddy(self.mobileEdit)
-        faxLabel = QLabel("Fa&x:")
-        self.faxEdit = QLineEdit()
+        faxLabel = QtWidgets.QLabel("Fa&x:")
+        self.faxEdit = QtWidgets.QLineEdit()
         faxLabel.setBuddy(self.faxEdit)
-        emailLabel = QLabel("&Email:")
-        self.emailEdit = QLineEdit()
+        emailLabel = QtWidgets.QLabel("&Email:")
+        self.emailEdit = QtWidgets.QLineEdit()
         emailLabel.setBuddy(self.emailEdit)
-        self.buttonBox = QDialogButtonBox(QDialogButtonBox.Ok|
-                                          QDialogButtonBox.Cancel)
-        addButton = self.buttonBox.button(QDialogButtonBox.Ok)
+        self.buttonBox = QtWidgets.QDialogButtonBox(
+            QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel
+        )
+        addButton = self.buttonBox.button(QtWidgets.QDialogButtonBox.Ok)
         addButton.setText("&Add")
         addButton.setEnabled(False)
 
-        grid = QGridLayout()
+        grid = QtWidgets.QGridLayout()
         grid.addWidget(forenameLabel, 0, 0)
         grid.addWidget(self.forenameEdit, 0, 1)
         grid.addWidget(surnameLabel, 0, 2)
@@ -82,26 +81,30 @@ QLineEdit[mandatory="1"] {
         grid.addWidget(self.faxEdit, 4, 1)
         grid.addWidget(emailLabel, 4, 2)
         grid.addWidget(self.emailEdit, 4, 3)
-        layout = QVBoxLayout()
+        layout = QtWidgets.QVBoxLayout()
         layout.addLayout(grid)
         layout.addWidget(self.buttonBox)
         self.setLayout(layout)
 
-        self.lineedits = (self.forenameEdit, self.surnameEdit,
-                self.companyEdit, self.phoneEdit, self.emailEdit)
+        self.lineedits = (
+            self.forenameEdit,
+            self.surnameEdit,
+            self.companyEdit,
+            self.phoneEdit,
+            self.emailEdit,
+        )
         for lineEdit in self.lineedits:
             lineEdit.setProperty("mandatory", 1)
-            self.connect(lineEdit, SIGNAL("textEdited(QString)"),
-                         self.updateUi)
-        self.connect(self.categoryComboBox, SIGNAL("activated(int)"),
-                     self.updateUi)
+            self.connect(lineEdit, QtCore.SIGNAL("textEdited(QString)"), self.updateUi)
+        self.connect(
+            self.categoryComboBox, QtCore.SIGNAL("activated(int)"), self.updateUi
+        )
 
-        self.connect(self.buttonBox, SIGNAL("accepted()"), self.accept)
-        self.connect(self.buttonBox, SIGNAL("rejected()"), self.reject)
+        self.connect(self.buttonBox, QtCore.SIGNAL("accepted()"), self.accept)
+        self.connect(self.buttonBox, QtCore.SIGNAL("rejected()"), self.reject)
 
         self.setStyleSheet(ContactDlg.StyleSheet)
         self.setWindowTitle("Add Contact")
-
 
     def updateUi(self):
         mandatory = bool(int(self.companyEdit.property("mandatory")))
@@ -110,20 +113,18 @@ QLineEdit[mandatory="1"] {
                 self.companyEdit.setProperty("mandatory", 1)
         elif mandatory:
             self.companyEdit.setProperty("mandatory", 0)
-        if (mandatory !=
-            bool(int(self.companyEdit.property("mandatory")))):
+        if mandatory != bool(int(self.companyEdit.property("mandatory"))):
             self.setStyleSheet(ContactDlg.StyleSheet)
         enable = True
         for lineEdit in self.lineedits:
-            if (bool(int(lineEdit.property("mandatory"))) and
-                not lineEdit.text()):
+            if bool(int(lineEdit.property("mandatory"))) and not lineEdit.text():
                 enable = False
                 break
-        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(enable)
+        self.buttonBox.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(enable)
 
 
 if __name__ == "__main__":
-    app = QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     form = ContactDlg()
     form.show()
-    app.exec_()
+    app.exec()
