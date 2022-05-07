@@ -10,8 +10,7 @@
 # the GNU General Public License for more details.
 
 import platform
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PySide6 import QtWidgets, QtCore, QtGui
 
 X11 = True
 try:
@@ -20,7 +19,7 @@ except ImportError:
     X11 = False
 
 
-class FractionSlider(QWidget):
+class FractionSlider(QtWidgets.QWidget):
 
     XMARGIN = 12.0
     YMARGIN = 5.0
@@ -30,31 +29,31 @@ class FractionSlider(QWidget):
         super(FractionSlider, self).__init__(parent)
         self.__numerator = numerator
         self.__denominator = denominator
-        self.setFocusPolicy(Qt.WheelFocus)
-        self.setSizePolicy(QSizePolicy(QSizePolicy.MinimumExpanding,
-                                       QSizePolicy.Fixed))
-
+        self.setFocusPolicy(QtCore.Qt.WheelFocus)
+        self.setSizePolicy(
+            QtWidgets.QSizePolicy(
+                QtWidgets.QSizePolicy.MinimumExpanding,
+                QtWidgets.QSizePolicy.Fixed,
+            )
+        )
 
     def decimal(self):
         return self.__numerator / float(self.__denominator)
 
-
     def fraction(self):
         return self.__numerator, self.__denominator
-
 
     def sizeHint(self):
         return self.minimumSizeHint()
 
-
     def minimumSizeHint(self):
-        font = QFont(self.font())
+        font = QtGui.QFont(self.font())
         font.setPointSize(font.pointSize() - 1)
-        fm = QFontMetricsF(font)
-        return QSize(fm.width(FractionSlider.WSTRING) *
-                     self.__denominator,
-                     (fm.height() * 4) + FractionSlider.YMARGIN)
-
+        fm = QtGui.QFontMetricsF(font)
+        return QtCore.QSize(
+            int(fm.maxWidth() * self.__denominator),
+            int((fm.height() * 4) + FractionSlider.YMARGIN),
+        )
 
     def setFraction(self, numerator, denominator=None):
         if denominator is not None:
@@ -69,45 +68,43 @@ class FractionSlider(QWidget):
         self.update()
         self.updateGeometry()
 
-
     def mousePressEvent(self, event):
-        if event.button() == Qt.LeftButton:
-            self.moveSlider(event.x())
+        if event.button() == QtCore.Qt.LeftButton:
+            self.moveSlider(event.position().x())
             event.accept()
         else:
-            QWidget.mousePressEvent(self, event)
-
+            QtWidgets.QWidget.mousePressEvent(self, event)
 
     def mouseMoveEvent(self, event):
-        self.moveSlider(event.x())
-
+        self.moveSlider(event.position().x())
 
     def moveSlider(self, x):
         span = self.width() - (FractionSlider.XMARGIN * 2)
         offset = span - x + FractionSlider.XMARGIN
-        numerator = int(round(self.__denominator *
-                        (1.0 - (offset / span))))
+        numerator = int(round(self.__denominator * (1.0 - (offset / span))))
         numerator = max(0, min(numerator, self.__denominator))
         if numerator != self.__numerator:
             self.__numerator = numerator
-            self.emit(SIGNAL("valueChanged(int,int)"),
-                      self.__numerator, self.__denominator)
+            self.emit(
+                QtCore.SIGNAL("valueChanged(int,int)"),
+                self.__numerator,
+                self.__denominator,
+            )
             self.update()
-
 
     def keyPressEvent(self, event):
         change = 0
-        if event.key() == Qt.Key_Home:
+        if event.key() == QtCore.Qt.Key_Home:
             change = -self.__denominator
-        elif event.key() in (Qt.Key_Up, Qt.Key_Right):
+        elif event.key() in (QtCore.Qt.Key_Up, QtCore.Qt.Key_Right):
             change = 1
-        elif event.key() == Qt.Key_PageUp:
+        elif event.key() == QtCore.Qt.Key_PageUp:
             change = (self.__denominator // 10) + 1
-        elif event.key() in (Qt.Key_Down, Qt.Key_Left):
+        elif event.key() in (QtCore.Qt.Key_Down, QtCore.Qt.Key_Left):
             change = -1
-        elif event.key() == Qt.Key_PageDown:
+        elif event.key() == QtCore.Qt.Key_PageDown:
             change = -((self.__denominator // 10) + 1)
-        elif event.key() == Qt.Key_End:
+        elif event.key() == QtCore.Qt.Key_End:
             change = self.__denominator
         if change:
             numerator = self.__numerator
@@ -115,38 +112,40 @@ class FractionSlider(QWidget):
             numerator = max(0, min(numerator, self.__denominator))
             if numerator != self.__numerator:
                 self.__numerator = numerator
-                self.emit(SIGNAL("valueChanged(int,int)"),
-                          self.__numerator, self.__denominator)
+                self.emit(
+                    QtCore.SIGNAL("valueChanged(int,int)"),
+                    self.__numerator,
+                    self.__denominator,
+                )
                 self.update()
             event.accept()
         else:
-            QWidget.keyPressEvent(self, event)
-
+            QtWidgets.QWidget.keyPressEvent(self, event)
 
     def paintEvent(self, event=None):
-        font = QFont(self.font())
+        font = QtGui.QFont(self.font())
         font.setPointSize(font.pointSize() - 1)
-        fm = QFontMetricsF(font)
-        fracWidth = fm.width(FractionSlider.WSTRING)
+        fm = QtGui.QFontMetricsF(font)
+        fracWidth = fm.maxWidth()
         indent = fm.boundingRect("9").width() / 2.0
         if not X11:
             fracWidth *= 1.5
         span = self.width() - (FractionSlider.XMARGIN * 2)
         value = self.__numerator / float(self.__denominator)
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
-        painter.setRenderHint(QPainter.TextAntialiasing)
-        painter.setPen(self.palette().color(QPalette.Mid))
-        painter.setBrush(self.palette().brush(
-                QPalette.AlternateBase))
+        painter = QtGui.QPainter(self)
+        painter.setRenderHint(QtGui.QPainter.Antialiasing)
+        painter.setRenderHint(QtGui.QPainter.TextAntialiasing)
+        painter.setPen(self.palette().color(QtGui.QPalette.Mid))
+        painter.setBrush(self.palette().brush(QtGui.QPalette.AlternateBase))
         painter.drawRect(self.rect())
-        segColor = QColor(Qt.green).dark(120)
-        segLineColor = segColor.dark()
+        segColor = QtGui.QColor(QtCore.Qt.green).darker(120)
+        segLineColor = segColor.darker()
         painter.setPen(segLineColor)
         painter.setBrush(segColor)
-        painter.drawRect(FractionSlider.XMARGIN,
-                         FractionSlider.YMARGIN, span, fm.height())
-        textColor = self.palette().color(QPalette.Text)
+        painter.drawRect(
+            FractionSlider.XMARGIN, FractionSlider.YMARGIN, span, fm.height()
+        )
+        textColor = self.palette().color(QtGui.QPalette.Text)
         segWidth = span / self.__denominator
         segHeight = fm.height() * 2
         nRect = fm.boundingRect(FractionSlider.WSTRING)
@@ -157,46 +156,48 @@ class FractionSlider(QWidget):
             painter.drawLine(x, FractionSlider.YMARGIN, x, segHeight)
             painter.setPen(textColor)
             y = segHeight
-            rect = QRectF(nRect)
-            rect.moveCenter(QPointF(x, y + fm.height() / 2.0))
-            painter.drawText(rect, Qt.AlignCenter, "{}".format(i))
+            rect = QtCore.QRectF(nRect)
+            rect.moveCenter(QtCore.QPointF(x, y + fm.height() / 2.0))
+            painter.drawText(rect, QtCore.Qt.AlignCenter, "{}".format(i))
             y = yOffset
-            rect.moveCenter(QPointF(x, y + fm.height() / 2.0))
-            painter.drawText(rect, Qt.AlignCenter,
-                             "{}".format(self.__denominator))
-            painter.drawLine(QPointF(rect.left() + indent, y),
-                             QPointF(rect.right() - indent, y))
+            rect.moveCenter(QtCore.QPointF(x, y + fm.height() / 2.0))
+            painter.drawText(
+                rect, QtCore.Qt.AlignCenter, "{}".format(self.__denominator)
+            )
+            painter.drawLine(
+                QtCore.QPointF(rect.left() + indent, y), QtCore.QPointF(rect.right() - indent, y)
+            )
             x += segWidth
         span = int(span)
         y = FractionSlider.YMARGIN - 0.5
-        triangle = [QPointF(value * span, y),
-                    QPointF((value * span) +
-                            (2 * FractionSlider.XMARGIN), y),
-                    QPointF((value * span) +
-                            FractionSlider.XMARGIN, fm.height())]
-        painter.setPen(Qt.yellow)
-        painter.setBrush(Qt.darkYellow)
-        painter.drawPolygon(QPolygonF(triangle))
+        triangle = [
+            QtCore.QPointF(value * span, y),
+            QtCore.QPointF((value * span) + (2 * FractionSlider.XMARGIN), y),
+            QtCore.QPointF((value * span) + FractionSlider.XMARGIN, fm.height()),
+        ]
+        painter.setPen(QtCore.Qt.yellow)
+        painter.setBrush(QtCore.Qt.darkYellow)
+        painter.drawPolygon(QtGui.QPolygonF(triangle))
 
 
 if __name__ == "__main__":
     import sys
 
-    app = QApplication(sys.argv)
-    form = QDialog()
-    sliderLabel = QLabel("&Fraction")
+    app = QtWidgets.QApplication(sys.argv)
+    form = QtWidgets.QDialog()
+    sliderLabel = QtWidgets.QLabel("&Fraction")
     slider = FractionSlider(denominator=12)
     sliderLabel.setBuddy(slider)
-    denominatorLabel = QLabel("&Denominator")
-    denominatorSpinBox = QSpinBox()
+    denominatorLabel = QtWidgets.QLabel("&Denominator")
+    denominatorSpinBox = QtWidgets.QSpinBox()
     denominatorLabel.setBuddy(denominatorSpinBox)
     denominatorSpinBox.setRange(3, 60)
     denominatorSpinBox.setValue(slider.fraction()[1])
-    denominatorSpinBox.setAlignment(Qt.AlignRight|Qt.AlignVCenter)
-    numeratorLabel = QLabel("Numerator")
-    numeratorLCD = QLCDNumber()
-    numeratorLCD.setSegmentStyle(QLCDNumber.Flat)
-    layout = QGridLayout()
+    denominatorSpinBox.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+    numeratorLabel = QtWidgets.QLabel("Numerator")
+    numeratorLCD = QtWidgets.QLCDNumber()
+    numeratorLCD.setSegmentStyle(QtWidgets.QLCDNumber.Flat)
+    layout = QtWidgets.QGridLayout()
     layout.addWidget(sliderLabel, 0, 0)
     layout.addWidget(slider, 0, 1, 1, 5)
     layout.addWidget(numeratorLabel, 1, 0)
@@ -209,12 +210,14 @@ if __name__ == "__main__":
         numerator = int(slider.decimal() * denominator)
         slider.setFraction(numerator, denominator)
         numeratorLCD.display(numerator)
-        
-    form.connect(slider, SIGNAL("valueChanged(int,int)"),
-                 numeratorLCD, SLOT("display(int)"))
-    form.connect(denominatorSpinBox, SIGNAL("valueChanged(int)"),
-                 valueChanged)
+
+    form.connect(
+        slider,
+        QtCore.SIGNAL("valueChanged(int,int)"),
+        numeratorLCD,
+        QtCore.SLOT("display(int)"),
+    )
+    form.connect(denominatorSpinBox, QtCore.SIGNAL("valueChanged(int)"), valueChanged)
     form.setWindowTitle("Fraction Slider")
     form.show()
-    app.exec_()
-
+    app.exec()
