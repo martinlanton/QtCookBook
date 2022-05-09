@@ -51,7 +51,7 @@ class FractionSlider(QtWidgets.QWidget):
         font.setPointSize(font.pointSize() - 1)
         fm = QtGui.QFontMetricsF(font)
         return QtCore.QSize(
-            int(fm.maxWidth() * self.__denominator),
+            int(fm.horizontalAdvance(FractionSlider.WSTRING) * self.__denominator),
             int((fm.height() * 4) + FractionSlider.YMARGIN),
         )
 
@@ -126,7 +126,7 @@ class FractionSlider(QtWidgets.QWidget):
         font = QtGui.QFont(self.font())
         font.setPointSize(font.pointSize() - 1)
         fm = QtGui.QFontMetricsF(font)
-        fracWidth = fm.maxWidth()
+        fracWidth = fm.horizontalAdvance(FractionSlider.WSTRING)
         indent = fm.boundingRect("9").width() / 2.0
         if not X11:
             fracWidth *= 1.5
