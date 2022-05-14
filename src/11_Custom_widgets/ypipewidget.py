@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # Copyright (c) 2008-10 Qtrac Ltd. All rights reserved.
 # This program or module is free software: you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as published
@@ -14,6 +13,8 @@ from PySide6 import QtWidgets, QtCore, QtGui
 
 
 class YPipeWidget(QtWidgets.QWidget):
+    valueChanged = QtCore.Signal((int, int))
+
     def __init__(self, leftFlow=0, rightFlow=0, maxFlow=100, parent=None):
         super(YPipeWidget, self).__init__(parent)
 
@@ -23,7 +24,7 @@ class YPipeWidget(QtWidgets.QWidget):
         self.leftSpinBox.setSuffix(" l/s")
         self.leftSpinBox.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self.connect(
-            self.leftSpinBox, QtCore.SIGNAL("valueChanged(int)"), self.valueChanged
+            self.leftSpinBox, QtCore.SIGNAL("valueChanged(int)"), self.updateValue
         )
 
         self.rightSpinBox = QtWidgets.QSpinBox(self)
@@ -32,7 +33,7 @@ class YPipeWidget(QtWidgets.QWidget):
         self.rightSpinBox.setSuffix(" l/s")
         self.rightSpinBox.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self.connect(
-            self.rightSpinBox, QtCore.SIGNAL("valueChanged(int)"), self.valueChanged
+            self.rightSpinBox, QtCore.SIGNAL("valueChanged(int)"), self.updateValue
         )
 
         self.label = QtWidgets.QLabel(self)
@@ -47,13 +48,13 @@ class YPipeWidget(QtWidgets.QWidget):
             )
         )
         self.setMinimumSize(self.minimumSizeHint())
-        self.valueChanged()
+        self.updateValue()
 
-    def valueChanged(self):
+    def updateValue(self):
         a = self.leftSpinBox.value()
         b = self.rightSpinBox.value()
         self.label.setText("{} l/s".format(a + b))
-        self.emit(QtCore.SIGNAL("valueChanged"), a, b)
+        self.valueChanged.emit(a, b)
         self.update()
 
     def values(self):
@@ -145,7 +146,7 @@ if __name__ == "__main__":
 
     app = QtWidgets.QApplication(sys.argv)
     form = YPipeWidget()
-    form.connect(form, QtCore.SIGNAL("valueChanged"), valueChanged)  # TODO : fix this signal connection
+    form.valueChanged.connect(valueChanged)  # TODO : fix this signal connection
     form.setWindowTitle("YPipe")
     form.move(0, 0)
     form.show()
