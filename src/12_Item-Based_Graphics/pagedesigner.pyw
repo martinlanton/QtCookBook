@@ -27,7 +27,7 @@ Dirty = False
 
 class TextItemDlg(QtWidgets.QDialog):
     def __init__(self, item=None, position=None, scene=None, parent=None):
-        super(QtWidgets.QDialog, self).__init__(parent)
+        super(TextItemDlg, self).__init__(parent)
 
         self.item = item
         self.position = position
@@ -38,7 +38,7 @@ class TextItemDlg(QtWidgets.QDialog):
         self.editor.setTabChangesFocus(True)
         editorLabel = QtWidgets.QLabel("&Text:")
         editorLabel.setBuddy(self.editor)
-        self.fontComboBox = QtWidgets.QtGui.QFontComboBox()
+        self.fontComboBox = QtWidgets.QFontComboBox()
         self.fontComboBox.setCurrentFont(QtGui.QFont("Times", PointSize))
         fontLabel = QtWidgets.QLabel("&Font:")
         fontLabel.setBuddy(self.fontComboBox)
@@ -115,7 +115,7 @@ class TextItem(QtWidgets.QGraphicsTextItem):
         position,
         scene,
         font=QtGui.QFont("Times", PointSize),
-        matrix=QtGui.QMatrix2x2(),
+        transform=QtGui.QTransform(),
     ):
         super(TextItem, self).__init__(text)
         self.setFlags(
@@ -124,7 +124,7 @@ class TextItem(QtWidgets.QGraphicsTextItem):
         )
         self.setFont(font)
         self.setPos(position)
-        self.setMatrix(matrix)
+        self.setTransform(transform)
         scene.clearSelection()
         scene.addItem(self)
         self.setSelected(True)
@@ -142,7 +142,7 @@ class TextItem(QtWidgets.QGraphicsTextItem):
 
     def mouseDoubleClickEvent(self, event):
         dialog = TextItemDlg(self, self.parentWidget())
-        dialog.exec_()
+        dialog.exec()
 
 
 class BoxItem(QtWidgets.QGraphicsItem):
@@ -152,7 +152,7 @@ class BoxItem(QtWidgets.QGraphicsItem):
         scene,
         style=QtCore.Qt.SolidLine,
         rect=None,
-        matrix=QtGui.QMatrix2x2(),
+        transform=QtGui.QTransform(),
     ):
         super(BoxItem, self).__init__()
         self.setFlags(
@@ -167,7 +167,7 @@ class BoxItem(QtWidgets.QGraphicsItem):
         self.rect = rect
         self.style = style
         self.setPos(position)
-        self.setMatrix(matrix)
+        self.setTransform(transform)
         scene.clearSelection()
         scene.addItem(self)
         self.setSelected(True)
@@ -209,7 +209,7 @@ class BoxItem(QtWidgets.QGraphicsItem):
             wrapper = functools.partial(self.setStyle, param)
             wrapped.append(wrapper)
             menu.addAction(text, wrapper)
-        menu.exec_(event.screenPos())
+        menu.exec(event.screenPos())
 
     def setStyle(self, style):
         self.style = style
@@ -306,18 +306,20 @@ class MainForm(QtWidgets.QDialog):
 
         fm = QtGui.QFontMetrics(self.font())
         self.resize(
-            self.scene.width() + fm.width(" Delete... ") + 50, self.scene.height() + 50
+            int(self.scene.width() + fm.horizontalAdvance(" Delete... ") + 50), int(self.scene.height() + 50)
         )
         self.setWindowTitle("Page Designer")
 
     def addBorders(self):
         self.borders = []
         rect = QtCore.QRectF(0, 0, PageSize[0], PageSize[1])
-        self.borders.append(self.scene.addRect(rect, QtCore.Qt.yellow))
+        brush = QtGui.QBrush()
+        pen = QtGui.QPen(QtCore.Qt.yellow)
+        self.borders.append(self.scene.addRect(rect, pen, brush))
         margin = 5.25 * PointSize
         self.borders.append(
             self.scene.addRect(
-                rect.adjusted(margin, margin, -margin, -margin), QtCore.Qt.yellow
+                rect.adjusted(margin, margin, -margin, -margin), pen, brush
             )
         )
 
@@ -363,14 +365,14 @@ class MainForm(QtWidgets.QDialog):
 
     def addText(self):
         dialog = TextItemDlg(position=self.position(), scene=self.scene, parent=self)
-        dialog.exec_()
+        dialog.exec()
 
     def addBox(self):
         BoxItem(self.position(), self.scene)
 
     def addPixmap(self):
         path = QtCore.QFileInfo(self.filename).path() if self.filename else "."
-        fname = QtWidgets.QFileDialog.getOpenFileName(
+        fname, filter = QtWidgets.QFileDialog.getOpenFileName(
             self,
             "Page Designer - Add Pixmap",
             path,
@@ -380,14 +382,14 @@ class MainForm(QtWidgets.QDialog):
             return
         self.createPixmapItem(QtGui.QPixmap(fname), self.position())
 
-    def createPixmapItem(self, pixmap, position, matrix=QtGui.QMatrix2x2()):
+    def createPixmapItem(self, pixmap, position, transform=QtGui.QTransform()):
         item = QtWidgets.QGraphicsPixmapItem(pixmap)
         item.setFlags(
             QtWidgets.QGraphicsItem.ItemIsSelectable
             | QtWidgets.QGraphicsItem.ItemIsMovable
         )
         item.setPos(position)
-        item.setMatrix(matrix)
+        item.setTransform(transform)
         self.scene.clearSelection()
         self.scene.addItem(item)
         item.setSelected(True)
@@ -426,7 +428,8 @@ class MainForm(QtWidgets.QDialog):
 
     def rotate(self):
         for item in self.scene.selectedItems():
-            item.rotate(30)
+            rotation = item.rotation()
+            item.setRotation(rotation + 30)
 
     def delete(self):
         items = self.scene.selectedItems()
@@ -449,7 +452,7 @@ class MainForm(QtWidgets.QDialog):
 
     def print_(self):
         dialog = QtPrintSupport.QPrintDialog(self.printer)
-        if dialog.exec_():
+        if dialog.exec():
             painter = QtGui.QPainter(self.printer)
             painter.setRenderHint(QtGui.QPainter.Antialiasing)
             painter.setRenderHint(QtGui.QPainter.TextAntialiasing)
@@ -461,7 +464,7 @@ class MainForm(QtWidgets.QDialog):
     def open(self):
         self.offerSave()
         path = QtCore.QFileInfo(self.filename).path() if self.filename else "."
-        fname = QtWidgets.QFileDialog.getOpenFileName(
+        fname, filter = QtWidgets.QFileDialog.getOpenFileName(
             self, "Page Designer - Open", path, "Page Designer Files (*.pgd)"
         )
         if not fname:
@@ -503,7 +506,7 @@ class MainForm(QtWidgets.QDialog):
     def save(self):
         if not self.filename:
             path = "."
-            fname = QtWidgets.QFileDialog.getSaveFileName(
+            fname, filter = QtWidgets.QFileDialog.getSaveFileName(
                 self, "Page Designer - Save As", path, "Page Designer Files (*.pgd)"
             )
             if not fname:
@@ -538,7 +541,7 @@ class MainForm(QtWidgets.QDialog):
     def readItemFromStream(self, stream, offset=0):
         type = ""
         position = QtCore.QPointF()
-        matrix = QtGui.QMatrix2x2()
+        matrix = QtGui.QTransform()
         type = stream.readQString()
         stream >> position >> matrix
         if offset:
@@ -561,21 +564,21 @@ class MainForm(QtWidgets.QDialog):
     def writeItemToStream(self, stream, item):
         if isinstance(item, QtWidgets.QGraphicsTextItem):
             stream.writeQString("Text")
-            stream << item.pos() << item.matrix()
+            stream << item.pos() << item.transform()
             stream.writeQString(item.toPlainText())
             stream << item.font()
         elif isinstance(item, QtWidgets.QGraphicsPixmapItem):
             stream.writeQString("Pixmap")
-            stream << item.pos() << item.matrix() << item.pixmap()
+            stream << item.pos() << item.transform() << item.pixmap()
         elif isinstance(item, BoxItem):
             stream.writeQString("Box")
-            stream << item.pos() << item.matrix() << item.rect
+            stream << item.pos() << item.transform() << item.rect
             stream.writeInt16(item.style)
 
 
 app = QtWidgets.QApplication(sys.argv)
 form = MainForm()
-rect = QtWidgets.QApplication.desktop().availableGeometry()
+rect = QtGui.QScreen().availableGeometry()
 form.resize(int(rect.width() * 0.6), int(rect.height() * 0.9))
 form.show()
-app.exec_()
+app.exec()
