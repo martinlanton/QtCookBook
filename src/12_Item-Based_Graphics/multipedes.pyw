@@ -42,7 +42,8 @@ class Head(QtWidgets.QGraphicsItem):
         return path
 
     def paint(self, painter, option, widget=None):
-        transform = self.transform()
+        view = self.scene().views()[0]
+        transform = view.transform()
         level_of_detail = option.levelOfDetailFromTransform(transform)
         painter.setPen(QtCore.Qt.NoPen)
         painter.setBrush(QtGui.QBrush(self.color))
@@ -124,7 +125,8 @@ class Segment(QtWidgets.QGraphicsItem):
         return self.path
 
     def paint(self, painter, option, widget=None):
-        transform = self.transform()
+        view = self.scene().views()[0]
+        transform = view.transform()
         level_of_detail = option.levelOfDetailFromTransform(transform)
         painter.setPen(QtCore.Qt.NoPen)
         painter.setBrush(QtGui.QBrush(self.color))
