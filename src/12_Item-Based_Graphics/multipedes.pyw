@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # Copyright (c) 2008-10 Qtrac Ltd. All rights reserved.
 # This program or module is free software: you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as published
@@ -38,23 +37,25 @@ class Head(QtWidgets.QGraphicsItem):
         return Head.Rect
 
     def shape(self):
-        path = QtGui.QtGui.QPainterPath()
+        path = QtGui.QPainterPath()
         path.addEllipse(Head.Rect)
         return path
 
     def paint(self, painter, option, widget=None):
+        transform = self.transform()
+        level_of_detail = option.levelOfDetailFromTransform(transform)
         painter.setPen(QtCore.Qt.NoPen)
         painter.setBrush(QtGui.QBrush(self.color))
         painter.drawEllipse(Head.Rect)
-        if option.levelOfDetail > 0.5:  # Outer eyes
+        if level_of_detail > 0.5:  # Outer eyes
             painter.setBrush(QtGui.QBrush(QtCore.Qt.yellow))
             painter.drawEllipse(-12, -19, 8, 8)
             painter.drawEllipse(-12, 11, 8, 8)
-            if option.levelOfDetail > 0.9:  # Inner eyes
+            if level_of_detail > 0.9:  # Inner eyes
                 painter.setBrush(QtGui.QBrush(QtCore.Qt.darkBlue))
                 painter.drawEllipse(-12, -19, 4, 4)
                 painter.drawEllipse(-12, 11, 4, 4)
-                if option.levelOfDetail > 1.3:  # Nostrils
+                if level_of_detail > 1.3:  # Nostrils
                     painter.setBrush(QtGui.QBrush(QtCore.Qt.white))
                     painter.drawEllipse(-27, -5, 2, 2)
                     painter.drawEllipse(-27, 3, 2, 2)
@@ -71,7 +72,7 @@ class Head(QtWidgets.QGraphicsItem):
             if 0 <= x <= SCENESIZE and 0 <= y <= SCENESIZE:
                 break
         self.angle = angle
-        self.rotate(random.randint(-5, 5))
+        self.setRotation(random.randint(-5, 5))
         self.setPos(QtCore.QPointF(x, y))
         for item in self.scene().collidingItems(self):
             if isinstance(item, Head):
@@ -85,7 +86,7 @@ class Segment(QtWidgets.QGraphicsItem):
         super(Segment, self).__init__(parent)
         self.color = color
         self.rect = QtCore.QRectF(offset, -20, 30, 40)
-        self.path = QtGui.QtGui.QPainterPath()
+        self.path = QtGui.QPainterPath()
         self.path.addEllipse(self.rect)
         x = offset + 15
         y = -20
@@ -123,9 +124,11 @@ class Segment(QtWidgets.QGraphicsItem):
         return self.path
 
     def paint(self, painter, option, widget=None):
+        transform = self.transform()
+        level_of_detail = option.levelOfDetailFromTransform(transform)
         painter.setPen(QtCore.Qt.NoPen)
         painter.setBrush(QtGui.QBrush(self.color))
-        if option.levelOfDetail < 0.9:
+        if level_of_detail < 0.9:
             painter.drawEllipse(self.rect)
         else:
             painter.drawPath(self.path)
@@ -209,7 +212,7 @@ class MainForm(QtWidgets.QDialog):
             for j in range(random.randint(3, 7)):
                 offset += 25
                 segment = Segment(color, offset, segment)
-            head.rotate(random.randint(0, 360))
+            head.setRotation(random.randint(0, 360))
             self.scene.addItem(head)
         global Running
         Running = True
