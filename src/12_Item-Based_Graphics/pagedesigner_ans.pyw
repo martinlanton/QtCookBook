@@ -12,13 +12,12 @@
 import functools
 import random
 import sys
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PySide6 import QtWidgets, QtCore, QtGui, QtPrintSupport
 
 MAC = "qt_mac_set_native_menubar" in dir()
 
-#PageSize = (595, 842) # A4 in points
-PageSize = (612, 792) # US Letter in points
+# PageSize = (595, 842) # A4 in points
+PageSize = (612, 792)  # US Letter in points
 PointSize = 10
 
 MagicNumber = 0x70616765
@@ -27,40 +26,40 @@ FileVersion = 1
 Dirty = False
 
 
-class TextItemDlg(QDialog):
-
+class TextItemDlg(QtWidgets.QDialog):
     def __init__(self, item=None, position=None, scene=None, parent=None):
-        super(QDialog, self).__init__(parent)
+        super(TextItemDlg, self).__init__(parent)
 
         self.item = item
         self.position = position
         self.scene = scene
 
-        self.editor = QTextEdit()
+        self.editor = QtWidgets.QTextEdit()
         self.editor.setAcceptRichText(False)
         self.editor.setTabChangesFocus(True)
-        editorLabel = QLabel("&Text:")
+        editorLabel = QtWidgets.QLabel("&Text:")
         editorLabel.setBuddy(self.editor)
-        self.fontComboBox = QFontComboBox()
-        self.fontComboBox.setCurrentFont(QFont("Times", PointSize))
-        fontLabel = QLabel("&Font:")
+        self.fontComboBox = QtWidgets.QFontComboBox()
+        self.fontComboBox.setCurrentFont(QtGui.QFont("Times", PointSize))
+        fontLabel = QtWidgets.QLabel("&Font:")
         fontLabel.setBuddy(self.fontComboBox)
-        self.fontSpinBox = QSpinBox()
-        self.fontSpinBox.setAlignment(Qt.AlignRight|Qt.AlignVCenter)
+        self.fontSpinBox = QtWidgets.QSpinBox()
+        self.fontSpinBox.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self.fontSpinBox.setRange(6, 280)
         self.fontSpinBox.setValue(PointSize)
-        fontSizeLabel = QLabel("&Size:")
+        fontSizeLabel = QtWidgets.QLabel("&Size:")
         fontSizeLabel.setBuddy(self.fontSpinBox)
-        self.buttonBox = QDialogButtonBox(QDialogButtonBox.Ok|
-                                          QDialogButtonBox.Cancel)
-        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
+        self.buttonBox = QtWidgets.QDialogButtonBox(
+            QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel
+        )
+        self.buttonBox.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(False)
 
         if self.item is not None:
             self.editor.setPlainText(self.item.toPlainText())
             self.fontComboBox.setCurrentFont(self.item.font())
             self.fontSpinBox.setValue(self.item.font().pointSize())
 
-        layout = QGridLayout()
+        layout = QtWidgets.QGridLayout()
         layout.addWidget(editorLabel, 0, 0)
         layout.addWidget(self.editor, 1, 0, 1, 6)
         layout.addWidget(fontLabel, 2, 0)
@@ -70,27 +69,32 @@ class TextItemDlg(QDialog):
         layout.addWidget(self.buttonBox, 3, 0, 1, 6)
         self.setLayout(layout)
 
-        self.connect(self.fontComboBox,
-                SIGNAL("currentFontChanged(QFont)"), self.updateUi)
-        self.connect(self.fontSpinBox,
-                SIGNAL("valueChanged(int)"), self.updateUi)
-        self.connect(self.editor, SIGNAL("textChanged()"),
-                     self.updateUi)
-        self.connect(self.buttonBox, SIGNAL("accepted()"), self.accept)
-        self.connect(self.buttonBox, SIGNAL("rejected()"), self.reject)
+        self.connect(
+            self.fontComboBox,
+            QtCore.SIGNAL("currentFontChanged(QFont)"),
+            self.updateUi,
+        )
+        self.connect(
+            self.fontSpinBox, QtCore.SIGNAL("valueChanged(int)"), self.updateUi
+        )
+        self.connect(self.editor, QtCore.SIGNAL("textChanged()"), self.updateUi)
+        self.connect(self.buttonBox, QtCore.SIGNAL("accepted()"), self.accept)
+        self.connect(self.buttonBox, QtCore.SIGNAL("rejected()"), self.reject)
 
-        self.setWindowTitle("Page Designer - {} Text Item".format(
-                "Add" if self.item is None else "Edit"))
+        self.setWindowTitle(
+            "Page Designer - {} Text Item".format(
+                "Add" if self.item is None else "Edit"
+            )
+        )
         self.updateUi()
-
 
     def updateUi(self):
         font = self.fontComboBox.currentFont()
         font.setPointSize(self.fontSpinBox.value())
         self.editor.document().setDefaultFont(font)
-        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(
-                bool(self.editor.toPlainText()))
-
+        self.buttonBox.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(
+            bool(self.editor.toPlainText())
+        )
 
     def accept(self):
         if self.item is None:
@@ -98,61 +102,73 @@ class TextItemDlg(QDialog):
         font = self.fontComboBox.currentFont()
         font.setPointSize(self.fontSpinBox.value())
         self.item.setFont(font)
-        self.item.setPlainText(self.editor.toPlainText())   
+        self.item.setPlainText(self.editor.toPlainText())
         self.item.update()
         global Dirty
         Dirty = True
-        QDialog.accept(self)
+        QtWidgets.QDialog.accept(self)
 
 
-class TextItem(QGraphicsTextItem):
-
-    def __init__(self, text, position, scene,
-                font=QFont("Times", PointSize), matrix=QMatrix()):
+class TextItem(QtWidgets.QGraphicsTextItem):
+    def __init__(
+        self,
+        text,
+        position,
+        scene,
+        font=QtGui.QFont("Times", PointSize),
+        transform=QtGui.QTransform(),
+    ):
         super(TextItem, self).__init__(text)
-        self.setFlags(QGraphicsItem.ItemIsSelectable|
-                      QGraphicsItem.ItemIsMovable)
+        self.setFlags(
+            QtWidgets.QGraphicsItem.ItemIsSelectable
+            | QtWidgets.QGraphicsItem.ItemIsMovable
+        )
         self.setFont(font)
         self.setPos(position)
-        self.setMatrix(matrix)
+        self.setTransform(transform)
         scene.clearSelection()
         scene.addItem(self)
         self.setSelected(True)
         global Dirty
         Dirty = True
 
-
     def parentWidget(self):
         return self.scene().views()[0]
 
-
     def itemChange(self, change, variant):
-        if change != QGraphicsItem.ItemSelectedChange:
+        if change != QtWidgets.QGraphicsItem.ItemSelectedChange:
             global Dirty
             Dirty = True
-        return QGraphicsTextItem.itemChange(self, change, variant)
-
+        return QtWidgets.QGraphicsTextItem.itemChange(self, change, variant)
 
     def mouseDoubleClickEvent(self, event):
         dialog = TextItemDlg(self, self.parentWidget())
-        dialog.exec_()
+        dialog.exec()
 
 
-class BoxItem(QGraphicsItem):
-
-    def __init__(self, position, scene, style=Qt.SolidLine,
-                 rect=None, matrix=QMatrix()):
+class BoxItem(QtWidgets.QGraphicsItem):
+    def __init__(
+        self,
+        position,
+        scene,
+        style=QtCore.Qt.SolidLine,
+        rect=None,
+        transform=QtGui.QTransform(),
+    ):
         super(BoxItem, self).__init__()
-        self.setFlags(QGraphicsItem.ItemIsSelectable|
-                      QGraphicsItem.ItemIsMovable|
-                      QGraphicsItem.ItemIsFocusable)
+        self.setFlags(
+            QtWidgets.QGraphicsItem.ItemIsSelectable
+            | QtWidgets.QGraphicsItem.ItemIsMovable
+            | QtWidgets.QGraphicsItem.ItemIsFocusable
+        )
         if rect is None:
-            rect = QRectF(-10 * PointSize, -PointSize, 20 * PointSize,
-                          2 * PointSize)
+            rect = QtCore.QRectF(
+                -10 * PointSize, -PointSize, 20 * PointSize, 2 * PointSize
+            )
         self.rect = rect
         self.style = style
         self.setPos(position)
-        self.setMatrix(matrix)
+        self.setTransform(transform)
         scene.clearSelection()
         scene.addItem(self)
         self.setSelected(True)
@@ -160,46 +176,41 @@ class BoxItem(QGraphicsItem):
         global Dirty
         Dirty = True
 
-
     def parentWidget(self):
         return self.scene().views()[0]
-
 
     def boundingRect(self):
         return self.rect.adjusted(-2, -2, 2, 2)
 
-
     def paint(self, painter, option, widget):
-        pen = QPen(self.style)
-        pen.setColor(Qt.black)
+        pen = QtGui.QPen(self.style)
+        pen.setColor(QtCore.Qt.black)
         pen.setWidth(1)
-        if option.state & QStyle.State_Selected:
-            pen.setColor(Qt.blue)
+        if option.state & QtWidgets.QStyle.State_Selected:
+            pen.setColor(QtCore.Qt.blue)
         painter.setPen(pen)
         painter.drawRect(self.rect)
 
-
     def itemChange(self, change, variant):
-        if change != QGraphicsItem.ItemSelectedChange:
+        if change != QtWidgets.QGraphicsItem.ItemSelectedChange:
             global Dirty
             Dirty = True
-        return QGraphicsItem.itemChange(self, change, variant)
-
+        return QtWidgets.QGraphicsItem.itemChange(self, change, variant)
 
     def contextMenuEvent(self, event):
         wrapped = []
-        menu = QMenu(self.parentWidget())
+        menu = QtWidgets.QMenu(self.parentWidget())
         for text, param in (
-                ("&Solid", Qt.SolidLine),
-                ("&Dashed", Qt.DashLine),
-                ("D&otted", Qt.DotLine),
-                ("D&ashDotted", Qt.DashDotLine),
-                ("DashDo&tDotted", Qt.DashDotDotLine)):
+            ("&Solid", QtCore.Qt.SolidLine),
+            ("&Dashed", QtCore.Qt.DashLine),
+            ("D&otted", QtCore.Qt.DotLine),
+            ("D&ashDotted", QtCore.Qt.DashDotLine),
+            ("DashDo&tDotted", QtCore.Qt.DashDotDotLine),
+        ):
             wrapper = functools.partial(self.setStyle, param)
             wrapped.append(wrapper)
             menu.addAction(text, wrapper)
-        menu.exec_(event.screenPos())
-
+        menu.exec(event.screenPos())
 
     def setStyle(self, style):
         self.style = style
@@ -207,21 +218,20 @@ class BoxItem(QGraphicsItem):
         global Dirty
         Dirty = True
 
-
     def keyPressEvent(self, event):
         factor = PointSize / 4
         changed = False
-        if event.modifiers() & Qt.ShiftModifier:
-            if event.key() == Qt.Key_Left:
+        if event.modifiers() & QtCore.Qt.ShiftModifier:
+            if event.key() == QtCore.Qt.Key_Left:
                 self.rect.setRight(self.rect.right() - factor)
                 changed = True
-            elif event.key() == Qt.Key_Right:
+            elif event.key() == QtCore.Qt.Key_Right:
                 self.rect.setRight(self.rect.right() + factor)
                 changed = True
-            elif event.key() == Qt.Key_Up:
+            elif event.key() == QtCore.Qt.Key_Up:
                 self.rect.setBottom(self.rect.bottom() - factor)
                 changed = True
-            elif event.key() == Qt.Key_Down:
+            elif event.key() == QtCore.Qt.Key_Down:
                 self.rect.setBottom(self.rect.bottom() + factor)
                 changed = True
         if changed:
@@ -229,72 +239,72 @@ class BoxItem(QGraphicsItem):
             global Dirty
             Dirty = True
         else:
-            QGraphicsItem.keyPressEvent(self, event)
+            QtWidgets.QGraphicsItem.keyPressEvent(self, event)
 
 
-class GraphicsView(QGraphicsView):
-
+class GraphicsView(QtWidgets.QGraphicsView):
     def __init__(self, parent=None):
         super(GraphicsView, self).__init__(parent)
-        self.setDragMode(QGraphicsView.RubberBandDrag)
-        self.setRenderHint(QPainter.Antialiasing)
-        self.setRenderHint(QPainter.TextAntialiasing)
-
+        self.setDragMode(QtWidgets.QGraphicsView.RubberBandDrag)
+        self.setRenderHint(QtGui.QPainter.Antialiasing)
+        self.setRenderHint(QtGui.QPainter.TextAntialiasing)
 
     def wheelEvent(self, event):
-        factor = 1.41 ** (-event.delta() / 240.0)
+        delta = event.angleDelta().y()
+        factor = 1.41 ** (delta / 240.0)
         self.scale(factor, factor)
 
 
-class MainForm(QDialog):
-
+class MainForm(QtWidgets.QDialog):
     def __init__(self, parent=None):
         super(MainForm, self).__init__(parent)
 
         self.filename = ""
-        self.copiedItem = QByteArray()
+        self.copiedItem = QtCore.QByteArray()
         self.pasteOffset = 5
-        self.prevPoint = QPoint()
+        self.prevPoint = QtCore.QPoint()
         self.addOffset = 5
         self.borders = []
 
-        self.printer = QPrinter(QPrinter.HighResolution)
-        self.printer.setPageSize(QPrinter.Letter)
+        self.printer = QtPrintSupport.QPrinter(QtPrintSupport.QPrinter.HighResolution)
+        self.printer.setPageSize(QtGui.QPageSize.Letter)
 
         self.view = GraphicsView()
-        self.scene = QGraphicsScene(self)
+        self.scene = QtWidgets.QGraphicsScene(self)
         self.scene.setSceneRect(0, 0, PageSize[0], PageSize[1])
         self.addBorders()
         self.view.setScene(self.scene)
 
-        self.wrapped = [] # Needed to keep wrappers alive
-        buttonLayout = QVBoxLayout()
+        self.wrapped = []  # Needed to keep wrappers alive
+        buttonLayout = QtWidgets.QVBoxLayout()
         for text, slot in (
-                ("Add &Text", self.addText),
-                ("Add &Box", self.addBox),
-                ("Add Pi&xmap", self.addPixmap),
-                ("&Align", None),
-                ("&Copy", self.copy),
-                ("C&ut", self.cut),
-                ("&Paste", self.paste),
-                ("&Delete...", self.delete),
-                ("&Rotate", self.rotate),
-                ("Pri&nt...", self.print_),
-                ("&Open...", self.open),
-                ("&Save", self.save),
-                ("&Quit", self.accept)):
-            button = QPushButton(text)
+            ("Add &Text", self.addText),
+            ("Add &Box", self.addBox),
+            ("Add Pi&xmap", self.addPixmap),
+            ("&Align", None),
+            ("&Copy", self.copy),
+            ("C&ut", self.cut),
+            ("&Paste", self.paste),
+            ("&Delete...", self.delete),
+            ("&Rotate", self.rotate),
+            ("Pri&nt...", self.print_),
+            ("&Open...", self.open),
+            ("&Save", self.save),
+            ("&Quit", self.accept),
+        ):
+            button = QtWidgets.QPushButton(text)
             if not MAC:
-                button.setFocusPolicy(Qt.NoFocus)
+                button.setFocusPolicy(QtCore.Qt.NoFocus)
             if slot is not None:
-                self.connect(button, SIGNAL("clicked()"), slot)
+                self.connect(button, QtCore.SIGNAL("clicked()"), slot)
             if text == "&Align":
-                menu = QMenu(self)
+                menu = QtWidgets.QMenu(self)
                 for text, arg in (
-                        ("Align &Left", Qt.AlignLeft),
-                        ("Align &Right", Qt.AlignRight),
-                        ("Align &Top", Qt.AlignTop),
-                        ("Align &Bottom", Qt.AlignBottom)):
+                    ("Align &Left", QtCore.Qt.AlignLeft),
+                    ("Align &Right", QtCore.Qt.AlignRight),
+                    ("Align &Top", QtCore.Qt.AlignTop),
+                    ("Align &Bottom", QtCore.Qt.AlignBottom),
+                ):
                     wrapper = functools.partial(self.setAlignment, arg)
                     self.wrapped.append(wrapper)
                     menu.addAction(text, wrapper)
@@ -306,26 +316,30 @@ class MainForm(QDialog):
             buttonLayout.addWidget(button)
         buttonLayout.addStretch()
 
-        layout = QHBoxLayout()
+        layout = QtWidgets.QHBoxLayout()
         layout.addWidget(self.view, 1)
         layout.addLayout(buttonLayout)
         self.setLayout(layout)
 
-        fm = QFontMetrics(self.font())
-        self.resize(self.scene.width() + fm.width(" Delete... ") + 50,
-                    self.scene.height() + 50)
+        fm = QtGui.QFontMetrics(self.font())
+        self.resize(
+            int(self.scene.width() + fm.horizontalAdvance(" Delete... ") + 50),
+            int(self.scene.height() + 50),
+        )
         self.setWindowTitle("Page Designer")
-
 
     def addBorders(self):
         self.borders = []
-        rect = QRectF(0, 0, PageSize[0], PageSize[1])
-        self.borders.append(self.scene.addRect(rect, Qt.yellow))
+        rect = QtCore.QRectF(0, 0, PageSize[0], PageSize[1])
+        brush = QtGui.QBrush()
+        pen = QtGui.QPen(QtCore.Qt.yellow)
+        self.borders.append(self.scene.addRect(rect, pen, brush))
         margin = 5.25 * PointSize
-        self.borders.append(self.scene.addRect(
-                rect.adjusted(margin, margin, -margin, -margin),
-                Qt.yellow))
-
+        self.borders.append(
+            self.scene.addRect(
+                rect.adjusted(margin, margin, -margin, -margin), pen, brush
+            )
+        )
 
     def removeBorders(self):
         while self.borders:
@@ -333,72 +347,72 @@ class MainForm(QDialog):
             self.scene.removeItem(item)
             del item
 
-        
     def reject(self):
         self.accept()
 
-
     def accept(self):
         self.offerSave()
-        QDialog.accept(self)
-
+        QtWidgets.QDialog.accept(self)
 
     def offerSave(self):
-        if (Dirty and QMessageBox.question(self,
-                            "Page Designer - Unsaved Changes",
-                            "Save unsaved changes?",
-                            QMessageBox.Yes|QMessageBox.No) == 
-           QMessageBox.Yes):
+        if (
+            Dirty
+            and QtWidgets.QMessageBox.question(
+                self,
+                "Page Designer - Unsaved Changes",
+                "Save unsaved changes?",
+                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+            )
+            == QtWidgets.QMessageBox.Yes
+        ):
             self.save()
 
-
     def position(self):
-        point = self.mapFromGlobal(QCursor.pos())
+        point = self.mapFromGlobal(QtGui.QCursor.pos())
         if not self.view.geometry().contains(point):
             coord = random.randint(36, 144)
-            point = QPoint(coord, coord)
+            point = QtCore.QPoint(coord, coord)
         else:
             if point == self.prevPoint:
-                point += QPoint(self.addOffset, self.addOffset)
+                point += QtCore.QPoint(self.addOffset, self.addOffset)
                 self.addOffset += 5
             else:
                 self.addOffset = 5
                 self.prevPoint = point
         return self.view.mapToScene(point)
 
-
     def addText(self):
-        dialog = TextItemDlg(position=self.position(),
-                             scene=self.scene, parent=self)
-        dialog.exec_()
-
+        dialog = TextItemDlg(position=self.position(), scene=self.scene, parent=self)
+        dialog.exec()
 
     def addBox(self):
         BoxItem(self.position(), self.scene)
 
-
     def addPixmap(self):
-        path = QFileInfo(self.filename).path() if self.filename else "."
-        fname = QFileDialog.getOpenFileName(self,
-                "Page Designer - Add Pixmap", path,
-                "Pixmap Files (*.bmp *.jpg *.png *.xpm)")
+        path = QtCore.QFileInfo(self.filename).path() if self.filename else "."
+        fname, filter = QtWidgets.QFileDialog.getOpenFileName(
+            self,
+            "Page Designer - Add Pixmap",
+            path,
+            "Pixmap Files (*.bmp *.jpg *.png *.xpm)",
+        )
         if not fname:
             return
-        self.createPixmapItem(QPixmap(fname), self.position())
+        self.createPixmapItem(QtGui.QPixmap(fname), self.position())
 
-
-    def createPixmapItem(self, pixmap, position, matrix=QMatrix()):
-        item = QGraphicsPixmapItem(pixmap)
-        item.setFlags(QGraphicsItem.ItemIsSelectable|
-                      QGraphicsItem.ItemIsMovable)
+    def createPixmapItem(self, pixmap, position, transform=QtGui.QTransform()):
+        item = QtWidgets.QGraphicsPixmapItem(pixmap)
+        item.setFlags(
+            QtWidgets.QGraphicsItem.ItemIsSelectable
+            | QtWidgets.QGraphicsItem.ItemIsMovable
+        )
         item.setPos(position)
-        item.setMatrix(matrix)
+        item.setTransform(transform)
         self.scene.clearSelection()
         self.scene.addItem(item)
         item.setSelected(True)
         global Dirty
         Dirty = True
-
 
     def selectedItem(self):
         items = self.scene.selectedItems()
@@ -406,16 +420,14 @@ class MainForm(QDialog):
             return items[0]
         return None
 
-
     def copy(self):
         item = self.selectedItem()
         if item is None:
             return
         self.copiedItem.clear()
         self.pasteOffset = 5
-        stream = QDataStream(self.copiedItem, QIODevice.WriteOnly)
+        stream = QtCore.QDataStream(self.copiedItem, QtCore.QIODevice.WriteOnly)
         self.writeItemToStream(stream, item)
-
 
     def cut(self):
         item = self.selectedItem()
@@ -425,14 +437,12 @@ class MainForm(QDialog):
         self.scene.removeItem(item)
         del item
 
-
     def paste(self):
         if self.copiedItem.isEmpty():
             return
-        stream = QDataStream(self.copiedItem, QIODevice.ReadOnly)
+        stream = QtCore.QDataStream(self.copiedItem, QtCore.QIODevice.ReadOnly)
         self.readItemFromStream(stream, self.pasteOffset)
         self.pasteOffset += 5
-
 
     def setAlignment(self, alignment):
         # Items are returned in arbitrary order
@@ -448,39 +458,42 @@ class MainForm(QDialog):
             topYs.append(rect.y())
             bottomYs.append(rect.y() + rect.height())
         # Perform alignment
-        if alignment == Qt.AlignLeft:
+        if alignment == QtCore.Qt.AlignLeft:
             xAlignment = min(leftXs)
             for i, item in enumerate(items):
                 item.moveBy(xAlignment - leftXs[i], 0)
-        elif alignment == Qt.AlignRight:
+        elif alignment == QtCore.Qt.AlignRight:
             xAlignment = max(rightXs)
             for i, item in enumerate(items):
                 item.moveBy(xAlignment - rightXs[i], 0)
-        elif alignment == Qt.AlignTop:
+        elif alignment == QtCore.Qt.AlignTop:
             yAlignment = min(topYs)
             for i, item in enumerate(items):
                 item.moveBy(0, yAlignment - topYs[i])
-        elif alignment == Qt.AlignBottom:
+        elif alignment == QtCore.Qt.AlignBottom:
             yAlignment = max(bottomYs)
             for i, item in enumerate(items):
                 item.moveBy(0, yAlignment - bottomYs[i])
         global Dirty
         Dirty = True
 
-
     def rotate(self):
         for item in self.scene.selectedItems():
-            item.rotate(30)
-
+            rotation = item.rotation()
+            item.setRotation(rotation + 30)
 
     def delete(self):
         items = self.scene.selectedItems()
-        if (len(items) and QMessageBox.question(self,
+        if (
+            len(items)
+            and QtWidgets.QMessageBox.question(
+                self,
                 "Page Designer - Delete",
-                "Delete {} item{}?".format(len(items),
-                "s" if len(items) != 1 else ""),
-                QMessageBox.Yes|QMessageBox.No) ==
-                QMessageBox.Yes):
+                "Delete {} item{}?".format(len(items), "s" if len(items) != 1 else ""),
+                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+            )
+            == QtWidgets.QMessageBox.Yes
+        ):
             while items:
                 item = items.pop()
                 self.scene.removeItem(item)
@@ -488,32 +501,30 @@ class MainForm(QDialog):
             global Dirty
             Dirty = True
 
-
     def print_(self):
-        dialog = QPrintDialog(self.printer)
-        if dialog.exec_():
-            painter = QPainter(self.printer)
-            painter.setRenderHint(QPainter.Antialiasing)
-            painter.setRenderHint(QPainter.TextAntialiasing)
+        dialog = QtPrintSupport.QPrintDialog(self.printer)
+        if dialog.exec():
+            painter = QtGui.QPainter(self.printer)
+            painter.setRenderHint(QtGui.QPainter.Antialiasing)
+            painter.setRenderHint(QtGui.QPainter.TextAntialiasing)
             self.scene.clearSelection()
             self.removeBorders()
             self.scene.render(painter)
             self.addBorders()
 
-
     def open(self):
         self.offerSave()
-        path = QFileInfo(self.filename).path() if self.filename else "."
-        fname = QFileDialog.getOpenFileName(self,
-                "Page Designer - Open", path,
-                "Page Designer Files (*.pgd)")
+        path = QtCore.QFileInfo(self.filename).path() if self.filename else "."
+        fname, filter = QtWidgets.QFileDialog.getOpenFileName(
+            self, "Page Designer - Open", path, "Page Designer Files (*.pgd)"
+        )
         if not fname:
             return
         self.filename = fname
         fh = None
         try:
-            fh = QFile(self.filename)
-            if not fh.open(QIODevice.ReadOnly):
+            fh = QtCore.QFile(self.filename)
+            if not fh.open(QtCore.QIODevice.ReadOnly):
                 raise IOError(fh.errorString())
             items = self.scene.items()
             while items:
@@ -521,8 +532,8 @@ class MainForm(QDialog):
                 self.scene.removeItem(item)
                 del item
             self.addBorders()
-            stream = QDataStream(fh)
-            stream.setVersion(QDataStream.Qt_4_2)
+            stream = QtCore.QDataStream(fh)
+            stream.setVersion(QtCore.QDataStream.Qt_4_2)
             magic = stream.readInt32()
             if magic != MagicNumber:
                 raise IOError("not a valid .pgd file")
@@ -532,21 +543,23 @@ class MainForm(QDialog):
             while not fh.atEnd():
                 self.readItemFromStream(stream)
         except IOError as e:
-            QMessageBox.warning(self, "Page Designer -- Open Error",
-                    "Failed to open {}: {}".format(self.filename, e))
+            QtWidgets.QMessageBox.warning(
+                self,
+                "Page Designer -- Open Error",
+                "Failed to open {}: {}".format(self.filename, e),
+            )
         finally:
             if fh is not None:
                 fh.close()
         global Dirty
         Dirty = False
 
-
     def save(self):
         if not self.filename:
             path = "."
-            fname = QFileDialog.getSaveFileName(self,
-                    "Page Designer - Save As", path,
-                    "Page Designer Files (*.pgd)")
+            fname, filter = QtWidgets.QFileDialog.getSaveFileName(
+                self, "Page Designer - Save As", path, "Page Designer Files (*.pgd)"
+            )
             if not fname:
                 return
             if not fname.lower().endswith(".pgd"):
@@ -554,69 +567,69 @@ class MainForm(QDialog):
             self.filename = fname
         fh = None
         try:
-            fh = QFile(self.filename)
-            if not fh.open(QIODevice.WriteOnly):
+            fh = QtCore.QFile(self.filename)
+            if not fh.open(QtCore.QIODevice.WriteOnly):
                 raise IOError(fh.errorString())
             self.scene.clearSelection()
-            stream = QDataStream(fh)
-            stream.setVersion(QDataStream.Qt_4_2)
+            stream = QtCore.QDataStream(fh)
+            stream.setVersion(QtCore.QDataStream.Qt_4_2)
             stream.writeInt32(MagicNumber)
             stream.writeInt16(FileVersion)
             for item in self.scene.items():
                 self.writeItemToStream(stream, item)
         except IOError as e:
-            QMessageBox.warning(self, "Page Designer -- Save Error",
-                    "Failed to save {}: {}".format(self.filename, e))
+            QtWidgets.QMessageBox.warning(
+                self,
+                "Page Designer -- Save Error",
+                "Failed to save {}: {}".format(self.filename, e),
+            )
         finally:
             if fh is not None:
                 fh.close()
         global Dirty
         Dirty = False
 
-
     def readItemFromStream(self, stream, offset=0):
         type = ""
-        position = QPointF()
-        matrix = QMatrix()
+        position = QtCore.QPointF()
+        matrix = QtGui.QTransform()
         type = stream.readQString()
         stream >> position >> matrix
         if offset:
-            position += QPointF(offset, offset)
+            position += QtCore.QPointF(offset, offset)
         if type == "Text":
             text = stream.readQString()
-            font = QFont()
+            font = QtGui.QFont()
             stream >> font
             TextItem(text, position, self.scene, font, matrix)
         elif type == "Box":
-            rect = QRectF()
+            rect = QtCore.QRectF()
             stream >> rect
-            style = Qt.PenStyle(stream.readInt16())
+            style = QtCore.Qt.PenStyle(stream.readInt16())
             BoxItem(position, self.scene, style, rect, matrix)
         elif type == "Pixmap":
-            pixmap = QPixmap()
+            pixmap = QtGui.QPixmap()
             stream >> pixmap
             self.createPixmapItem(pixmap, position, matrix)
 
-
     def writeItemToStream(self, stream, item):
-        if isinstance(item, QGraphicsTextItem):
+        if isinstance(item, QtWidgets.QGraphicsTextItem):
             stream.writeQString("Text")
-            stream << item.pos() << item.matrix()
+            stream << item.pos() << item.transform()
             stream.writeQString(item.toPlainText())
             stream << item.font()
-        elif isinstance(item, QGraphicsPixmapItem):
+        elif isinstance(item, QtWidgets.QGraphicsPixmapItem):
             stream.writeQString("Pixmap")
-            stream << item.pos() << item.matrix() << item.pixmap()
+            stream << item.pos() << item.transform() << item.pixmap()
         elif isinstance(item, BoxItem):
             stream.writeQString("Box")
-            stream << item.pos() << item.matrix() << item.rect
+            stream << item.pos() << item.transform() << item.rect
             stream.writeInt16(item.style)
 
 
-app = QApplication(sys.argv)
+app = QtWidgets.QApplication(sys.argv)
 form = MainForm()
-rect = QApplication.desktop().availableGeometry()
+rect = QtGui.QScreen().availableGeometry()
 form.resize(int(rect.width() * 0.6), int(rect.height() * 0.9))
 form.show()
-app.exec_()
-
+app.exec()

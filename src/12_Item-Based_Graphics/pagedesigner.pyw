@@ -70,7 +70,7 @@ class TextItemDlg(QtWidgets.QDialog):
 
         self.connect(
             self.fontComboBox,
-            QtCore.SIGNAL("currentFontChanged(QtGui.QFont)"),
+            QtCore.SIGNAL("currentFontChanged(QFont)"),
             self.updateUi,
         )
         self.connect(
@@ -249,7 +249,8 @@ class GraphicsView(QtWidgets.QGraphicsView):
         self.setRenderHint(QtGui.QPainter.TextAntialiasing)
 
     def wheelEvent(self, event):
-        factor = 1.41 ** (-event.delta() / 240.0)
+        delta = event.angleDelta().y()
+        factor = 1.41 ** (delta / 240.0)
         self.scale(factor, factor)
 
 
@@ -306,7 +307,8 @@ class MainForm(QtWidgets.QDialog):
 
         fm = QtGui.QFontMetrics(self.font())
         self.resize(
-            int(self.scene.width() + fm.horizontalAdvance(" Delete... ") + 50), int(self.scene.height() + 50)
+            int(self.scene.width() + fm.horizontalAdvance(" Delete... ") + 50),
+            int(self.scene.height() + 50),
         )
         self.setWindowTitle("Page Designer")
 
