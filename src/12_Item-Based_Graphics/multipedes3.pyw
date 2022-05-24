@@ -12,17 +12,16 @@
 import math
 import random
 import sys
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PySide6 import QtWidgets, QtCore, QtGui
 
 
 SCENESIZE = 500
 INTERVAL = 1
 
 
-class Head(QGraphicsItem):
+class Head(QtWidgets.QGraphicsItem):
 
-    Rect = QRectF(-30, -20, 60, 40)
+    Rect = QtCore.QRectF(-30, -20, 60, 40)
 
     def __init__(self, color, angle, position):
         super(Head, self).__init__()
@@ -30,34 +29,33 @@ class Head(QGraphicsItem):
         self.angle = angle
         self.setPos(position)
 
-
     def boundingRect(self):
         return Head.Rect
 
-
     def shape(self):
-        path = QPainterPath()
+        path = QtGui.QPainterPath()
         path.addEllipse(Head.Rect)
         return path
 
-
     def paint(self, painter, option, widget=None):
-        painter.setPen(Qt.NoPen)
-        painter.setBrush(QBrush(self.color))
+        view = self.scene().views()[0]
+        transform = view.transform()
+        level_of_detail = option.levelOfDetailFromTransform(transform)
+        painter.setPen(QtCore.Qt.NoPen)
+        painter.setBrush(QtGui.QBrush(self.color))
         painter.drawEllipse(Head.Rect)
-        if option.levelOfDetail > 0.5: # Outer eyes
-            painter.setBrush(QBrush(Qt.yellow))
+        if level_of_detail > 0.5:  # Outer eyes
+            painter.setBrush(QtGui.QBrush(QtCore.Qt.yellow))
             painter.drawEllipse(-12, -19, 8, 8)
             painter.drawEllipse(-12, 11, 8, 8)
-            if option.levelOfDetail > 0.9: # Inner eyes
-                painter.setBrush(QBrush(Qt.darkBlue))
+            if level_of_detail > 0.9:  # Inner eyes
+                painter.setBrush(QtGui.QBrush(QtCore.Qt.darkBlue))
                 painter.drawEllipse(-12, -19, 4, 4)
                 painter.drawEllipse(-12, 11, 4, 4)
-                if option.levelOfDetail > 1.3: # Nostrils
-                    painter.setBrush(QBrush(Qt.white))
+                if level_of_detail > 1.3:  # Nostrils
+                    painter.setBrush(QtGui.QBrush(QtCore.Qt.white))
                     painter.drawEllipse(-27, -5, 2, 2)
                     painter.drawEllipse(-27, 3, 2, 2)
-
 
     def advance(self, phase):
         if phase == 0:
@@ -73,9 +71,9 @@ class Head(QGraphicsItem):
                 else:
                     flipper = -1 if flipper == 1 else 1
             self.angle = angle
-            self.position = QPointF(x, y)
+            self.position = QtCore.QPointF(x, y)
         else:
-            self.rotate(random.random() * random.choice((-1, 1)))
+            self.setRotation(random.random() * random.choice((-1, 1)))
             self.setPos(self.position)
             if self.scene():
                 for item in self.scene().collidingItems(self):
@@ -85,50 +83,61 @@ class Head(QGraphicsItem):
                         item.color.setBlue(min(255, item.color.blue() + 1))
 
 
-
-class Segment(QGraphicsItem):
-
+class Segment(QtWidgets.QGraphicsItem):
     def __init__(self, color, offset, parent):
         super(Segment, self).__init__(parent)
         self.color = color
-        self.rect = QRectF(offset, -20, 30, 40)
-        self.path = QPainterPath()
+        self.rect = QtCore.QRectF(offset, -20, 30, 40)
+        self.path = QtGui.QPainterPath()
         self.path.addEllipse(self.rect)
         x = offset + 15
         y = -20
-        self.path.addPolygon(QPolygonF([QPointF(x, y),
-                QPointF(x - 5, y - 12), QPointF(x - 5, y)]))
+        self.path.addPolygon(
+            QtGui.QPolygonF(
+                [
+                    QtCore.QPointF(x, y),
+                    QtCore.QPointF(x - 5, y - 12),
+                    QtCore.QPointF(x - 5, y),
+                ]
+            )
+        )
         self.path.closeSubpath()
         y = 20
-        self.path.addPolygon(QPolygonF([QPointF(x, y),
-                QPointF(x - 5, y + 12), QPointF(x - 5, y)]))
+        self.path.addPolygon(
+            QtGui.QPolygonF(
+                [
+                    QtCore.QPointF(x, y),
+                    QtCore.QPointF(x - 5, y + 12),
+                    QtCore.QPointF(x - 5, y),
+                ]
+            )
+        )
         self.path.closeSubpath()
         self.change = 1
         self.angle = 0
 
-
     def boundingRect(self):
         return self.path.boundingRect()
-
 
     def shape(self):
         return self.path
 
-
     def paint(self, painter, option, widget=None):
-        painter.setPen(Qt.NoPen)
-        painter.setBrush(QBrush(self.color))
-        if option.levelOfDetail < 0.9:
+        view = self.scene().views()[0]
+        transform = view.transform()
+        level_of_detail = option.levelOfDetailFromTransform(transform)
+        painter.setPen(QtCore.Qt.NoPen)
+        painter.setBrush(QtGui.QBrush(self.color))
+        if level_of_detail < 0.9:
             painter.drawEllipse(self.rect)
         else:
             painter.drawPath(self.path)
 
-
     def advance(self, phase):
         if phase == 0:
-            matrix = self.matrix()
-            matrix.reset()
-            self.setMatrix(matrix)
+            transform = self.transform()
+            transform.reset()
+            self.setTransform(transform)
             self.angle += self.change * random.random()
             if self.angle > 4.5:
                 self.change = -1
@@ -137,60 +146,55 @@ class Segment(QGraphicsItem):
                 self.change = 1
                 self.angle += 0.00001
         elif phase == 1:
-            self.rotate(self.angle)
+            self.setRotation(self.angle)
 
 
-class MainForm(QDialog):
-
+class MainForm(QtWidgets.QDialog):
     def __init__(self, parent=None):
         super(MainForm, self).__init__(parent)
 
         self.running = False
-        self.scene = QGraphicsScene(self)
+        self.scene = QtWidgets.QGraphicsScene(self)
         self.scene.setSceneRect(0, 0, SCENESIZE, SCENESIZE)
-        self.scene.setItemIndexMethod(QGraphicsScene.NoIndex)
-        self.view = QGraphicsView()
-        self.view.setRenderHint(QPainter.Antialiasing)
+        self.scene.setItemIndexMethod(QtWidgets.QGraphicsScene.NoIndex)
+        self.view = QtWidgets.QGraphicsView()
+        self.view.setRenderHint(QtGui.QPainter.Antialiasing)
         self.view.setScene(self.scene)
-        self.view.setFocusPolicy(Qt.NoFocus)
-        zoomSlider = QSlider(Qt.Horizontal)
+        self.view.setFocusPolicy(QtCore.Qt.NoFocus)
+        zoomSlider = QtWidgets.QSlider(QtCore.Qt.Horizontal)
         zoomSlider.setRange(5, 200)
         zoomSlider.setValue(100)
-        self.pauseButton = QPushButton("Pa&use")
-        quitButton = QPushButton("&Quit")
-        quitButton.setFocusPolicy(Qt.NoFocus)
+        self.pauseButton = QtWidgets.QPushButton("Pa&use")
+        quitButton = QtWidgets.QPushButton("&Quit")
+        quitButton.setFocusPolicy(QtCore.Qt.NoFocus)
 
-        layout = QVBoxLayout()
+        layout = QtWidgets.QVBoxLayout()
         layout.addWidget(self.view)
-        bottomLayout = QHBoxLayout()
+        bottomLayout = QtWidgets.QHBoxLayout()
         bottomLayout.addWidget(self.pauseButton)
         bottomLayout.addWidget(zoomSlider)
         bottomLayout.addWidget(quitButton)
         layout.addLayout(bottomLayout)
         self.setLayout(layout)
 
-        self.connect(zoomSlider, SIGNAL("valueChanged(int)"), self.zoom)
-        self.connect(self.pauseButton, SIGNAL("clicked()"),
-                     self.pauseOrResume)
-        self.connect(quitButton, SIGNAL("clicked()"), self.accept)
+        self.connect(zoomSlider, QtCore.SIGNAL("valueChanged(int)"), self.zoom)
+        self.connect(self.pauseButton, QtCore.SIGNAL("clicked()"), self.pauseOrResume)
+        self.connect(quitButton, QtCore.SIGNAL("clicked()"), self.accept)
 
         self.populate()
         self.startTimer(INTERVAL)
         self.setWindowTitle("Multipedes")
 
-
     def zoom(self, value):
         factor = value / 100.0
-        matrix = self.view.matrix()
-        matrix.reset()
-        matrix.scale(factor, factor)
-        self.view.setMatrix(matrix)
-
+        transform = self.view.transform()
+        transform.reset()
+        transform.scale(factor, factor)
+        self.view.setTransform(transform)
 
     def pauseOrResume(self):
         self.running = not self.running
         self.pauseButton.setText("Pa&use" if self.running else "Res&ume")
-
 
     def populate(self):
         red, green, blue = 0, 150, 0
@@ -200,18 +204,17 @@ class MainForm(QDialog):
             half = SCENESIZE / 2
             x = half + (offset * math.sin(math.radians(angle)))
             y = half + (offset * math.cos(math.radians(angle)))
-            color = QColor(red, green, blue)
-            head = Head(color, angle, QPointF(x, y))
-            color = QColor(red, green + random.randint(10, 60), blue)
+            color = QtGui.QColor(red, green, blue)
+            head = Head(color, angle, QtCore.QPointF(x, y))
+            color = QtGui.QColor(red, green + random.randint(10, 60), blue)
             offset = 25
             segment = Segment(color, offset, head)
             for j in range(random.randint(3, 7)):
                 offset += 25
                 segment = Segment(color, offset, segment)
-            head.rotate(random.randint(0, 360))
+            head.setRotation(random.randint(0, 360))
             self.scene.addItem(head)
         self.running = True
-
 
     def timerEvent(self, event):
         if not self.running:
@@ -237,10 +240,9 @@ class MainForm(QDialog):
         self.scene.advance()
 
 
-app = QApplication(sys.argv)
+app = QtWidgets.QApplication(sys.argv)
 form = MainForm()
-rect = QApplication.desktop().availableGeometry()
+rect = QtGui.QScreen().availableGeometry()
 form.resize(int(rect.width() * 0.75), int(rect.height() * 0.9))
 form.show()
-app.exec_()
-
+app.exec()
