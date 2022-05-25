@@ -11,70 +11,94 @@
 
 import os
 import sys
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-import qrc_resources
+from PySide6 import QtWidgets, QtCore, QtGui
+
+#  Since pyrcc is no longer provided with PyQt or PySide, we
+#  need to change resources location using the information from this thread :
+#  https://stackoverflow.com/questions/66099225/how-can-resources-be-provided-in-pyqt6-which-has-no-pyrcc
+# import qrc_resources  # this means this needs to go, and we need to adjust all the resources calls
+QtCore.QDir.addSearchPath("resources", "images/")
+
+CODEC = QtCore.QStringConverter.Utf8
 
 
 __version__ = "1.0.1"
 
 
-class PythonHighlighter(QSyntaxHighlighter):
+class PythonHighlighter(QtGui.QSyntaxHighlighter):
 
     Rules = []
 
     def __init__(self, parent=None):
         super(PythonHighlighter, self).__init__(parent)
 
-        keywordFormat = QTextCharFormat()
-        keywordFormat.setForeground(Qt.darkBlue)
-        keywordFormat.setFontWeight(QFont.Bold)
-        for pattern in ((r"\band\b", r"\bas\b", r"\bassert\b",
-                r"\bbreak\b", r"\bclass\b", r"\bcontinue\b",
-                r"\bdef\b", r"\bdel\b", r"\belif\b", r"\belse\b",
-                r"\bexcept\b", r"\bexec\b", r"\bfinally\b", r"\bfor\b",
-                r"\bfrom\b", r"\bglobal\b", r"\bif\b", r"\bimport\b",
-                r"\bin\b", r"\bis\b", r"\blambda\b", r"\bnot\b",
-                r"\bor\b", r"\bpass\b", r"\bprint\b", r"\braise\b",
-                r"\breturn\b", r"\btry\b", r"\bwhile\b", r"\bwith\b",
-                r"\byield\b")):
-            PythonHighlighter.Rules.append((QRegExp(pattern),
-                                           keywordFormat))
-        commentFormat = QTextCharFormat()
-        commentFormat.setForeground(QColor(0, 127, 0))
-        commentFormat.setFontItalic(True)
-        PythonHighlighter.Rules.append((QRegExp(r"#.*"),
-                                        commentFormat))
-        self.stringFormat = QTextCharFormat()
-        self.stringFormat.setForeground(Qt.darkYellow)
-        stringRe = QRegExp(r"""(?:'[^']*'|"[^"]*")""")
-        stringRe.setMinimal(True)
-        PythonHighlighter.Rules.append((stringRe, self.stringFormat))
-        self.stringRe = QRegExp(r"""(:?"["]".*"["]"|'''.*''')""")
-        self.stringRe.setMinimal(True)
-        PythonHighlighter.Rules.append((self.stringRe,
-                                        self.stringFormat))
-        self.tripleSingleRe = QRegExp(r"""'''(?!")""")
-        self.tripleDoubleRe = QRegExp(r'''"""(?!')''')
-
+        keywordFormat = QtGui.QTextCharFormat()
+        keywordFormat.setForeground(QtCore.Qt.darkBlue)
+        keywordFormat.setFontWeight(QtGui.QFont.Bold)
+        for pattern in (
+            r"\band\b",
+            r"\bas\b",
+            r"\bassert\b",
+            r"\bbreak\b",
+            r"\bclass\b",
+            r"\bcontinue\b",
+            r"\bdef\b",
+            r"\bdel\b",
+            r"\belif\b",
+            r"\belse\b",
+            r"\bexcept\b",
+            r"\bexec\b",
+            r"\bfinally\b",
+            r"\bfor\b",
+            r"\bfrom\b",
+            r"\bglobal\b",
+            r"\bif\b",
+            r"\bimport\b",
+            r"\bin\b",
+            r"\bis\b",
+            r"\blambda\b",
+            r"\bnot\b",
+            r"\bor\b",
+            r"\bpass\b",
+            r"\bprint\b",
+            r"\braise\b",
+            r"\breturn\b",
+            r"\btry\b",
+            r"\bwhile\b",
+            r"\bwith\b",
+            r"\byield\b",
+        ):
+            PythonHighlighter.Rules.append((QtCore.QRegularExpression(pattern), keywordFormat))
+        comment_format = QtGui.QTextCharFormat()
+        comment_format.setForeground(QtGui.QColor(0, 127, 0))
+        comment_format.setFontItalic(True)
+        PythonHighlighter.Rules.append((QtCore.QRegularExpression(r"#.*"), comment_format))
+        self.stringFormat = QtGui.QTextCharFormat()
+        self.stringFormat.setForeground(QtCore.Qt.darkYellow)
+        string_re = QtCore.QRegularExpression(r"""(?:'[^']*?'|"[^"]*?")""")
+        PythonHighlighter.Rules.append((string_re, self.stringFormat))
+        self.stringRe = QtCore.QRegularExpression(r"""(:?"["]".*?"["]"|'''.*?''')""")
+        PythonHighlighter.Rules.append((self.stringRe, self.stringFormat))
+        self.tripleSingleRe = QtCore.QRegularExpression(r"""'''(?!")""")
+        self.tripleDoubleRe = QtCore.QRegularExpression(r'''"""(?!')''')
 
     def highlightBlock(self, text):
-        NORMAL, TRIPLESINGLE, TRIPLEDOUBLE = range(3)
+        normal, triplesingle, tripledouble = range(3)
 
-        for regex, format in PythonHighlighter.Rules:
+        for regex, formatting in PythonHighlighter.Rules:
             i = regex.indexIn(text)
             while i >= 0:
                 length = regex.matchedLength()
-                self.setFormat(i, length, format)
+                self.setFormat(i, length, formatting)
                 i = regex.indexIn(text, i + length)
 
-        self.setCurrentBlockState(NORMAL)
+        self.setCurrentBlockState(normal)
         if self.stringRe.indexIn(text) != -1:
             return
-        for i, state in ((self.tripleSingleRe.indexIn(text),
-                          TRIPLESINGLE),
-                         (self.tripleDoubleRe.indexIn(text),
-                          TRIPLEDOUBLE)):
+        for i, state in (
+            (self.tripleSingleRe.indexIn(text), triplesingle),
+            (self.tripleDoubleRe.indexIn(text), tripledouble),
+        ):
             if self.previousBlockState() == state:
                 if i == -1:
                     i = text.length()
@@ -85,27 +109,23 @@ class PythonHighlighter(QSyntaxHighlighter):
                 self.setFormat(i, text.length(), self.stringFormat)
 
 
-class TextEdit(QTextEdit):
-
+class TextEdit(QtWidgets.QTextEdit):
     def __init__(self, parent=None):
         super(TextEdit, self).__init__(parent)
 
-
     def event(self, event):
-        if (event.type() == QEvent.KeyPress and
-            event.key() == Qt.Key_Tab):
+        if event.type() == QtCore.QEvent.KeyPress and event.key() == QtCore.Qt.Key_Tab:
             cursor = self.textCursor()
             cursor.insertText("    ")
             return True
-        return QTextEdit.event(self, event)
+        return QtWidgets.QMainWindow.event(self, event)
 
 
-class MainWindow(QMainWindow):
-
+class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, filename=None, parent=None):
         super(MainWindow, self).__init__(parent)
 
-        font = QFont("Courier", 11)
+        font = QtGui.QFont("Courier", 11)
         font.setFixedPitch(True)
         self.editor = TextEdit()
         self.editor.setFont(font)
@@ -116,50 +136,82 @@ class MainWindow(QMainWindow):
         status.setSizeGripEnabled(False)
         status.showMessage("Ready", 5000)
 
-        fileNewAction = self.createAction("&New...", self.fileNew,
-                QKeySequence.New, "filenew", "Create a Python file")
-        fileOpenAction = self.createAction("&Open...", self.fileOpen,
-                QKeySequence.Open, "fileopen",
-                "Open an existing Python file")
-        self.fileSaveAction = self.createAction("&Save", self.fileSave,
-                QKeySequence.Save, "filesave", "Save the file")
-        self.fileSaveAsAction = self.createAction("Save &As...",
-                self.fileSaveAs, icon="filesaveas",
-                tip="Save the file using a new name")
-        fileQuitAction = self.createAction("&Quit", self.close,
-                "Ctrl+Q", "filequit", "Close the application")
-        self.editCopyAction = self.createAction("&Copy",
-                self.editor.copy, QKeySequence.Copy, "editcopy",
-                "Copy text to the clipboard")
-        self.editCutAction = self.createAction("Cu&t", self.editor.cut,
-                QKeySequence.Cut, "editcut",
-                "Cut text to the clipboard")
-        self.editPasteAction = self.createAction("&Paste",
-                self.editor.paste, QKeySequence.Paste, "editpaste",
-                "Paste in the clipboard's text")
+        file_new_action = self.createAction(
+            "&New...", self.fileNew, QtGui.QKeySequence.New, "filenew", "Create a Python file"
+        )
+        file_open_action = self.createAction(
+            "&Open...",
+            self.fileOpen,
+            QtGui.QKeySequence.Open,
+            "fileopen",
+            "Open an existing Python file",
+        )
+        self.fileSaveAction = self.createAction(
+            "&Save", self.fileSave, QtGui.QKeySequence.Save, "filesave", "Save the file"
+        )
+        self.fileSaveAsAction = self.createAction(
+            "Save &As...",
+            self.fileSaveAs,
+            icon="filesaveas",
+            tip="Save the file using a new name",
+        )
+        file_quit_action = self.createAction(
+            "&Quit", self.close, "Ctrl+Q", "filequit", "Close the application"
+        )
+        self.editCopyAction = self.createAction(
+            "&Copy",
+            self.editor.copy,
+            QtGui.QKeySequence.Copy,
+            "editcopy",
+            "Copy text to the clipboard",
+        )
+        self.editCutAction = self.createAction(
+            "Cu&t",
+            self.editor.cut,
+            QtGui.QKeySequence.Cut,
+            "editcut",
+            "Cut text to the clipboard",
+        )
+        self.editPasteAction = self.createAction(
+            "&Paste",
+            self.editor.paste,
+            QtGui.QKeySequence.Paste,
+            "editpaste",
+            "Paste in the clipboard's text",
+        )
 
-        fileMenu = self.menuBar().addMenu("&File")
-        self.addActions(fileMenu, (fileNewAction, fileOpenAction,
-                self.fileSaveAction, self.fileSaveAsAction, None,
-                fileQuitAction))
-        editMenu = self.menuBar().addMenu("&Edit")
-        self.addActions(editMenu, (self.editCopyAction,
-                self.editCutAction, self.editPasteAction))
-        fileToolbar = self.addToolBar("File")
-        fileToolbar.setObjectName("FileToolBar")
-        self.addActions(fileToolbar, (fileNewAction, fileOpenAction,
-                                      self.fileSaveAction))
-        editToolbar = self.addToolBar("Edit")
-        editToolbar.setObjectName("EditToolBar")
-        self.addActions(editToolbar, (self.editCopyAction,
-                self.editCutAction, self.editPasteAction))
+        file_menu = self.menuBar().addMenu("&File")
+        self.addActions(
+            file_menu,
+            (
+                file_new_action,
+                file_open_action,
+                self.fileSaveAction,
+                self.fileSaveAsAction,
+                None,
+                file_quit_action,
+            ),
+        )
+        edit_menu = self.menuBar().addMenu("&Edit")
+        self.addActions(
+            edit_menu, (self.editCopyAction, self.editCutAction, self.editPasteAction)
+        )
+        file_toolbar = self.addToolBar("File")
+        file_toolbar.setObjectName("FileToolBar")
+        self.addActions(
+            file_toolbar, (file_new_action, file_open_action, self.fileSaveAction)
+        )
+        edit_toolbar = self.addToolBar("Edit")
+        edit_toolbar.setObjectName("EditToolBar")
+        self.addActions(
+            edit_toolbar, (self.editCopyAction, self.editCutAction, self.editPasteAction)
+        )
 
-        self.connect(self.editor,
-                SIGNAL("selectionChanged()"), self.updateUi)
-        self.connect(self.editor.document(),
-                SIGNAL("modificationChanged(bool)"), self.updateUi)
-        self.connect(QApplication.clipboard(),
-                SIGNAL("dataChanged()"), self.updateUi)
+        self.connect(self.editor, QtCore.SIGNAL("selectionChanged()"), self.updateUi)
+        self.connect(
+            self.editor.document(), QtCore.SIGNAL("modificationChanged(bool)"), self.updateUi
+        )
+        self.connect(QtWidgets.QApplication.clipboard(), QtCore.SIGNAL("dataChanged()"), self.updateUi)
 
         self.resize(800, 600)
         self.setWindowTitle("Python Editor")
@@ -168,34 +220,37 @@ class MainWindow(QMainWindow):
             self.loadFile()
         self.updateUi()
 
-
     def updateUi(self, arg=None):
-        self.fileSaveAction.setEnabled(
-                self.editor.document().isModified())
-        self.fileSaveAsAction.setEnabled(
-                not self.editor.document().isEmpty())
+        self.fileSaveAction.setEnabled(self.editor.document().isModified())
+        self.fileSaveAsAction.setEnabled(not self.editor.document().isEmpty())
         enable = self.editor.textCursor().hasSelection()
         self.editCopyAction.setEnabled(enable)
         self.editCutAction.setEnabled(enable)
         self.editPasteAction.setEnabled(self.editor.canPaste())
 
-
-    def createAction(self, text, slot=None, shortcut=None, icon=None,
-                     tip=None, checkable=False, signal="triggered()"):
-        action = QAction(text, self)
+    def createAction(
+        self,
+        text,
+        slot=None,
+        shortcut=None,
+        icon=None,
+        tip=None,
+        checkable=False,
+        signal="triggered()",
+    ):
+        action = QtGui.QAction(text, self)
         if icon is not None:
-            action.setIcon(QIcon(":/{}.png".format(icon)))
+            action.setIcon(QtGui.QIcon("resources:{}.png".format(icon)))
         if shortcut is not None:
             action.setShortcut(shortcut)
         if tip is not None:
             action.setToolTip(tip)
             action.setStatusTip(tip)
         if slot is not None:
-            self.connect(action, SIGNAL(signal), slot)
+            self.connect(action, QtCore.SIGNAL(signal), slot)
         if checkable:
             action.setCheckable(True)
         return action
-
 
     def addActions(self, target, actions):
         for action in actions:
@@ -204,25 +259,23 @@ class MainWindow(QMainWindow):
             else:
                 target.addAction(action)
 
-
     def closeEvent(self, event):
         if not self.okToContinue():
             event.ignore()
 
-
     def okToContinue(self):
         if self.editor.document().isModified():
-            reply = QMessageBox.question(self,
-                            "Python Editor - Unsaved Changes",
-                            "Save unsaved changes?",
-                            QMessageBox.Yes|QMessageBox.No|
-                            QMessageBox.Cancel)
-            if reply == QMessageBox.Cancel:
+            reply = QtWidgets.QMessageBox.question(
+                self,
+                "Python Editor - Unsaved Changes",
+                "Save unsaved changes?",
+                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No | QtWidgets.QMessageBox.Cancel,
+            )
+            if reply == QtWidgets.QMessageBox.Cancel:
                 return False
-            elif reply == QMessageBox.Yes:
+            elif reply == QtWidgets.QMessageBox.Yes:
                 return self.fileSave()
         return True
-
 
     def fileNew(self):
         if not self.okToContinue():
@@ -234,78 +287,81 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Python Editor - Unnamed")
         self.updateUi()
 
-
     def fileOpen(self):
         if not self.okToContinue():
             return
-        dir = (os.path.dirname(self.filename)
-               if self.filename is not None else ".")
-        fname = QFileDialog.getOpenFileName(self,
-                "Python Editor - Choose File", dir,
-                "Python files (*.py *.pyw)")
-        if fname:
-            self.filename = fname
+        dir_ = os.path.dirname(self.filename) if self.filename is not None else "."
+        filename, filter_str = QtWidgets.QFileDialog.getOpenFileName(
+            self, "Python Editor - Choose File", dir_, "Python files (*.py *.pyw)"
+        )
+        if filename:
+            self.filename = filename
             self.loadFile()
-
 
     def loadFile(self):
         fh = None
         try:
-            fh = QFile(self.filename)
-            if not fh.open(QIODevice.ReadOnly):
+            fh = QtCore.QFile(self.filename)
+            if not fh.open(QtCore.QIODevice.ReadOnly):
                 raise IOError(fh.errorString())
-            stream = QTextStream(fh)
-            stream.setCodec("UTF-8")
+            stream = QtCore.QTextStream(fh)
+            stream.setEncoding(CODEC)
             self.editor.setPlainText(stream.readAll())
             self.editor.document().setModified(False)
-            self.setWindowTitle("Python Editor - {}".format(
-                    QFileInfo(self.filename).fileName()))
+            self.setWindowTitle(
+                "Python Editor - {}".format(QtCore.QFileInfo(self.filename).fileName())
+            )
         except EnvironmentError as e:
-            QMessageBox.warning(self, "Python Editor -- Load Error",
-                    "Failed to load {}: {}".format(self.filename, e))
+            QtWidgets.QMessageBox.warning(
+                self,
+                "Python Editor -- Load Error",
+                "Failed to load {}: {}".format(self.filename, e),
+            )
         finally:
             if fh is not None:
                 fh.close()
-
 
     def fileSave(self):
         if self.filename is None:
             return self.fileSaveAs()
         fh = None
         try:
-            fh = QFile(self.filename)
-            if not fh.open(QIODevice.WriteOnly):
+            fh = QtCore.QFile(self.filename)
+            if not fh.open(QtCore.QIODevice.WriteOnly):
                 raise IOError(fh.errorString())
-            stream = QTextStream(fh)
-            stream.setCodec("UTF-8")
+            stream = QtCore.QTextStream(fh)
+            stream.setEncoding(CODEC)
             stream << self.editor.toPlainText()
             self.editor.document().setModified(False)
         except EnvironmentError as e:
-            QMessageBox.warning(self, "Python Editor -- Save Error",
-                    "Failed to save {}: {}".format(self.filename, e))
+            QtWidgets.QMessageBox.warning(
+                self,
+                "Python Editor -- Save Error",
+                "Failed to save {}: {}".format(self.filename, e),
+            )
             return False
         finally:
             if fh is not None:
                 fh.close()
         return True
 
-
     def fileSaveAs(self):
         filename = self.filename if self.filename is not None else "."
-        filename = QFileDialog.getSaveFileName(self,
-                "Python Editor -- Save File As", filename,
-                "Python files (*.py *.pyw)")
+        filename, filter_str = QtWidgets.QFileDialog.getSaveFileName(
+            self, "Python Editor -- Save File As", filename, "Python files (*.py *.pyw)"
+        )
         if filename:
             self.filename = filename
-            self.setWindowTitle("Python Editor - {}".format(
-                    QFileInfo(self.filename).fileName()))
+            self.setWindowTitle(
+                "Python Editor - {}".format(QtCore.QFileInfo(self.filename).fileName())
+            )
             return self.fileSave()
         return False
 
 
 def main():
-    app = QApplication(sys.argv)
-    app.setWindowIcon(QIcon(":/icon.png"))
+    app = QtWidgets.QApplication(sys.argv)
+    app.setWindowIcon(QtGui.QIcon("resources:icon.png"))
     fname = None
     if len(sys.argv) > 1:
         fname = sys.argv[1]
@@ -315,4 +371,3 @@ def main():
 
 
 main()
-
