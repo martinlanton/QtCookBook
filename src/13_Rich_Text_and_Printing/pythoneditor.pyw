@@ -118,7 +118,7 @@ class TextEdit(QtWidgets.QTextEdit):
             cursor = self.textCursor()
             cursor.insertText("    ")
             return True
-        return QtWidgets.QMainWindow.event(self, event)
+        return QtWidgets.QTextEdit.event(self, event)
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -367,7 +367,7 @@ def main():
         fname = sys.argv[1]
     form = MainWindow(fname)
     form.show()
-    app.exec_()
+    app.exec()
 
 
 main()
