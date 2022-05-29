@@ -93,6 +93,7 @@ class PythonHighlighter(QtGui.QSyntaxHighlighter):
                 i = regex.indexIn(text, i + length)
 
         self.setCurrentBlockState(normal)
+        # TODO : fix the indexIn call
         if self.stringRe.indexIn(text) != -1:
             return
         for i, state in (
