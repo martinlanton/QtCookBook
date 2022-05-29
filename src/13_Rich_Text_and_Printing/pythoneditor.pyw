@@ -86,20 +86,21 @@ class PythonHighlighter(QtGui.QSyntaxHighlighter):
         normal, triplesingle, tripledouble = range(3)
 
         for regex, formatting in PythonHighlighter.Rules:
-            i = regex.indexIn(text)
-            while i >= 0:
-                length = regex.matchedLength()
-                self.setFormat(i, length, formatting)
-                i = regex.indexIn(text, i + length)
+            match = regex.match(text)
+
+            for i in range(match.lastCapturedIndex()+1):
+                start = match.capturedStart(i)
+                end = match.capturedEnd(i)
+                self.setFormat(start, end, formatting)
 
         self.setCurrentBlockState(normal)
-        # TODO : fix the indexIn call
-        if self.stringRe.indexIn(text) != -1:
+        if self.stringRe.match(text).hasMatch():
             return
-        for i, state in (
-            (self.tripleSingleRe.indexIn(text), triplesingle),
-            (self.tripleDoubleRe.indexIn(text), tripledouble),
+        for match, state in (
+            (self.tripleSingleRe.match(text), triplesingle),
+            (self.tripleDoubleRe.match(text), tripledouble),
         ):
+            # TODO : finish this part
             if self.previousBlockState() == state:
                 if i == -1:
                     i = text.length()
