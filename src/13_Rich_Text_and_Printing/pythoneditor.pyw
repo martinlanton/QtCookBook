@@ -91,7 +91,7 @@ class PythonHighlighter(QtGui.QSyntaxHighlighter):
             for i in range(match.lastCapturedIndex()+1):
                 start = match.capturedStart(i)
                 end = match.capturedEnd(i)
-                self.setFormat(start, end, formatting)
+                self.setFormat(start, end - start, formatting)
 
         self.setCurrentBlockState(normal)
         if self.stringRe.match(text).hasMatch():
@@ -100,15 +100,17 @@ class PythonHighlighter(QtGui.QSyntaxHighlighter):
             (self.tripleSingleRe.match(text), triplesingle),
             (self.tripleDoubleRe.match(text), tripledouble),
         ):
-            # TODO : finish this part
             if self.previousBlockState() == state:
-                if i == -1:
-                    i = text.length()
+                if not match.hasMatch():
+                    i = len(text)
                     self.setCurrentBlockState(state)
+                else:
+                    i = match.capturedStart(0)
                 self.setFormat(0, i + 3, self.stringFormat)
-            elif i > -1:
+            elif match.hasMatch():
+                start = match.capturedStart(0)
                 self.setCurrentBlockState(state)
-                self.setFormat(i, text.length(), self.stringFormat)
+                self.setFormat(start, len(text), self.stringFormat)
 
 
 class TextEdit(QtWidgets.QTextEdit):
