@@ -32,9 +32,9 @@ class PythonHighlighter(QtGui.QSyntaxHighlighter):
     def __init__(self, parent=None):
         super(PythonHighlighter, self).__init__(parent)
 
-        keywordFormat = QtGui.QTextCharFormat()
-        keywordFormat.setForeground(QtCore.Qt.darkBlue)
-        keywordFormat.setFontWeight(QtGui.QFont.Bold)
+        keyword_format = QtGui.QTextCharFormat()
+        keyword_format.setForeground(QtCore.Qt.darkBlue)
+        keyword_format.setFontWeight(QtGui.QFont.Bold)
         for pattern in (
             r"\band\b",
             r"\bas\b",
@@ -68,7 +68,7 @@ class PythonHighlighter(QtGui.QSyntaxHighlighter):
             r"\bwith\b",
             r"\byield\b",
         ):
-            PythonHighlighter.Rules.append((QtCore.QRegularExpression(pattern), keywordFormat))
+            PythonHighlighter.Rules.append((QtCore.QRegularExpression(pattern), keyword_format))
         comment_format = QtGui.QTextCharFormat()
         comment_format.setForeground(QtGui.QColor(0, 127, 0))
         comment_format.setFontItalic(True)
@@ -366,10 +366,10 @@ class MainWindow(QtWidgets.QMainWindow):
 def main():
     app = QtWidgets.QApplication(sys.argv)
     app.setWindowIcon(QtGui.QIcon("resources:icon.png"))
-    fname = None
+    f_name = None
     if len(sys.argv) > 1:
-        fname = sys.argv[1]
-    form = MainWindow(fname)
+        f_name = sys.argv[1]
+    form = MainWindow(f_name)
     form.show()
     app.exec()
 
