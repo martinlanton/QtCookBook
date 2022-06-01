@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # Copyright (c) 2008-10 Qtrac Ltd. All rights reserved.
 # This program or module is free software: you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as published
@@ -128,6 +127,7 @@ class RichTextLineEdit(QtWidgets.QTextEdit):
 
     def textEffectMenu(self):
         format = self.currentCharFormat()
+        font = format.font()
         menu = QtWidgets.QMenu("Text Effect")
         formatting = (
             (
@@ -139,24 +139,24 @@ class RichTextLineEdit(QtWidgets.QTextEdit):
             ("&Italic", "Ctrl+I", RichTextLineEdit.Italic, self.fontItalic()),
             ("Strike &out", None, RichTextLineEdit.StrikeOut, format.fontStrikeOut()),
             ("&Underline", "Ctrl+U", RichTextLineEdit.Underline, self.fontUnderline()),
-            # (
-            #     "&Monospaced",
-            #     None,
-            #     RichTextLineEdit.Monospaced,
-            #     format.fontFamily() == self.monofamily,
-            # ),
-            # (
-            #     "&Serifed",
-            #     None,
-            #     RichTextLineEdit.Serif,
-            #     format.fontFamily() == self.seriffamily,
-            # ),
-            # (
-            #     "S&ans Serif",
-            #     None,
-            #     RichTextLineEdit.Sans,
-            #     format.fontFamily() == self.sansfamily,
-            # ),
+            (
+                "&Monospaced",
+                None,
+                RichTextLineEdit.Monospaced,
+                font.family() == self.monofamily,
+            ),
+            (
+                "&Serifed",
+                None,
+                RichTextLineEdit.Serif,
+                font.family() == self.seriffamily,
+            ),
+            (
+                "S&ans Serif",
+                None,
+                RichTextLineEdit.Sans,
+                font.family() == self.sansfamily,
+            ),
             (
                 "&No super or subscript",
                 None,
@@ -217,6 +217,7 @@ class RichTextLineEdit(QtWidgets.QTextEdit):
             self.mergeCurrentCharFormat(format)
 
     def toSimpleHtml(self):
+        # TODO : fix this method
         html = ""
         black = QtGui.QColor(QtCore.Qt.black)
         block = self.document().begin()
