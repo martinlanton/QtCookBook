@@ -117,7 +117,7 @@ class RichTextLineEdit(QtWidgets.QTextEdit):
             action = menu.addAction(QtGui.QIcon(pixmap), text, self.setColor)
             action.setData(color)
         self.ensureCursorVisible()
-        menu.exec_(self.viewport().mapToGlobal(self.cursorRect().center()))
+        menu.exec(self.viewport().mapToGlobal(self.cursorRect().center()))
 
     def setColor(self):
         action = self.sender()
@@ -129,7 +129,7 @@ class RichTextLineEdit(QtWidgets.QTextEdit):
     def textEffectMenu(self):
         format = self.currentCharFormat()
         menu = QtWidgets.QMenu("Text Effect")
-        for text, shortcut, data, checked in (
+        formatting = (
             (
                 "&Bold",
                 "Ctrl+B",
@@ -139,24 +139,24 @@ class RichTextLineEdit(QtWidgets.QTextEdit):
             ("&Italic", "Ctrl+I", RichTextLineEdit.Italic, self.fontItalic()),
             ("Strike &out", None, RichTextLineEdit.StrikeOut, format.fontStrikeOut()),
             ("&Underline", "Ctrl+U", RichTextLineEdit.Underline, self.fontUnderline()),
-            (
-                "&Monospaced",
-                None,
-                RichTextLineEdit.Monospaced,
-                format.fontFamily() == self.monofamily,
-            ),
-            (
-                "&Serifed",
-                None,
-                RichTextLineEdit.Serif,
-                format.fontFamily() == self.seriffamily,
-            ),
-            (
-                "S&ans Serif",
-                None,
-                RichTextLineEdit.Sans,
-                format.fontFamily() == self.sansfamily,
-            ),
+            # (
+            #     "&Monospaced",
+            #     None,
+            #     RichTextLineEdit.Monospaced,
+            #     format.fontFamily() == self.monofamily,
+            # ),
+            # (
+            #     "&Serifed",
+            #     None,
+            #     RichTextLineEdit.Serif,
+            #     format.fontFamily() == self.seriffamily,
+            # ),
+            # (
+            #     "S&ans Serif",
+            #     None,
+            #     RichTextLineEdit.Sans,
+            #     format.fontFamily() == self.sansfamily,
+            # ),
             (
                 "&No super or subscript",
                 None,
@@ -175,15 +175,16 @@ class RichTextLineEdit(QtWidgets.QTextEdit):
                 RichTextLineEdit.Subscript,
                 format.verticalAlignment() == QtGui.QTextCharFormat.AlignSubScript,
             ),
-        ):
+        )
+        for text, shortcut, data, checked in formatting:
             action = menu.addAction(text, self.setTextEffect)
             if shortcut is not None:
-                action.setShortcut(QKeySequence(shortcut))
+                action.setShortcut(QtGui.QKeySequence(shortcut))
             action.setData(data)
             action.setCheckable(True)
             action.setChecked(checked)
         self.ensureCursorVisible()
-        menu.exec_(self.viewport().mapToGlobal(self.cursorRect().center()))
+        menu.exec(self.viewport().mapToGlobal(self.cursorRect().center()))
 
     def setTextEffect(self):
         action = self.sender()
