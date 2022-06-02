@@ -11,15 +11,21 @@
 
 import os
 import sys
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-import qrc_resources
+from PySide6 import QtWidgets, QtCore, QtGui
+
+#  Since pyrcc is no longer provided with PyQt or PySide, we
+#  need to change resources location using the information from this thread :
+#  https://stackoverflow.com/questions/66099225/how-can-resources-be-provided-in-pyqt6-which-has-no-pyrcc
+# import qrc_resources  # this means this needs to go, and we need to adjust all the resources calls
+QtCore.QDir.addSearchPath("resources", "images/")
+
+CODEC = QtCore.QStringConverter.Utf8
 
 
 __version__ = "1.1.0"
 
 
-class PythonHighlighter(QSyntaxHighlighter):
+class PythonHighlighter(QtGui.QSyntaxHighlighter):
 
     Rules = []
     Formats = {}
@@ -29,74 +35,169 @@ class PythonHighlighter(QSyntaxHighlighter):
 
         self.initializeFormats()
 
-        KEYWORDS = ["and", "as", "assert", "break", "class",
-                "continue", "def", "del", "elif", "else", "except",
-                "exec", "finally", "for", "from", "global", "if",
-                "import", "in", "is", "lambda", "not", "or", "pass",
-                "print", "raise", "return", "try", "while", "with",
-                "yield"]
-        BUILTINS = ["abs", "all", "any", "basestring", "bool",
-                "callable", "chr", "classmethod", "cmp", "compile",
-                "complex", "delattr", "dict", "dir", "divmod",
-                "enumerate", "eval", "execfile", "exit", "file",
-                "filter", "float", "frozenset", "getattr", "globals",
-                "hasattr", "hex", "id", "int", "isinstance",
-                "issubclass", "iter", "len", "list", "locals", "map",
-                "max", "min", "object", "oct", "open", "ord", "pow",
-                "property", "range", "reduce", "repr", "reversed",
-                "round", "set", "setattr", "slice", "sorted",
-                "staticmethod", "str", "sum", "super", "tuple", "type",
-                "vars", "zip"] 
-        CONSTANTS = ["False", "True", "None", "NotImplemented",
-                     "Ellipsis"]
+        KEYWORDS = [
+            "and",
+            "as",
+            "assert",
+            "break",
+            "class",
+            "continue",
+            "def",
+            "del",
+            "elif",
+            "else",
+            "except",
+            "exec",
+            "finally",
+            "for",
+            "from",
+            "global",
+            "if",
+            "import",
+            "in",
+            "is",
+            "lambda",
+            "not",
+            "or",
+            "pass",
+            "print",
+            "raise",
+            "return",
+            "try",
+            "while",
+            "with",
+            "yield",
+        ]
+        BUILTINS = [
+            "abs",
+            "all",
+            "any",
+            "basestring",
+            "bool",
+            "callable",
+            "chr",
+            "classmethod",
+            "cmp",
+            "compile",
+            "complex",
+            "delattr",
+            "dict",
+            "dir",
+            "divmod",
+            "enumerate",
+            "eval",
+            "execfile",
+            "exit",
+            "file",
+            "filter",
+            "float",
+            "frozenset",
+            "getattr",
+            "globals",
+            "hasattr",
+            "hex",
+            "id",
+            "int",
+            "isinstance",
+            "issubclass",
+            "iter",
+            "len",
+            "list",
+            "locals",
+            "map",
+            "max",
+            "min",
+            "object",
+            "oct",
+            "open",
+            "ord",
+            "pow",
+            "property",
+            "range",
+            "reduce",
+            "repr",
+            "reversed",
+            "round",
+            "set",
+            "setattr",
+            "slice",
+            "sorted",
+            "staticmethod",
+            "str",
+            "sum",
+            "super",
+            "tuple",
+            "type",
+            "vars",
+            "zip",
+        ]
+        CONSTANTS = ["False", "True", "None", "NotImplemented", "Ellipsis"]
 
-        PythonHighlighter.Rules.append((QRegExp(
-                "|".join([r"\b%s\b" % keyword for keyword in KEYWORDS])),
-                "keyword"))
-        PythonHighlighter.Rules.append((QRegExp(
-                "|".join([r"\b%s\b" % builtin for builtin in BUILTINS])),
-                "builtin"))
-        PythonHighlighter.Rules.append((QRegExp(
-                "|".join([r"\b%s\b" % constant
-                for constant in CONSTANTS])), "constant"))
-        PythonHighlighter.Rules.append((QRegExp(
-                r"\b[+-]?[0-9]+[lL]?\b"
-                r"|\b[+-]?0[xX][0-9A-Fa-f]+[lL]?\b"
-                r"|\b[+-]?[0-9]+(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?\b"),
-                "number"))
-        PythonHighlighter.Rules.append((QRegExp(
-                r"\bPyQt4\b|\bQt?[A-Z][a-z]\w+\b"), "pyqt"))
-        PythonHighlighter.Rules.append((QRegExp(r"\b@\w+\b"),
-                "decorator"))
-        stringRe = QRegExp(r"""(?:'[^']*'|"[^"]*")""")
+        PythonHighlighter.Rules.append(
+            (
+                QtCore.QRegularExpression("|".join([r"\b%s\b" % keyword for keyword in KEYWORDS])),
+                "keyword",
+            )
+        )
+        PythonHighlighter.Rules.append(
+            (
+                QtCore.QRegularExpression("|".join([r"\b%s\b" % builtin for builtin in BUILTINS])),
+                "builtin",
+            )
+        )
+        PythonHighlighter.Rules.append(
+            (
+                QtCore.QRegularExpression("|".join([r"\b%s\b" % constant for constant in CONSTANTS])),
+                "constant",
+            )
+        )
+        PythonHighlighter.Rules.append(
+            (
+                QtCore.QRegularExpression(
+                    r"\b[+-]?[0-9]+[lL]?\b"
+                    r"|\b[+-]?0[xX][0-9A-Fa-f]+[lL]?\b"
+                    r"|\b[+-]?[0-9]+(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?\b"
+                ),
+                "number",
+            )
+        )
+        PythonHighlighter.Rules.append(
+            (QtCore.QRegularExpression(r"\bPyQt4\b|\bQt?[A-Z][a-z]\w+\b"), "pyqt")
+        )
+        PythonHighlighter.Rules.append((QtCore.QRegularExpression(r"\b@\w+\b"), "decorator"))
+        stringRe = QtCore.QRegularExpression(r"""(?:'[^']*'|"[^"]*")""")
         stringRe.setMinimal(True)
         PythonHighlighter.Rules.append((stringRe, "string"))
-        self.stringRe = QRegExp(r"""(:?"["]".*"["]"|'''.*''')""")
+        self.stringRe = QtCore.QRegularExpression(r"""(:?"["]".*"["]"|'''.*''')""")
         self.stringRe.setMinimal(True)
         PythonHighlighter.Rules.append((self.stringRe, "string"))
-        self.tripleSingleRe = QRegExp(r"""'''(?!")""")
-        self.tripleDoubleRe = QRegExp(r'''"""(?!')''')
-
+        self.tripleSingleRe = QtCore.QRegularExpression(r"""'''(?!")""")
+        self.tripleDoubleRe = QtCore.QRegularExpression(r'''"""(?!')''')
 
     @staticmethod
     def initializeFormats():
-        baseFormat = QTextCharFormat()
+        baseFormat = QtGui.QTextCharFormat()
         baseFormat.setFontFamily("courier")
         baseFormat.setFontPointSize(12)
-        for name, color in (("normal", Qt.black),
-                ("keyword", Qt.darkBlue), ("builtin", Qt.darkRed),
-                ("constant", Qt.darkGreen),
-                ("decorator", Qt.darkBlue), ("comment", Qt.darkGreen),
-                ("string", Qt.darkYellow), ("number", Qt.darkMagenta),
-                ("error", Qt.darkRed), ("pyqt", Qt.darkCyan)):
-            format = QTextCharFormat(baseFormat)
-            format.setForeground(QColor(color))
+        for name, color in (
+            ("normal", QtCore.Qt.black),
+            ("keyword", QtCore.Qt.darkBlue),
+            ("builtin", QtCore.Qt.darkRed),
+            ("constant", QtCore.Qt.darkGreen),
+            ("decorator", QtCore.Qt.darkBlue),
+            ("comment", QtCore.Qt.darkGreen),
+            ("string", QtCore.Qt.darkYellow),
+            ("number", QtCore.Qt.darkMagenta),
+            ("error", QtCore.Qt.darkRed),
+            ("pyqt", QtCore.Qt.darkCyan),
+        ):
+            format = QtGui.QTextCharFormat(baseFormat)
+            format.setForeground(QtGui.QColor(color))
             if name in ("keyword", "decorator"):
-                format.setFontWeight(QFont.Bold)
+                format.setFontWeight(QtGui.QFont.Bold)
             if name == "comment":
                 format.setFontItalic(True)
             PythonHighlighter.Formats[name] = format
-
 
     def highlightBlock(self, text):
         NORMAL, TRIPLESINGLE, TRIPLEDOUBLE, ERROR = range(4)
@@ -104,37 +205,33 @@ class PythonHighlighter(QSyntaxHighlighter):
         textLength = len(text)
         prevState = self.previousBlockState()
 
-        self.setFormat(0, textLength,
-                       PythonHighlighter.Formats["normal"])
+        self.setFormat(0, textLength, PythonHighlighter.Formats["normal"])
 
         if text.startswith("Traceback") or text.startswith("Error: "):
             self.setCurrentBlockState(ERROR)
-            self.setFormat(0, textLength,
-                           PythonHighlighter.Formats["error"])
+            self.setFormat(0, textLength, PythonHighlighter.Formats["error"])
             return
-        if (prevState == ERROR and
-            not (text.startswith(sys.ps1) or text.startswith("#"))):
+        if prevState == ERROR and not (
+            text.startswith(sys.ps1) or text.startswith("#")
+        ):
             self.setCurrentBlockState(ERROR)
-            self.setFormat(0, textLength,
-                           PythonHighlighter.Formats["error"])
+            self.setFormat(0, textLength, PythonHighlighter.Formats["error"])
             return
 
         for regex, format in PythonHighlighter.Rules:
             i = regex.indexIn(text)
             while i >= 0:
                 length = regex.matchedLength()
-                self.setFormat(i, length,
-                               PythonHighlighter.Formats[format])
+                self.setFormat(i, length, PythonHighlighter.Formats[format])
                 i = regex.indexIn(text, i + length)
 
         # Slow but good quality highlighting for comments. For more
         # speed, comment this out and add the following to __init__:
-        # PythonHighlighter.Rules.append((QRegExp(r"#.*"), "comment"))
+        # PythonHighlighter.Rules.append((QtCore.QRegularExpression(r"#.*"), "comment"))
         if not text:
             pass
         elif text[0] == "#":
-            self.setFormat(0, len(text),
-                           PythonHighlighter.Formats["comment"])
+            self.setFormat(0, len(text), PythonHighlighter.Formats["comment"])
         else:
             stack = []
             for i, c in enumerate(text):
@@ -144,8 +241,7 @@ class PythonHighlighter(QSyntaxHighlighter):
                     else:
                         stack.append(c)
                 elif c == "#" and len(stack) == 0:
-                    self.setFormat(i, len(text),
-                                   PythonHighlighter.Formats["comment"])
+                    self.setFormat(i, len(text), PythonHighlighter.Formats["comment"])
                     break
 
         self.setCurrentBlockState(NORMAL)
@@ -153,50 +249,42 @@ class PythonHighlighter(QSyntaxHighlighter):
         if self.stringRe.indexIn(text) != -1:
             return
         # This is fooled by triple quotes inside single quoted strings
-        for i, state in ((self.tripleSingleRe.indexIn(text),
-                          TRIPLESINGLE),
-                         (self.tripleDoubleRe.indexIn(text),
-                          TRIPLEDOUBLE)):
+        for i, state in (
+            (self.tripleSingleRe.indexIn(text), TRIPLESINGLE),
+            (self.tripleDoubleRe.indexIn(text), TRIPLEDOUBLE),
+        ):
             if self.previousBlockState() == state:
                 if i == -1:
                     i = len(text)
                     self.setCurrentBlockState(state)
-                self.setFormat(0, i + 3,     
-                               PythonHighlighter.Formats["string"])
+                self.setFormat(0, i + 3, PythonHighlighter.Formats["string"])
             elif i > -1:
                 self.setCurrentBlockState(state)
-                self.setFormat(i, len(text),
-                               PythonHighlighter.Formats["string"])
-
+                self.setFormat(i, len(text), PythonHighlighter.Formats["string"])
 
     def rehighlight(self):
-        QApplication.setOverrideCursor(QCursor(
-                                                    Qt.WaitCursor))
-        QSyntaxHighlighter.rehighlight(self)
-        QApplication.restoreOverrideCursor()
+        QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
+        QtGui.QSyntaxHighlighter.rehighlight(self)
+        QtWidgets.QApplication.restoreOverrideCursor()
 
 
-class TextEdit(QTextEdit):
-
+class TextEdit(QtWidgets.QTextEdit):
     def __init__(self, parent=None):
         super(TextEdit, self).__init__(parent)
 
-
     def event(self, event):
-        if (event.type() == QEvent.KeyPress and
-            event.key() == Qt.Key_Tab):
+        if event.type() == QtCore.QEvent.KeyPress and event.key() == QtCore.Qt.Key_Tab:
             cursor = self.textCursor()
             cursor.insertText("    ")
             return True
-        return QTextEdit.event(self, event)
+        return QtWidgets.QTextEdit.event(self, event)
 
 
-class MainWindow(QMainWindow):
-
+class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, filename=None, parent=None):
         super(MainWindow, self).__init__(parent)
 
-        font = QFont("Courier", 11)
+        font = QtGui.QFont("Courier", 11)
         font.setFixedPitch(True)
         self.editor = TextEdit()
         self.editor.setFont(font)
@@ -207,58 +295,112 @@ class MainWindow(QMainWindow):
         status.setSizeGripEnabled(False)
         status.showMessage("Ready", 5000)
 
-        fileNewAction = self.createAction("&New...", self.fileNew,
-                QKeySequence.New, "filenew", "Create a Python file")
-        fileOpenAction = self.createAction("&Open...", self.fileOpen,
-                QKeySequence.Open, "fileopen",
-                "Open an existing Python file")
-        self.fileSaveAction = self.createAction("&Save", self.fileSave,
-                QKeySequence.Save, "filesave", "Save the file")
-        self.fileSaveAsAction = self.createAction("Save &As...",
-                self.fileSaveAs, icon="filesaveas",
-                tip="Save the file using a new name")
-        fileQuitAction = self.createAction("&Quit", self.close,
-                "Ctrl+Q", "filequit", "Close the application")
-        self.editCopyAction = self.createAction("&Copy",
-                self.editor.copy, QKeySequence.Copy, "editcopy",
-                "Copy text to the clipboard")
-        self.editCutAction = self.createAction("Cu&t", self.editor.cut,
-                QKeySequence.Cut, "editcut",
-                "Cut text to the clipboard")
-        self.editPasteAction = self.createAction("&Paste",
-                self.editor.paste, QKeySequence.Paste, "editpaste",
-                "Paste in the clipboard's text")
-        self.editIndentAction = self.createAction("&Indent",
-                self.editIndent, "Ctrl+]", "editindent",
-                "Indent the current line or selection")
-        self.editUnindentAction = self.createAction("&Unindent",
-                self.editUnindent, "Ctrl+[", "editunindent",
-                "Unindent the current line or selection")
+        fileNewAction = self.createAction(
+            "&New...", self.fileNew, QtGui.QKeySequence.New, "filenew", "Create a Python file"
+        )
+        fileOpenAction = self.createAction(
+            "&Open...",
+            self.fileOpen,
+            QtGui.QKeySequence.Open,
+            "fileopen",
+            "Open an existing Python file",
+        )
+        self.fileSaveAction = self.createAction(
+            "&Save", self.fileSave, QtGui.QKeySequence.Save, "filesave", "Save the file"
+        )
+        self.fileSaveAsAction = self.createAction(
+            "Save &As...",
+            self.fileSaveAs,
+            icon="filesaveas",
+            tip="Save the file using a new name",
+        )
+        fileQuitAction = self.createAction(
+            "&Quit", self.close, "Ctrl+Q", "filequit", "Close the application"
+        )
+        self.editCopyAction = self.createAction(
+            "&Copy",
+            self.editor.copy,
+            QtGui.QKeySequence.Copy,
+            "editcopy",
+            "Copy text to the clipboard",
+        )
+        self.editCutAction = self.createAction(
+            "Cu&t",
+            self.editor.cut,
+            QtGui.QKeySequence.Cut,
+            "editcut",
+            "Cut text to the clipboard",
+        )
+        self.editPasteAction = self.createAction(
+            "&Paste",
+            self.editor.paste,
+            QtGui.QKeySequence.Paste,
+            "editpaste",
+            "Paste in the clipboard's text",
+        )
+        self.editIndentAction = self.createAction(
+            "&Indent",
+            self.editIndent,
+            "Ctrl+]",
+            "editindent",
+            "Indent the current line or selection",
+        )
+        self.editUnindentAction = self.createAction(
+            "&Unindent",
+            self.editUnindent,
+            "Ctrl+[",
+            "editunindent",
+            "Unindent the current line or selection",
+        )
 
         fileMenu = self.menuBar().addMenu("&File")
-        self.addActions(fileMenu, (fileNewAction, fileOpenAction,
-                self.fileSaveAction, self.fileSaveAsAction, None,
-                fileQuitAction))
+        self.addActions(
+            fileMenu,
+            (
+                fileNewAction,
+                fileOpenAction,
+                self.fileSaveAction,
+                self.fileSaveAsAction,
+                None,
+                fileQuitAction,
+            ),
+        )
         editMenu = self.menuBar().addMenu("&Edit")
-        self.addActions(editMenu, (self.editCopyAction,
-                self.editCutAction, self.editPasteAction, None,
-                self.editIndentAction, self.editUnindentAction))
+        self.addActions(
+            editMenu,
+            (
+                self.editCopyAction,
+                self.editCutAction,
+                self.editPasteAction,
+                None,
+                self.editIndentAction,
+                self.editUnindentAction,
+            ),
+        )
         fileToolbar = self.addToolBar("File")
         fileToolbar.setObjectName("FileToolBar")
-        self.addActions(fileToolbar, (fileNewAction, fileOpenAction,
-                                      self.fileSaveAction))
+        self.addActions(
+            fileToolbar, (fileNewAction, fileOpenAction, self.fileSaveAction)
+        )
         editToolbar = self.addToolBar("Edit")
         editToolbar.setObjectName("EditToolBar")
-        self.addActions(editToolbar, (self.editCopyAction,
-                self.editCutAction, self.editPasteAction, None,
-                self.editIndentAction, self.editUnindentAction))
+        self.addActions(
+            editToolbar,
+            (
+                self.editCopyAction,
+                self.editCutAction,
+                self.editPasteAction,
+                None,
+                self.editIndentAction,
+                self.editUnindentAction,
+            ),
+        )
 
-        self.connect(self.editor,
-                SIGNAL("selectionChanged()"), self.updateUi)
-        self.connect(self.editor.document(),
-                SIGNAL("modificationChanged(bool)"), self.updateUi)
-        self.connect(QApplication.clipboard(),
-                SIGNAL("dataChanged()"), self.updateUi)
+        self.connect(self.editor, QtCore.SIGNAL("selectionChanged()"), self.updateUi)
+        self.connect(
+            self.editor.document(), QtCore.SIGNAL("modificationChanged(bool)"), self.updateUi
+        )
+        self.connect(QtWidgets.QApplication.clipboard(), QtCore.SIGNAL("dataChanged()"), self.updateUi)
 
         self.resize(800, 600)
         self.setWindowTitle("Python Editor")
@@ -267,10 +409,8 @@ class MainWindow(QMainWindow):
             self.loadFile()
         self.updateUi()
 
-
     def updateUi(self, arg=None):
-        self.fileSaveAction.setEnabled(
-                self.editor.document().isModified())
+        self.fileSaveAction.setEnabled(self.editor.document().isModified())
         enable = not self.editor.document().isEmpty()
         self.fileSaveAsAction.setEnabled(enable)
         self.editIndentAction.setEnabled(enable)
@@ -280,23 +420,29 @@ class MainWindow(QMainWindow):
         self.editCutAction.setEnabled(enable)
         self.editPasteAction.setEnabled(self.editor.canPaste())
 
-
-    def createAction(self, text, slot=None, shortcut=None, icon=None,
-                     tip=None, checkable=False, signal="triggered()"):
-        action = QAction(text, self)
+    def createAction(
+        self,
+        text,
+        slot=None,
+        shortcut=None,
+        icon=None,
+        tip=None,
+        checkable=False,
+        signal="triggered()",
+    ):
+        action = QtGui.QAction(text, self)
         if icon is not None:
-            action.setIcon(QIcon(":/{}.png".format(icon)))
+            action.setIcon(QtGui.QIcon("resources:{}.png".format(icon)))
         if shortcut is not None:
             action.setShortcut(shortcut)
         if tip is not None:
             action.setToolTip(tip)
             action.setStatusTip(tip)
         if slot is not None:
-            self.connect(action, SIGNAL(signal), slot)
+            self.connect(action, QtCore.SIGNAL(signal), slot)
         if checkable:
             action.setCheckable(True)
         return action
-
 
     def addActions(self, target, actions):
         for action in actions:
@@ -305,25 +451,23 @@ class MainWindow(QMainWindow):
             else:
                 target.addAction(action)
 
-
     def closeEvent(self, event):
         if not self.okToContinue():
             event.ignore()
 
-
     def okToContinue(self):
         if self.editor.document().isModified():
-            reply = QMessageBox.question(self,
-                            "Python Editor - Unsaved Changes",
-                            "Save unsaved changes?",
-                            QMessageBox.Yes|QMessageBox.No|
-                            QMessageBox.Cancel)
-            if reply == QMessageBox.Cancel:
+            reply = QtWidgets.QMessageBox.question(
+                self,
+                "Python Editor - Unsaved Changes",
+                "Save unsaved changes?",
+                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No | QtWidgets.QMessageBox.Cancel,
+            )
+            if reply == QtWidgets.QMessageBox.Cancel:
                 return False
-            elif reply == QMessageBox.Yes:
+            elif reply == QtWidgets.QMessageBox.Yes:
                 return self.fileSave()
         return True
-
 
     def fileNew(self):
         if not self.okToContinue():
@@ -335,74 +479,76 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Python Editor - Unnamed")
         self.updateUi()
 
-
     def fileOpen(self):
         if not self.okToContinue():
             return
-        dir = (os.path.dirname(self.filename)
-               if self.filename is not None else ".")
-        fname = QFileDialog.getOpenFileName(self,
-                "Python Editor - Choose File", dir,
-                "Python files (*.py *.pyw)")
+        dir = os.path.dirname(self.filename) if self.filename is not None else "."
+        fname, filtering = QtWidgets.QFileDialog.getOpenFileName(
+            self, "Python Editor - Choose File", dir, "Python files (*.py *.pyw)"
+        )
         if fname:
             self.filename = fname
             self.loadFile()
 
-
     def loadFile(self):
         fh = None
         try:
-            fh = QFile(self.filename)
-            if not fh.open(QIODevice.ReadOnly):
+            fh = QtCore.QFile(self.filename)
+            if not fh.open(QtCore.QIODevice.ReadOnly):
                 raise IOError(fh.errorString())
-            stream = QTextStream(fh)
-            stream.setCodec("UTF-8")
+            stream = QtCore.QTextStream(fh)
+            stream.setEncoding(CODEC)
             self.editor.setPlainText(stream.readAll())
             self.editor.document().setModified(False)
         except EnvironmentError as e:
-            QMessageBox.warning(self, "Python Editor -- Load Error",
-                    "Failed to load {}: {}".format(self.filename, e))
+            QtWidgets.QMessageBox.warning(
+                self,
+                "Python Editor -- Load Error",
+                "Failed to load {}: {}".format(self.filename, e),
+            )
         finally:
             if fh is not None:
                 fh.close()
-        self.setWindowTitle("Python Editor - {}".format(
-                QFileInfo(self.filename).fileName()))
-
+        self.setWindowTitle(
+            "Python Editor - {}".format(QtCore.QFileInfo(self.filename).fileName())
+        )
 
     def fileSave(self):
         if self.filename is None:
             return self.fileSaveAs()
         fh = None
         try:
-            fh = QFile(self.filename)
-            if not fh.open(QIODevice.WriteOnly):
+            fh = QtCore.QFile(self.filename)
+            if not fh.open(QtCore.QIODevice.WriteOnly):
                 raise IOError(fh.errorString())
-            stream = QTextStream(fh)
-            stream.setCodec("UTF-8")
+            stream = QtCore.QTextStream(fh)
+            stream.setEncoding(CODEC)
             stream << self.editor.toPlainText()
             self.editor.document().setModified(False)
         except EnvironmentError as e:
-            QMessageBox.warning(self, "Python Editor -- Save Error",
-                    "Failed to save {}: {}".format(self.filename, e))
+            QtWidgets.QMessageBox.warning(
+                self,
+                "Python Editor -- Save Error",
+                "Failed to save {}: {}".format(self.filename, e),
+            )
             return False
         finally:
             if fh is not None:
                 fh.close()
         return True
 
-
     def fileSaveAs(self):
         filename = self.filename if self.filename is not None else "."
-        filename = QFileDialog.getSaveFileName(self,
-                "Python Editor -- Save File As", filename,
-                "Python files (*.py *.pyw)")
+        filename, filtering = QtWidgets.QFileDialog.getSaveFileName(
+            self, "Python Editor -- Save File As", filename, "Python files (*.py *.pyw)"
+        )
         if filename:
             self.filename = filename
-            self.setWindowTitle("Python Editor - {}".format(
-                    QFileInfo(self.filename).fileName()))
+            self.setWindowTitle(
+                "Python Editor - {}".format(QtCore.QFileInfo(self.filename).fileName())
+            )
             return self.fileSave()
         return False
-
 
     def editIndent(self):
         cursor = self.editor.textCursor()
@@ -415,22 +561,22 @@ class MainWindow(QMainWindow):
                 pos = start
             cursor.clearSelection()
             cursor.setPosition(pos)
-            cursor.movePosition(QTextCursor.StartOfLine)
+            cursor.movePosition(QtGui.QTextCursor.StartOfLine)
             while pos <= end:
                 cursor.insertText("    ")
-                cursor.movePosition(QTextCursor.Down)
-                cursor.movePosition(QTextCursor.StartOfLine)
+                cursor.movePosition(QtGui.QTextCursor.Down)
+                cursor.movePosition(QtGui.QTextCursor.StartOfLine)
                 pos = cursor.position()
             cursor.setPosition(start)
-            cursor.movePosition(QTextCursor.NextCharacter,
-                                QTextCursor.KeepAnchor, end - start)
+            cursor.movePosition(
+                QtGui.QTextCursor.NextCharacter, QtGui.QTextCursor.KeepAnchor, end - start
+            )
         else:
             pos = cursor.position()
-            cursor.movePosition(QTextCursor.StartOfBlock)
+            cursor.movePosition(QtGui.QTextCursor.StartOfBlock)
             cursor.insertText("    ")
             cursor.setPosition(pos + 4)
         cursor.endEditBlock()
-
 
     def editUnindent(self):
         cursor = self.editor.textCursor()
@@ -442,39 +588,39 @@ class MainWindow(QMainWindow):
                 start, end = end, start
                 pos = start
             cursor.setPosition(pos)
-            cursor.movePosition(QTextCursor.StartOfLine)
+            cursor.movePosition(QtGui.QTextCursor.StartOfLine)
             while pos <= end:
                 cursor.clearSelection()
-                cursor.movePosition(QTextCursor.NextCharacter,
-                                    QTextCursor.KeepAnchor, 4)
+                cursor.movePosition(
+                    QtGui.QTextCursor.NextCharacter, QtGui.QTextCursor.KeepAnchor, 4
+                )
                 if cursor.selectedText() == "    ":
                     cursor.removeSelectedText()
-                cursor.movePosition(QTextCursor.Down)
-                cursor.movePosition(QTextCursor.StartOfLine)
+                cursor.movePosition(QtGui.QTextCursor.Down)
+                cursor.movePosition(QtGui.QTextCursor.StartOfLine)
                 pos = cursor.position()
             cursor.setPosition(start)
-            cursor.movePosition(QTextCursor.NextCharacter,
-                                QTextCursor.KeepAnchor, end - start)
+            cursor.movePosition(
+                QtGui.QTextCursor.NextCharacter, QtGui.QTextCursor.KeepAnchor, end - start
+            )
         else:
             cursor.clearSelection()
-            cursor.movePosition(QTextCursor.StartOfBlock)
-            cursor.movePosition(QTextCursor.NextCharacter,
-                                QTextCursor.KeepAnchor, 4)
+            cursor.movePosition(QtGui.QTextCursor.StartOfBlock)
+            cursor.movePosition(QtGui.QTextCursor.NextCharacter, QtGui.QTextCursor.KeepAnchor, 4)
             if cursor.selectedText() == "    ":
                 cursor.removeSelectedText()
         cursor.endEditBlock()
 
 
 def main():
-    app = QApplication(sys.argv)
-    app.setWindowIcon(QIcon(":/icon.png"))
+    app = QtWidgets.QApplication(sys.argv)
+    app.setWindowIcon(QtGui.QIcon(":/icon.png"))
     fname = None
     if len(sys.argv) > 1:
         fname = sys.argv[1]
     form = MainWindow(fname)
     form.show()
-    app.exec_()
+    app.exec()
 
 
 main()
-
