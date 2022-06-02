@@ -229,7 +229,7 @@ class RichTextLineEdit(QtWidgets.QTextEdit):
                     format = fragment.charFormat()
                     family = format.fontFamily()
                     color = format.foreground().color()
-                    text = QtCore.Qt.escape(fragment.text())
+                    text = QtCore.QRegularExpression.escape(fragment.text())
                     if format.verticalAlignment() == QtGui.QTextCharFormat.AlignSubScript:
                         text = "<sub>{}</sub>".format(text)
                     elif format.verticalAlignment() == QtGui.QTextCharFormat.AlignSuperScript:
@@ -261,6 +261,4 @@ if __name__ == "__main__":
     lineedit.show()
     lineedit.setWindowTitle("RichTextEdit")
     app.exec()
-    print(lineedit.toHtml())
-    print(lineedit.toPlainText())
     print(lineedit.toSimpleHtml())
