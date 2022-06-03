@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # Copyright (c) 2008-10 Qtrac Ltd. All rights reserved.
 # This program or module is free software: you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as published
@@ -165,11 +164,9 @@ class PythonHighlighter(QtGui.QSyntaxHighlighter):
             (QtCore.QRegularExpression(r"\bPyQt4\b|\bQt?[A-Z][a-z]\w+\b"), "pyqt")
         )
         PythonHighlighter.Rules.append((QtCore.QRegularExpression(r"\b@\w+\b"), "decorator"))
-        stringRe = QtCore.QRegularExpression(r"""(?:'[^']*'|"[^"]*")""")
-        stringRe.setMinimal(True)
+        stringRe = QtCore.QRegularExpression(r"""(?:'[^']*?'|"[^"]*?")""")
         PythonHighlighter.Rules.append((stringRe, "string"))
-        self.stringRe = QtCore.QRegularExpression(r"""(:?"["]".*"["]"|'''.*''')""")
-        self.stringRe.setMinimal(True)
+        self.stringRe = QtCore.QRegularExpression(r"""(:?"["]".*?"["]"|'''.*?''')""")
         PythonHighlighter.Rules.append((self.stringRe, "string"))
         self.tripleSingleRe = QtCore.QRegularExpression(r"""'''(?!")""")
         self.tripleDoubleRe = QtCore.QRegularExpression(r'''"""(?!')''')
@@ -218,12 +215,13 @@ class PythonHighlighter(QtGui.QSyntaxHighlighter):
             self.setFormat(0, textLength, PythonHighlighter.Formats["error"])
             return
 
-        for regex, format in PythonHighlighter.Rules:
-            i = regex.indexIn(text)
-            while i >= 0:
-                length = regex.matchedLength()
-                self.setFormat(i, length, PythonHighlighter.Formats[format])
-                i = regex.indexIn(text, i + length)
+        for regex, formatting in PythonHighlighter.Rules:
+            match = regex.match(text)
+
+            for i in range(match.lastCapturedIndex() + 1):
+                start = match.capturedStart(i)
+                end = match.capturedEnd(i)
+                self.setFormat(start, end - start, PythonHighlighter.Formats[formatting])
 
         # Slow but good quality highlighting for comments. For more
         # speed, comment this out and add the following to __init__:
@@ -246,21 +244,24 @@ class PythonHighlighter(QtGui.QSyntaxHighlighter):
 
         self.setCurrentBlockState(NORMAL)
 
-        if self.stringRe.indexIn(text) != -1:
+        if self.stringRe.match(text).hasMatch():
             return
         # This is fooled by triple quotes inside single quoted strings
-        for i, state in (
-            (self.tripleSingleRe.indexIn(text), TRIPLESINGLE),
-            (self.tripleDoubleRe.indexIn(text), TRIPLEDOUBLE),
+        for match, state in (
+            (self.tripleSingleRe.match(text), TRIPLESINGLE),
+            (self.tripleDoubleRe.match(text), TRIPLEDOUBLE),
         ):
             if self.previousBlockState() == state:
-                if i == -1:
+                if not match.hasMatch():
                     i = len(text)
                     self.setCurrentBlockState(state)
+                else:
+                    i = match.capturedStart(0)
                 self.setFormat(0, i + 3, PythonHighlighter.Formats["string"])
-            elif i > -1:
+            elif match.hasMatch():
+                start = match.capturedStart(0)
                 self.setCurrentBlockState(state)
-                self.setFormat(i, len(text), PythonHighlighter.Formats["string"])
+                self.setFormat(start, len(text), PythonHighlighter.Formats["string"])
 
     def rehighlight(self):
         QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
