@@ -68,11 +68,15 @@ class PythonHighlighter(QtGui.QSyntaxHighlighter):
             r"\bwith\b",
             r"\byield\b",
         ):
-            PythonHighlighter.Rules.append((QtCore.QRegularExpression(pattern), keyword_format))
+            PythonHighlighter.Rules.append(
+                (QtCore.QRegularExpression(pattern), keyword_format)
+            )
         comment_format = QtGui.QTextCharFormat()
         comment_format.setForeground(QtGui.QColor(0, 127, 0))
         comment_format.setFontItalic(True)
-        PythonHighlighter.Rules.append((QtCore.QRegularExpression(r"#.*"), comment_format))
+        PythonHighlighter.Rules.append(
+            (QtCore.QRegularExpression(r"#.*"), comment_format)
+        )
         self.stringFormat = QtGui.QTextCharFormat()
         self.stringFormat.setForeground(QtCore.Qt.darkYellow)
         string_re = QtCore.QRegularExpression(r"""(?:'[^']*?'|"[^"]*?")""")
@@ -88,7 +92,7 @@ class PythonHighlighter(QtGui.QSyntaxHighlighter):
         for regex, formatting in PythonHighlighter.Rules:
             match = regex.match(text)
 
-            for i in range(match.lastCapturedIndex()+1):
+            for i in range(match.lastCapturedIndex() + 1):
                 start = match.capturedStart(i)
                 end = match.capturedEnd(i)
                 self.setFormat(start, end - start, formatting)
@@ -141,7 +145,11 @@ class MainWindow(QtWidgets.QMainWindow):
         status.showMessage("Ready", 5000)
 
         file_new_action = self.createAction(
-            "&New...", self.fileNew, QtGui.QKeySequence.New, "filenew", "Create a Python file"
+            "&New...",
+            self.fileNew,
+            QtGui.QKeySequence.New,
+            "filenew",
+            "Create a Python file",
         )
         file_open_action = self.createAction(
             "&Open...",
@@ -208,14 +216,21 @@ class MainWindow(QtWidgets.QMainWindow):
         edit_toolbar = self.addToolBar("Edit")
         edit_toolbar.setObjectName("EditToolBar")
         self.addActions(
-            edit_toolbar, (self.editCopyAction, self.editCutAction, self.editPasteAction)
+            edit_toolbar,
+            (self.editCopyAction, self.editCutAction, self.editPasteAction),
         )
 
         self.connect(self.editor, QtCore.SIGNAL("selectionChanged()"), self.updateUi)
         self.connect(
-            self.editor.document(), QtCore.SIGNAL("modificationChanged(bool)"), self.updateUi
+            self.editor.document(),
+            QtCore.SIGNAL("modificationChanged(bool)"),
+            self.updateUi,
         )
-        self.connect(QtWidgets.QApplication.clipboard(), QtCore.SIGNAL("dataChanged()"), self.updateUi)
+        self.connect(
+            QtWidgets.QApplication.clipboard(),
+            QtCore.SIGNAL("dataChanged()"),
+            self.updateUi,
+        )
 
         self.resize(800, 600)
         self.setWindowTitle("Python Editor")
@@ -273,7 +288,9 @@ class MainWindow(QtWidgets.QMainWindow):
                 self,
                 "Python Editor - Unsaved Changes",
                 "Save unsaved changes?",
-                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No | QtWidgets.QMessageBox.Cancel,
+                QtWidgets.QMessageBox.Yes
+                | QtWidgets.QMessageBox.No
+                | QtWidgets.QMessageBox.Cancel,
             )
             if reply == QtWidgets.QMessageBox.Cancel:
                 return False
