@@ -134,19 +134,25 @@ class PythonHighlighter(QtGui.QSyntaxHighlighter):
 
         PythonHighlighter.Rules.append(
             (
-                QtCore.QRegularExpression("|".join([r"\b%s\b" % keyword for keyword in KEYWORDS])),
+                QtCore.QRegularExpression(
+                    "|".join([r"\b%s\b" % keyword for keyword in KEYWORDS])
+                ),
                 "keyword",
             )
         )
         PythonHighlighter.Rules.append(
             (
-                QtCore.QRegularExpression("|".join([r"\b%s\b" % builtin for builtin in BUILTINS])),
+                QtCore.QRegularExpression(
+                    "|".join([r"\b%s\b" % builtin for builtin in BUILTINS])
+                ),
                 "builtin",
             )
         )
         PythonHighlighter.Rules.append(
             (
-                QtCore.QRegularExpression("|".join([r"\b%s\b" % constant for constant in CONSTANTS])),
+                QtCore.QRegularExpression(
+                    "|".join([r"\b%s\b" % constant for constant in CONSTANTS])
+                ),
                 "constant",
             )
         )
@@ -163,7 +169,9 @@ class PythonHighlighter(QtGui.QSyntaxHighlighter):
         PythonHighlighter.Rules.append(
             (QtCore.QRegularExpression(r"\bPyQt4\b|\bQt?[A-Z][a-z]\w+\b"), "pyqt")
         )
-        PythonHighlighter.Rules.append((QtCore.QRegularExpression(r"\b@\w+\b"), "decorator"))
+        PythonHighlighter.Rules.append(
+            (QtCore.QRegularExpression(r"\b@\w+\b"), "decorator")
+        )
         stringRe = QtCore.QRegularExpression(r"""(?:'[^']*?'|"[^"]*?")""")
         PythonHighlighter.Rules.append((stringRe, "string"))
         self.stringRe = QtCore.QRegularExpression(r"""(:?"["]".*?"["]"|'''.*?''')""")
@@ -221,7 +229,9 @@ class PythonHighlighter(QtGui.QSyntaxHighlighter):
             for i in range(match.lastCapturedIndex() + 1):
                 start = match.capturedStart(i)
                 end = match.capturedEnd(i)
-                self.setFormat(start, end - start, PythonHighlighter.Formats[formatting])
+                self.setFormat(
+                    start, end - start, PythonHighlighter.Formats[formatting]
+                )
 
         # Slow but good quality highlighting for comments. For more
         # speed, comment this out and add the following to __init__:
@@ -297,7 +307,11 @@ class MainWindow(QtWidgets.QMainWindow):
         status.showMessage("Ready", 5000)
 
         fileNewAction = self.createAction(
-            "&New...", self.fileNew, QtGui.QKeySequence.New, "filenew", "Create a Python file"
+            "&New...",
+            self.fileNew,
+            QtGui.QKeySequence.New,
+            "filenew",
+            "Create a Python file",
         )
         fileOpenAction = self.createAction(
             "&Open...",
@@ -399,9 +413,15 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.connect(self.editor, QtCore.SIGNAL("selectionChanged()"), self.updateUi)
         self.connect(
-            self.editor.document(), QtCore.SIGNAL("modificationChanged(bool)"), self.updateUi
+            self.editor.document(),
+            QtCore.SIGNAL("modificationChanged(bool)"),
+            self.updateUi,
         )
-        self.connect(QtWidgets.QApplication.clipboard(), QtCore.SIGNAL("dataChanged()"), self.updateUi)
+        self.connect(
+            QtWidgets.QApplication.clipboard(),
+            QtCore.SIGNAL("dataChanged()"),
+            self.updateUi,
+        )
 
         self.resize(800, 600)
         self.setWindowTitle("Python Editor")
@@ -462,7 +482,9 @@ class MainWindow(QtWidgets.QMainWindow):
                 self,
                 "Python Editor - Unsaved Changes",
                 "Save unsaved changes?",
-                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No | QtWidgets.QMessageBox.Cancel,
+                QtWidgets.QMessageBox.Yes
+                | QtWidgets.QMessageBox.No
+                | QtWidgets.QMessageBox.Cancel,
             )
             if reply == QtWidgets.QMessageBox.Cancel:
                 return False
@@ -483,12 +505,12 @@ class MainWindow(QtWidgets.QMainWindow):
     def fileOpen(self):
         if not self.okToContinue():
             return
-        dir = os.path.dirname(self.filename) if self.filename is not None else "."
-        fname, filtering = QtWidgets.QFileDialog.getOpenFileName(
-            self, "Python Editor - Choose File", dir, "Python files (*.py *.pyw)"
+        directory = os.path.dirname(self.filename) if self.filename is not None else "."
+        filename, filtering = QtWidgets.QFileDialog.getOpenFileName(
+            self, "Python Editor - Choose File", directory, "Python files (*.py *.pyw)"
         )
-        if fname:
-            self.filename = fname
+        if filename:
+            self.filename = filename
             self.loadFile()
 
     def loadFile(self):
@@ -570,7 +592,9 @@ class MainWindow(QtWidgets.QMainWindow):
                 pos = cursor.position()
             cursor.setPosition(start)
             cursor.movePosition(
-                QtGui.QTextCursor.NextCharacter, QtGui.QTextCursor.KeepAnchor, end - start
+                QtGui.QTextCursor.NextCharacter,
+                QtGui.QTextCursor.KeepAnchor,
+                end - start,
             )
         else:
             pos = cursor.position()
@@ -602,12 +626,16 @@ class MainWindow(QtWidgets.QMainWindow):
                 pos = cursor.position()
             cursor.setPosition(start)
             cursor.movePosition(
-                QtGui.QTextCursor.NextCharacter, QtGui.QTextCursor.KeepAnchor, end - start
+                QtGui.QTextCursor.NextCharacter,
+                QtGui.QTextCursor.KeepAnchor,
+                end - start,
             )
         else:
             cursor.clearSelection()
             cursor.movePosition(QtGui.QTextCursor.StartOfBlock)
-            cursor.movePosition(QtGui.QTextCursor.NextCharacter, QtGui.QTextCursor.KeepAnchor, 4)
+            cursor.movePosition(
+                QtGui.QTextCursor.NextCharacter, QtGui.QTextCursor.KeepAnchor, 4
+            )
             if cursor.selectedText() == "    ":
                 cursor.removeSelectedText()
         cursor.endEditBlock()
@@ -616,10 +644,10 @@ class MainWindow(QtWidgets.QMainWindow):
 def main():
     app = QtWidgets.QApplication(sys.argv)
     app.setWindowIcon(QtGui.QIcon(":/icon.png"))
-    fname = None
+    filename = None
     if len(sys.argv) > 1:
-        fname = sys.argv[1]
-    form = MainWindow(fname)
+        filename = sys.argv[1]
+    form = MainWindow(filename)
     form.show()
     app.exec()
 
