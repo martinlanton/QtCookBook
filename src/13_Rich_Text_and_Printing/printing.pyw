@@ -62,7 +62,7 @@ class Form(QtWidgets.QDialog):
 
         self.connect(cursorButton, QtCore.SIGNAL("clicked()"), self.printViaQCursor)
         self.connect(htmlButton, QtCore.SIGNAL("clicked()"), self.printViaHtml)
-        self.connect(painterButton, QtCore.SIGNAL("clicked()"), self.printViaQtGui.QPainter)
+        self.connect(painterButton, QtCore.SIGNAL("clicked()"), self.printViaQPainter)
         self.connect(quitButton, QtCore.SIGNAL("clicked()"), self.accept)
 
         self.setWindowTitle("Printing")
