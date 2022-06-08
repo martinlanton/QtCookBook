@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # Copyright (c) 2008-10 Qtrac Ltd. All rights reserved.
 # This program or module is free software: you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as published
@@ -121,6 +120,7 @@ class Form(QtWidgets.QDialog):
         html = ""
         for statement in self.statements:
             date = QtCore.QDate.currentDate().toString(DATE_FORMAT)
+            # TODO : fix escaping of this method's address
             address = QtCore.QRegularExpression.escape(statement.address).replace(",", "<br>")
             contact = QtCore.QRegularExpression.escape(statement.contact)
             balance = statement.balance()
@@ -178,7 +178,7 @@ class Form(QtWidgets.QDialog):
         logo = QtGui.QPixmap("resources:logo.png")
         headFormat = QtGui.QTextBlockFormat()
         headFormat.setAlignment(QtCore.Qt.AlignLeft)
-        headFormat.setTextIndent(self.printer.pageRect().width() - logo.width() - 216)
+        headFormat.setTextIndent(self.printer.pageRect(QtPrintSupport.QPrinter.Point).width() - logo.width() - 216)
         bodyFormat = QtGui.QTextBlockFormat()
         bodyFormat.setAlignment(QtCore.Qt.AlignJustify)
         lastParaBodyFormat = QtGui.QTextBlockFormat(bodyFormat)
@@ -263,6 +263,7 @@ class Form(QtWidgets.QDialog):
         document.print_(self.printer)
 
     def printViaQPainter(self):
+        # TODO : fix sizes of this method's printing
         dialog = QtPrintSupport.QPrintDialog(self.printer, self)
         if not dialog.exec():
             return
@@ -277,7 +278,7 @@ class Form(QtWidgets.QDialog):
         serifLineHeight = fm.height()
         logo = QtGui.QPixmap("resources:logo.png")
         painter = QtGui.QPainter(self.printer)
-        pageRect = self.printer.pageRect()
+        pageRect = self.printer.pageRect(QtPrintSupport.QPrinter.Point)
         page = 1
         for statement in self.statements:
             painter.save()
