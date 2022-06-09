@@ -146,7 +146,7 @@ if __name__ == "__main__":
 
     app = QtWidgets.QApplication(sys.argv)
     form = YPipeWidget()
-    form.valueChanged.connect(valueChanged)  # TODO : fix this signal connection
+    form.valueChanged.connect(valueChanged)
     form.setWindowTitle("YPipe")
     form.move(0, 0)
     form.show()

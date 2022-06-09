@@ -217,7 +217,6 @@ class RichTextLineEdit(QtWidgets.QTextEdit):
             self.mergeCurrentCharFormat(format)
 
     def toSimpleHtml(self):
-        # TODO : fix this method
         html = ""
         black = QtGui.QColor(QtCore.Qt.black)
         block = self.document().begin()
