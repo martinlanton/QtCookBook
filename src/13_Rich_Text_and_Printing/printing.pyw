@@ -264,39 +264,59 @@ class Form(QtWidgets.QDialog):
 
     def printViaQPainter(self):
         # TODO : fix sizes of this method's printing
+
         dialog = QtPrintSupport.QPrintDialog(self.printer, self)
         if not dialog.exec():
             return
         LeftMargin = 72
+        # Setting margins because they are set at 0 by default when printing to pdf
+        self.printer.setPageMargins(QtCore.QMargins(15, 15, 15, 15),
+                                    QtGui.QPageLayout.Millimeter)
         sansFont = QtGui.QFont("Helvetica", 10)
-        sansLineHeight = QtGui.QFontMetrics(sansFont).height()
+        sansLineHeight = QtGui.QFontMetrics(sansFont).lineSpacing()
+        print(sansLineHeight)
         serifFont = QtGui.QFont("Times", 11)
         fm = QtGui.QFontMetrics(serifFont)
         DateWidth = fm.horizontalAdvance(" September 99, 2999 ")
+        print(DateWidth)
         CreditWidth = fm.horizontalAdvance(" Credit ")
+        print(CreditWidth)
         AmountWidth = fm.horizontalAdvance(" W999999.99 ")
-        serifLineHeight = fm.height()
+        print(AmountWidth)
+        serifLineHeight = fm.lineSpacing()
+        print(serifLineHeight)
         logo = QtGui.QPixmap("resources:logo.png")
         painter = QtGui.QPainter(self.printer)
-        pageRect = self.printer.pageRect(QtPrintSupport.QPrinter.Point)
+        pageRect = self.printer.pageRect(QtPrintSupport.QPrinter.DevicePixel)
+        print(pageRect)
+        paperRect = self.printer.paperRect(QtPrintSupport.QPrinter.DevicePixel)
+        print(paperRect)
         page = 1
         for statement in self.statements:
             painter.save()
             y = 0
+            print(y)
             x = pageRect.width() - logo.width() - LeftMargin
+            print(x)
             painter.drawPixmap(x, 0, logo)
             y += logo.height() + sansLineHeight
+            print(y)
             painter.setFont(sansFont)
             painter.drawText(x, y, "Greasy Hands Ltd.")
             y += sansLineHeight
+            print(y)
             painter.drawText(x, y, "New Lombard Street")
             y += sansLineHeight
+            print(y)
             painter.drawText(x, y, "London")
             y += sansLineHeight
+            print(y)
             painter.drawText(x, y, "WC13 4PX")
             y += sansLineHeight
+            print(y)
             painter.drawText(x, y, QtCore.QDate.currentDate().toString(DATE_FORMAT))
             y += sansLineHeight
+            print(y)
             painter.setFont(serifFont)
             x = LeftMargin
             for line in statement.address.split(", "):
