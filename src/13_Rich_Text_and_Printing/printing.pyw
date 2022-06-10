@@ -264,16 +264,16 @@ class Form(QtWidgets.QDialog):
 
     def printViaQPainter(self):
         # TODO : fix sizes of this method's printing
-
         dialog = QtPrintSupport.QPrintDialog(self.printer, self)
         if not dialog.exec():
             return
         LeftMargin = 72
         # Setting margins because they are set at 0 by default when printing to pdf
-        self.printer.setPageMargins(QtCore.QMargins(15, 15, 15, 15),
+        self.printer.setPageMargins(QtCore.QMargins(11, 11, 11, 11),
                                     QtGui.QPageLayout.Millimeter)
         sansFont = QtGui.QFont("Helvetica", 10)
-        sansLineHeight = QtGui.QFontMetrics(sansFont).lineSpacing()
+        sans_fm = QtGui.QFontMetrics(sansFont)
+        sansLineHeight = sans_fm.lineSpacing()
         print(sansLineHeight)
         serifFont = QtGui.QFont("Times", 11)
         fm = QtGui.QFontMetrics(serifFont)
@@ -286,6 +286,8 @@ class Form(QtWidgets.QDialog):
         serifLineHeight = fm.lineSpacing()
         print(serifLineHeight)
         logo = QtGui.QPixmap("resources:logo.png")
+        logo = logo.scaledToWidth(160, QtCore.Qt.SmoothTransformation)
+        print(logo.size())
         painter = QtGui.QPainter(self.printer)
         pageRect = self.printer.pageRect(QtPrintSupport.QPrinter.DevicePixel)
         print(pageRect)
@@ -302,15 +304,19 @@ class Form(QtWidgets.QDialog):
             y += logo.height() + sansLineHeight
             print(y)
             painter.setFont(sansFont)
+            x = pageRect.width() - LeftMargin - sans_fm.horizontalAdvance("Greasy Hands Ltd.")
             painter.drawText(x, y, "Greasy Hands Ltd.")
             y += sansLineHeight
             print(y)
+            x = pageRect.width() - LeftMargin - sans_fm.horizontalAdvance("New Lombard Street")
             painter.drawText(x, y, "New Lombard Street")
             y += sansLineHeight
             print(y)
+            x = pageRect.width() - LeftMargin - sans_fm.horizontalAdvance("London")
             painter.drawText(x, y, "London")
             y += sansLineHeight
             print(y)
+            x = pageRect.width() - LeftMargin - sans_fm.horizontalAdvance("WC13 4PX")
             painter.drawText(x, y, "WC13 4PX")
             y += sansLineHeight
             print(y)
