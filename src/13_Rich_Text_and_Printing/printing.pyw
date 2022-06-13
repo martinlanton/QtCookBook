@@ -27,7 +27,7 @@ class Statement(object):
         self.company = company
         self.contact = contact
         self.address = address
-        self.transactions = []  # List of (QtCore.QDate, float) two-tuples
+        self.transactions = []  # List of (QDate, float) two-tuples
 
     def balance(self):
         return sum([amount for date, amount in self.transactions])
@@ -281,7 +281,6 @@ class Form(QtWidgets.QDialog):
         logo = QtGui.QPixmap("resources:logo.png")
         painter = QtGui.QPainter(self.printer)
         pageRect = self.printer.pageRect(QtPrintSupport.QPrinter.DevicePixel)
-        paperRect = self.printer.paperRect(QtPrintSupport.QPrinter.DevicePixel)
         page = 1
         for statement in self.statements:
             painter.save()
