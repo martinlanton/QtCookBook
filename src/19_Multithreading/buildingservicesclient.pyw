@@ -21,7 +21,6 @@ SIZEOF_UINT16 = 2
 
 
 class BuildingServicesClient(QWidget):
-
     def __init__(self, parent=None):
         super(BuildingServicesClient, self).__init__(parent)
 
@@ -34,16 +33,16 @@ class BuildingServicesClient(QWidget):
         roomLabel.setBuddy(self.roomEdit)
         regex = QRegExp(r"[0-9](?:0[1-9]|[12][0-9]|3[0-4])")
         self.roomEdit.setValidator(QRegExpValidator(regex, self))
-        self.roomEdit.setAlignment(Qt.AlignRight|Qt.AlignVCenter)
+        self.roomEdit.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         dateLabel = QLabel("&Date")
         self.dateEdit = QDateEdit()
         dateLabel.setBuddy(self.dateEdit)
-        self.dateEdit.setAlignment(Qt.AlignRight|Qt.AlignVCenter)
+        self.dateEdit.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         self.dateEdit.setDate(QDate.currentDate().addDays(1))
         self.dateEdit.setDisplayFormat("yyyy-MM-dd")
         responseLabel = QLabel("Response")
         self.responseLabel = QLabel()
-        self.responseLabel.setFrameStyle(QFrame.StyledPanel|QFrame.Sunken)
+        self.responseLabel.setFrameStyle(QFrame.StyledPanel | QFrame.Sunken)
 
         self.bookButton = QPushButton("&Book")
         self.bookButton.setEnabled(False)
@@ -71,47 +70,38 @@ class BuildingServicesClient(QWidget):
 
         self.connect(self.socket, SIGNAL("connected()"), self.sendRequest)
         self.connect(self.socket, SIGNAL("readyRead()"), self.readResponse)
-        self.connect(self.socket, SIGNAL("disconnected()"),
-                     self.serverHasStopped)
-        self.connect(self.socket,
-                     SIGNAL("error(QAbstractSocket::SocketError)"),
-                     self.serverHasError)
-        self.connect(self.roomEdit, SIGNAL("textEdited(QString)"),
-                     self.updateUi)
-        self.connect(self.dateEdit, SIGNAL("dateChanged(QDate)"),
-                     self.updateUi)
+        self.connect(self.socket, SIGNAL("disconnected()"), self.serverHasStopped)
+        self.connect(
+            self.socket,
+            SIGNAL("error(QAbstractSocket::SocketError)"),
+            self.serverHasError,
+        )
+        self.connect(self.roomEdit, SIGNAL("textEdited(QString)"), self.updateUi)
+        self.connect(self.dateEdit, SIGNAL("dateChanged(QDate)"), self.updateUi)
         self.connect(self.bookButton, SIGNAL("clicked()"), self.book)
         self.connect(self.unBookButton, SIGNAL("clicked()"), self.unBook)
         self.connect(quitButton, SIGNAL("clicked()"), self.close)
 
         self.setWindowTitle("Building Services")
 
-
     def updateUi(self):
         enabled = False
-        if (self.roomEdit.text() and
-            self.dateEdit.date() > QDate.currentDate()):
+        if self.roomEdit.text() and self.dateEdit.date() > QDate.currentDate():
             enabled = True
         if self.request is not None:
             enabled = False
         self.bookButton.setEnabled(enabled)
         self.unBookButton.setEnabled(enabled)
 
-
     def closeEvent(self, event):
         self.socket.close()
         event.accept()
 
-
     def book(self):
-        self.issueRequest("BOOK", self.roomEdit.text(),
-                          self.dateEdit.date())
-
+        self.issueRequest("BOOK", self.roomEdit.text(), self.dateEdit.date())
 
     def unBook(self):
-        self.issueRequest("UNBOOK", self.roomEdit.text(),
-                          self.dateEdit.date())
-
+        self.issueRequest("UNBOOK", self.roomEdit.text(), self.dateEdit.date())
 
     def issueRequest(self, action, room, date):
         self.request = QByteArray()
@@ -129,13 +119,11 @@ class BuildingServicesClient(QWidget):
         self.responseLabel.setText("Connecting to server...")
         self.socket.connectToHost("localhost", PORT)
 
-
     def sendRequest(self):
         self.responseLabel.setText("Sending request...")
         self.nextBlockSize = 0
         self.socket.write(self.request)
         self.request = None
-        
 
     def readResponse(self):
         stream = QDataStream(self.socket)
@@ -156,25 +144,19 @@ class BuildingServicesClient(QWidget):
             if action == "ERROR":
                 msg = "Error: {}".format(room)
             elif action == "BOOK":
-                msg = "Booked room {} for {}".format(room,
-                       date.toString(Qt.ISODate))
+                msg = "Booked room {} for {}".format(room, date.toString(Qt.ISODate))
             elif action == "UNBOOK":
-                msg = "Unbooked room {} for {}".format(room,
-                       date.toString(Qt.ISODate))
+                msg = "Unbooked room {} for {}".format(room, date.toString(Qt.ISODate))
             self.responseLabel.setText(msg)
             self.updateUi()
             self.nextBlockSize = 0
 
-
     def serverHasStopped(self):
-        self.responseLabel.setText(
-                "Error: Connection closed by server")
+        self.responseLabel.setText("Error: Connection closed by server")
         self.socket.close()
 
-
     def serverHasError(self, error):
-        self.responseLabel.setText("Error: {}".format(
-                self.socket.errorString()))
+        self.responseLabel.setText("Error: {}".format(self.socket.errorString()))
         self.socket.close()
 
 
@@ -182,4 +164,3 @@ app = QApplication(sys.argv)
 form = BuildingServicesClient()
 form.show()
 app.exec_()
-

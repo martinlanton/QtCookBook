@@ -15,7 +15,6 @@ import qrc_resources
 
 
 class HelpForm(QDialog):
-
     def __init__(self, page, parent=None):
         super(HelpForm, self).__init__(parent)
         self.setAttribute(Qt.WA_DeleteOnClose)
@@ -38,19 +37,20 @@ class HelpForm(QDialog):
         layout.addWidget(self.textBrowser, 1)
         self.setLayout(layout)
 
-        self.connect(backAction, SIGNAL("triggered()"),
-                     self.textBrowser, SLOT("backward()"))
-        self.connect(homeAction, SIGNAL("triggered()"),
-                     self.textBrowser, SLOT("home()"))
-        self.connect(self.textBrowser, SIGNAL("sourceChanged(QUrl)"),
-                     self.updatePageTitle)
+        self.connect(
+            backAction, SIGNAL("triggered()"), self.textBrowser, SLOT("backward()")
+        )
+        self.connect(
+            homeAction, SIGNAL("triggered()"), self.textBrowser, SLOT("home()")
+        )
+        self.connect(
+            self.textBrowser, SIGNAL("sourceChanged(QUrl)"), self.updatePageTitle
+        )
 
         self.textBrowser.setSearchPaths([":/"])
         self.textBrowser.setSource(QUrl(page))
         self.resize(400, 600)
-        self.setWindowTitle(self.tr("{} Help").format(
-                QApplication.applicationName()))
-
+        self.setWindowTitle(self.tr("{} Help").format(QApplication.applicationName()))
 
     def updatePageTitle(self):
         self.pageLabel.setText(self.textBrowser.documentTitle())
@@ -63,4 +63,3 @@ if __name__ == "__main__":
     form = HelpForm("index.html")
     form.show()
     app.exec_()
-
