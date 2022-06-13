@@ -8,7 +8,6 @@
 # warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
 # the GNU General Public License for more details.
 
-import math
 import sys
 from PySide6 import QtWidgets, QtCore, QtGui, QtPrintSupport
 
