@@ -120,9 +120,8 @@ class Form(QtWidgets.QDialog):
         html = ""
         for statement in self.statements:
             date = QtCore.QDate.currentDate().toString(DATE_FORMAT)
-            # TODO : fix escaping of this method's address
-            address = QtCore.QRegularExpression.escape(statement.address).replace(",", "<br>")
-            contact = QtCore.QRegularExpression.escape(statement.contact)
+            address = statement.address.replace(",", "<br>")
+            contact = statement.contact
             balance = statement.balance()
             html += (
                 "<p align=right><img src='resources:logo.png'></p>"
