@@ -121,7 +121,7 @@ class ShipContainer(object):
             stream = QtCore.QDataStream(fh)
             stream.writeInt32(MAGIC_NUMBER)
             stream.writeInt16(FILE_VERSION)
-            stream.setVersion(QtCore.QDataStream.Qt_4_1)
+            stream.setVersion(QtCore.QDataStream.Qt_6_2)
             for ship in self.ships.values():
                 stream.writeQString(ship.name)
                 stream.writeQString(ship.owner)
@@ -180,7 +180,7 @@ class ShipTableModel(QtCore.QAbstractTableModel):
             if column == TEU:
                 return int(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
             return int(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
-        elif role == QtCore.Qt.TextColorRole and column == TEU:
+        elif role == QtCore.Qt.ForegroundRole and column == TEU:
             if ship.teu < 80000:
                 return QtGui.QColor(QtCore.Qt.black)
             elif ship.teu < 100000:
@@ -189,7 +189,7 @@ class ShipTableModel(QtCore.QAbstractTableModel):
                 return QtGui.QColor(QtCore.Qt.blue)
             else:
                 return QtGui.QColor(QtCore.Qt.red)
-        elif role == QtCore.Qt.BackgroundColorRole:
+        elif role == QtCore.Qt.BackgroundRole:
             if ship.country in (
                 "Bahamas",
                 "Cyprus",
