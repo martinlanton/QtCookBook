@@ -10,83 +10,84 @@
 # the GNU General Public License for more details.
 
 import sys
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PySide6 import QtWidgets, QtCore
+
 import ships
 
 MAC = "qt_mac_set_native_menubar" in dir()
 
 
-class MainForm(QDialog):
+class MainForm(QtWidgets.QDialog):
     def __init__(self, parent=None):
         super(MainForm, self).__init__(parent)
 
         self.model = ships.ShipTableModel("ships.dat")
-        tableLabel1 = QLabel("Table &1")
-        self.tableView1 = QTableView()
+        tableLabel1 = QtWidgets.QLabel("Table &1")
+        self.tableView1 = QtWidgets.QTableView()
         tableLabel1.setBuddy(self.tableView1)
         self.tableView1.setModel(self.model)
         self.tableView1.setItemDelegate(ships.ShipDelegate(self))
-        tableLabel2 = QLabel("Table &2")
-        self.tableView2 = QTableView()
+        tableLabel2 = QtWidgets.QLabel("Table &2")
+        self.tableView2 = QtWidgets.QTableView()
         tableLabel2.setBuddy(self.tableView2)
         self.tableView2.setModel(self.model)
         self.tableView2.setItemDelegate(ships.ShipDelegate(self))
 
-        addShipButton = QPushButton("&Add Ship")
-        removeShipButton = QPushButton("&Remove Ship")
-        quitButton = QPushButton("&Quit")
+        addShipButton = QtWidgets.QPushButton("&Add Ship")
+        removeShipButton = QtWidgets.QPushButton("&Remove Ship")
+        quitButton = QtWidgets.QPushButton("&Quit")
         if not MAC:
-            addShipButton.setFocusPolicy(Qt.NoFocus)
-            removeShipButton.setFocusPolicy(Qt.NoFocus)
-            quitButton.setFocusPolicy(Qt.NoFocus)
+            addShipButton.setFocusPolicy(QtCore.Qt.NoFocus)
+            removeShipButton.setFocusPolicy(QtCore.Qt.NoFocus)
+            quitButton.setFocusPolicy(QtCore.Qt.NoFocus)
 
-        buttonLayout = QHBoxLayout()
+        buttonLayout = QtWidgets.QHBoxLayout()
         buttonLayout.addWidget(addShipButton)
         buttonLayout.addWidget(removeShipButton)
         buttonLayout.addStretch()
         buttonLayout.addWidget(quitButton)
-        splitter = QSplitter(Qt.Horizontal)
-        vbox = QVBoxLayout()
+        splitter = QtWidgets.QSplitter(QtCore.Qt.Horizontal)
+        vbox = QtWidgets.QVBoxLayout()
         vbox.addWidget(tableLabel1)
         vbox.addWidget(self.tableView1)
-        widget = QWidget()
+        widget = QtWidgets.QWidget()
         widget.setLayout(vbox)
         splitter.addWidget(widget)
-        vbox = QVBoxLayout()
+        vbox = QtWidgets.QVBoxLayout()
         vbox.addWidget(tableLabel2)
         vbox.addWidget(self.tableView2)
-        widget = QWidget()
+        widget = QtWidgets.QWidget()
         widget.setLayout(vbox)
         splitter.addWidget(widget)
-        layout = QVBoxLayout()
+        layout = QtWidgets.QVBoxLayout()
         layout.addWidget(splitter)
         layout.addLayout(buttonLayout)
         self.setLayout(layout)
 
         for tableView in (self.tableView1, self.tableView2):
             header = tableView.horizontalHeader()
-            self.connect(header, SIGNAL("sectionClicked(int)"), self.sortTable)
-        self.connect(addShipButton, SIGNAL("clicked()"), self.addShip)
-        self.connect(removeShipButton, SIGNAL("clicked()"), self.removeShip)
-        self.connect(quitButton, SIGNAL("clicked()"), self.accept)
+            self.connect(header, QtCore.SIGNAL("sectionClicked(int)"), self.sortTable)
+        self.connect(addShipButton, QtCore.SIGNAL("clicked()"), self.addShip)
+        self.connect(removeShipButton, QtCore.SIGNAL("clicked()"), self.removeShip)
+        self.connect(quitButton, QtCore.SIGNAL("clicked()"), self.accept)
 
         self.setWindowTitle("Ships (delegate)")
-        QTimer.singleShot(0, self.initialLoad)
+        QtCore.QTimer.singleShot(0, self.initialLoad)
 
     def initialLoad(self):
-        if not QFile.exists(self.model.filename):
+        if not QtCore.QFile.exists(self.model.filename):
+            self.model.beginResetModel()
             for ship in ships.generateFakeShips():
                 self.model.ships.append(ship)
                 self.model.owners.add(ship.owner)
                 self.model.countries.add(ship.country)
-            self.model.reset()
+            self.model.endResetModel()
             self.model.dirty = False
         else:
             try:
                 self.model.load()
             except IOError as e:
-                QMessageBox.warning(
+                QtWidgets.QMessageBox.warning(
                     self, "Ships - Error", "Failed to load: {}".format(e)
                 )
         self.model.sortByName()
@@ -102,21 +103,21 @@ class MainForm(QDialog):
     def accept(self):
         if (
             self.model.dirty
-            and QMessageBox.question(
+            and QtWidgets.QMessageBox.question(
                 self,
                 "Ships - Save?",
                 "Save unsaved changes?",
-                QMessageBox.Yes | QMessageBox.No,
+                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
             )
-            == QMessageBox.Yes
+            == QtWidgets.QMessageBox.Yes
         ):
             try:
                 self.model.save()
             except IOError as e:
-                QMessageBox.warning(
+                QtWidgets.QMessageBox.warning(
                     self, "Ships - Error", "Failed to save: {}".format(e)
                 )
-        QDialog.accept(self)
+        QtWidgets.QDialog.accept(self)
 
     def sortTable(self, section):
         if section in (ships.OWNER, ships.COUNTRY):
@@ -148,20 +149,20 @@ class MainForm(QDialog):
         owner = self.model.data(self.model.index(row, ships.OWNER))
         country = self.model.data(self.model.index(row, ships.COUNTRY))
         if (
-            QMessageBox.question(
+            QtWidgets.QMessageBox.question(
                 self,
                 "Ships - Remove",
                 "Remove {} of {}/{}?".format(name, owner, country),
-                QMessageBox.Yes | QMessageBox.No,
+                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
             )
-            == QMessageBox.No
+            == QtWidgets.QMessageBox.No
         ):
             return
         self.model.removeRow(row)
         self.resizeColumns()
 
 
-app = QApplication(sys.argv)
+app = QtWidgets.QApplication(sys.argv)
 form = MainForm()
 form.show()
-app.exec_()
+app.exec()

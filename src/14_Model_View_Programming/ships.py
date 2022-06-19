@@ -148,17 +148,21 @@ class ShipTableModel(QtCore.QAbstractTableModel):
         self.countries = set()
 
     def sortByName(self):
+        self.beginResetModel()
         self.ships = sorted(self.ships)
-        self.reset()
+        self.endResetModel()
 
     def sortByCountryOwner(self):
+        self.beginResetModel()
         self.ships = sorted(self.ships, key=lambda x: (x.country, x.owner, x.name))
-        self.reset()
+        self.endResetModel()
 
     def flags(self, index):
         if not index.isValid():
             return QtCore.Qt.ItemIsEnabled
-        return QtCore.Qt.ItemFlags(QtCore.QAbstractTableModel.flags(self, index) | QtCore.Qt.ItemIsEditable)
+        return QtCore.Qt.ItemFlags(
+            QtCore.QAbstractTableModel.flags(self, index) | QtCore.Qt.ItemIsEditable
+        )
 
     def data(self, index, role=QtCore.Qt.DisplayRole):
         if not index.isValid() or not (0 <= index.row() < len(self.ships)):
@@ -248,7 +252,11 @@ class ShipTableModel(QtCore.QAbstractTableModel):
             elif column == TEU:
                 ship.teu = int(value)
             self.dirty = True
-            self.emit(QtCore.SIGNAL("dataChanged(QtCore.QModelIndex,QtCore.QModelIndex)"), index, index)
+            self.emit(
+                QtCore.SIGNAL("dataChanged(QtCore.QModelIndex,QtCore.QModelIndex)"),
+                index,
+                index,
+            )
             return True
         return False
 
@@ -353,7 +361,9 @@ class ShipDelegate(QtWidgets.QStyledItemDelegate):
             color = (
                 palette.highlight().color()
                 if option.state & QtWidgets.QStyle.State_Selected
-                else QtGui.QColor(index.model().data(index, QtCore.Qt.BackgroundColorRole))
+                else QtGui.QColor(
+                    index.model().data(index, QtCore.Qt.BackgroundColorRole)
+                )
             )
             painter.save()
             painter.fillRect(option.rect, color)
@@ -394,14 +404,20 @@ class ShipDelegate(QtWidgets.QStyledItemDelegate):
             return combobox
         elif index.column() == NAME:
             editor = QtWidgets.QLineEdit(parent)
-            self.connect(editor, QtCore.SIGNAL("returnPressed()"), self.commitAndCloseEditor)
+            self.connect(
+                editor, QtCore.SIGNAL("returnPressed()"), self.commitAndCloseEditor
+            )
             return editor
         elif index.column() == DESCRIPTION:
             editor = richtextlineedit.RichTextLineEdit(parent)
-            self.connect(editor, QtCore.SIGNAL("returnPressed()"), self.commitAndCloseEditor)
+            self.connect(
+                editor, QtCore.SIGNAL("returnPressed()"), self.commitAndCloseEditor
+            )
             return editor
         else:
-            return QtWidgets.QStyledItemDelegate.createEditor(self, parent, option, index)
+            return QtWidgets.QStyledItemDelegate.createEditor(
+                self, parent, option, index
+            )
 
     def commitAndCloseEditor(self):
         editor = self.sender()
