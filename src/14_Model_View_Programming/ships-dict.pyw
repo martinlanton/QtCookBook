@@ -10,82 +10,80 @@
 # the GNU General Public License for more details.
 
 import sys
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PySide6 import QtWidgets, QtCore
 import ships
 
 MAC = "qt_mac_set_native_menubar" in dir()
 
 
-class MainForm(QDialog):
-
+class MainForm(QtWidgets.QDialog):
     def __init__(self, parent=None):
         super(MainForm, self).__init__(parent)
 
-        listLabel = QLabel("&List")
-        self.listWidget = QListWidget()
+        listLabel = QtWidgets.QLabel("&List")
+        self.listWidget = QtWidgets.QListWidget()
         listLabel.setBuddy(self.listWidget)
 
-        tableLabel = QLabel("&Table")
-        self.tableWidget = QTableWidget()
+        tableLabel = QtWidgets.QLabel("&Table")
+        self.tableWidget = QtWidgets.QTableWidget()
         tableLabel.setBuddy(self.tableWidget)
 
-        treeLabel = QLabel("Tre&e")
-        self.treeWidget = QTreeWidget()
+        treeLabel = QtWidgets.QLabel("Tre&e")
+        self.treeWidget = QtWidgets.QTreeWidget()
         treeLabel.setBuddy(self.treeWidget)
 
-        addShipButton = QPushButton("&Add Ship")
-        removeShipButton = QPushButton("&Remove Ship")
-        quitButton = QPushButton("&Quit")
+        addShipButton = QtWidgets.QPushButton("&Add Ship")
+        removeShipButton = QtWidgets.QPushButton("&Remove Ship")
+        quitButton = QtWidgets.QPushButton("&Quit")
         if not MAC:
-            addShipButton.setFocusPolicy(Qt.NoFocus)
-            removeShipButton.setFocusPolicy(Qt.NoFocus)
-            quitButton.setFocusPolicy(Qt.NoFocus)
+            addShipButton.setFocusPolicy(QtCore.Qt.NoFocus)
+            removeShipButton.setFocusPolicy(QtCore.Qt.NoFocus)
+            quitButton.setFocusPolicy(QtCore.Qt.NoFocus)
 
-        splitter = QSplitter(Qt.Horizontal)
-        vbox = QVBoxLayout()
+        splitter = QtWidgets.QSplitter(QtCore.Qt.Horizontal)
+        vbox = QtWidgets.QVBoxLayout()
         vbox.addWidget(listLabel)
         vbox.addWidget(self.listWidget)
-        widget = QWidget()
+        widget = QtWidgets.QWidget()
         widget.setLayout(vbox)
         splitter.addWidget(widget)
-        vbox = QVBoxLayout()
+        vbox = QtWidgets.QVBoxLayout()
         vbox.addWidget(tableLabel)
         vbox.addWidget(self.tableWidget)
-        widget = QWidget()
+        widget = QtWidgets.QWidget()
         widget.setLayout(vbox)
         splitter.addWidget(widget)
-        vbox = QVBoxLayout()
+        vbox = QtWidgets.QVBoxLayout()
         vbox.addWidget(treeLabel)
         vbox.addWidget(self.treeWidget)
-        widget = QWidget()
+        widget = QtWidgets.QWidget()
         widget.setLayout(vbox)
         splitter.addWidget(widget)
-        buttonLayout = QHBoxLayout()
+        buttonLayout = QtWidgets.QHBoxLayout()
         buttonLayout.addWidget(addShipButton)
         buttonLayout.addWidget(removeShipButton)
         buttonLayout.addStretch()
         buttonLayout.addWidget(quitButton)
-        layout = QVBoxLayout()
+        layout = QtWidgets.QVBoxLayout()
         layout.addWidget(splitter)
         layout.addLayout(buttonLayout)
         self.setLayout(layout)
 
-        self.connect(self.tableWidget,
-                SIGNAL("itemChanged(QTableWidgetItem*)"),
-                self.tableItemChanged)
-        self.connect(addShipButton, SIGNAL("clicked()"), self.addShip)
-        self.connect(removeShipButton, SIGNAL("clicked()"),
-                     self.removeShip)
-        self.connect(quitButton, SIGNAL("clicked()"), self.accept)
+        self.connect(
+            self.tableWidget,
+            QtCore.SIGNAL("itemChanged(QtWidgets.QTableWidgetItem*)"),
+            self.tableItemChanged,
+        )
+        self.connect(addShipButton, QtCore.SIGNAL("clicked()"), self.addShip)
+        self.connect(removeShipButton, QtCore.SIGNAL("clicked()"), self.removeShip)
+        self.connect(quitButton, QtCore.SIGNAL("clicked()"), self.accept)
 
         self.ships = ships.ShipContainer("ships.dat")
         self.setWindowTitle("Ships (dict)")
-        QTimer.singleShot(0, self.initialLoad)
-
+        QtCore.QTimer.singleShot(0, self.initialLoad)
 
     def initialLoad(self):
-        if not QFile.exists(self.ships.filename):
+        if not QtCore.QFile.exists(self.ships.filename):
             for ship in ships.generateFakeShips():
                 self.ships.addShip(ship)
             self.ships.dirty = False
@@ -93,45 +91,51 @@ class MainForm(QDialog):
             try:
                 self.ships.load()
             except IOError as e:
-                QMessageBox.warning(self, "Ships - Error",
-                        "Failed to load: {}".format(e))
+                QtWidgets.QMessageBox.warning(
+                    self, "Ships - Error", "Failed to load: {}".format(e)
+                )
         self.populateList()
         self.populateTable()
         self.tableWidget.sortItems(0)
         self.populateTree()
 
-
     def reject(self):
         self.accept()
 
-
     def accept(self):
-        if (self.ships.dirty and
-            QMessageBox.question(self, "Ships - Save?",
-                    "Save unsaved changes?",
-                    QMessageBox.Yes|QMessageBox.No) ==
-                    QMessageBox.Yes):
+        if (
+            self.ships.dirty
+            and QtWidgets.QMessageBox.question(
+                self,
+                "Ships - Save?",
+                "Save unsaved changes?",
+                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+            )
+            == QtWidgets.QMessageBox.Yes
+        ):
             try:
                 self.ships.save()
             except IOError as e:
-                QMessageBox.warning(self, "Ships - Error",
-                        "Failed to save: {}".format(e))
-        QDialog.accept(self)
-
+                QtWidgets.QMessageBox.warning(
+                    self, "Ships - Error", "Failed to save: {}".format(e)
+                )
+        QtWidgets.QDialog.accept(self)
 
     def populateList(self, selectedShip=None):
         selected = None
         self.listWidget.clear()
         for ship in self.ships.inOrder():
-            item = QListWidgetItem("{} of {}/{} ({:,})".format(
-                     ship.name, ship.owner, ship.country, ship.teu))
+            item = QtWidgets.QListWidgetItem(
+                "{} of {}/{} ({:,})".format(
+                    ship.name, ship.owner, ship.country, ship.teu
+                )
+            )
             self.listWidget.addItem(item)
             if selectedShip is not None and selectedShip == id(ship):
                 selected = item
         if selected is not None:
             selected.setSelected(True)
             self.listWidget.setCurrentItem(selected)
-
 
     def populateTable(self, selectedShip=None):
         selected = None
@@ -142,26 +146,28 @@ class MainForm(QDialog):
         self.tableWidget.setColumnCount(len(headers))
         self.tableWidget.setHorizontalHeaderLabels(headers)
         for row, ship in enumerate(self.ships):
-            item = QTableWidgetItem(ship.name)
-            item.setData(Qt.UserRole, int(id(ship)))
+            item = QtWidgets.QTableWidgetItem(ship.name)
+            item.setData(QtCore.Qt.UserRole, int(id(ship)))
             if selectedShip is not None and selectedShip == id(ship):
                 selected = item
             self.tableWidget.setItem(row, ships.NAME, item)
-            self.tableWidget.setItem(row, ships.OWNER,
-                    QTableWidgetItem(ship.owner))
-            self.tableWidget.setItem(row, ships.COUNTRY,
-                    QTableWidgetItem(ship.country))
-            self.tableWidget.setItem(row, ships.DESCRIPTION,
-                    QTableWidgetItem(ship.description))
-            item = QTableWidgetItem("{:10}".format(ship.teu))
-            item.setTextAlignment(Qt.AlignRight|Qt.AlignVCenter)
+            self.tableWidget.setItem(
+                row, ships.OWNER, QtWidgets.QTableWidgetItem(ship.owner)
+            )
+            self.tableWidget.setItem(
+                row, ships.COUNTRY, QtWidgets.QTableWidgetItem(ship.country)
+            )
+            self.tableWidget.setItem(
+                row, ships.DESCRIPTION, QtWidgets.QTableWidgetItem(ship.description)
+            )
+            item = QtWidgets.QTableWidgetItem("{:10}".format(ship.teu))
+            item.setTextAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
             self.tableWidget.setItem(row, ships.TEU, item)
         self.tableWidget.setSortingEnabled(True)
         self.tableWidget.resizeColumnsToContents()
         if selected is not None:
             selected.setSelected(True)
             self.tableWidget.setCurrentItem(selected)
-
 
     def populateTree(self, selectedShip=None):
         selected = None
@@ -174,15 +180,17 @@ class MainForm(QDialog):
         for ship in self.ships.inCountryOwnerOrder():
             ancestor = parentFromCountry.get(ship.country)
             if ancestor is None:
-                ancestor = QTreeWidgetItem(self.treeWidget, [ship.country])
+                ancestor = QtWidgets.QTreeWidgetItem(self.treeWidget, [ship.country])
                 parentFromCountry[ship.country] = ancestor
             countryowner = ship.country + "/" + ship.owner
             parent = parentFromCountryOwner.get(countryowner)
             if parent is None:
-                parent = QTreeWidgetItem(ancestor, [ship.owner])
+                parent = QtWidgets.QTreeWidgetItem(ancestor, [ship.owner])
                 parentFromCountryOwner[countryowner] = parent
-            item = QTreeWidgetItem(parent, [ship.name, "{:,}".format(ship.teu)])
-            item.setTextAlignment(1, Qt.AlignRight|Qt.AlignVCenter)
+            item = QtWidgets.QTreeWidgetItem(
+                parent, [ship.name, "{:,}".format(ship.teu)]
+            )
+            item.setTextAlignment(1, QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
             if selectedShip is not None and selectedShip == id(ship):
                 selected = item
             self.treeWidget.expandItem(parent)
@@ -193,7 +201,6 @@ class MainForm(QDialog):
             selected.setSelected(True)
             self.treeWidget.setCurrentItem(selected)
 
-
     def addShip(self):
         ship = ships.Ship(" Unknown", " Unknown", " Unknown")
         self.ships.addShip(ship)
@@ -202,7 +209,6 @@ class MainForm(QDialog):
         self.populateTable(id(ship))
         self.tableWidget.setFocus()
         self.tableWidget.editItem(self.tableWidget.currentItem())
-
 
     def tableItemChanged(self, item):
         ship = self.currentTableShip()
@@ -223,22 +229,25 @@ class MainForm(QDialog):
         self.populateList()
         self.populateTree()
 
-
     def currentTableShip(self):
         item = self.tableWidget.item(self.tableWidget.currentRow(), 0)
         if item is None:
             return None
-        return self.ships.ship(int(item.data(Qt.UserRole)))
-
+        return self.ships.ship(int(item.data(QtCore.Qt.UserRole)))
 
     def removeShip(self):
         ship = self.currentTableShip()
         if ship is None:
             return
-        if (QMessageBox.question(self, "Ships - Remove", 
+        if (
+            QtWidgets.QMessageBox.question(
+                self,
+                "Ships - Remove",
                 "Remove {} of {}/{}?".format(ship.name, ship.owner, ship.country),
-                QMessageBox.Yes|QMessageBox.No) ==
-                QMessageBox.No):
+                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+            )
+            == QtWidgets.QMessageBox.No
+        ):
             return
         self.ships.removeShip(ship)
         self.populateList()
@@ -246,8 +255,7 @@ class MainForm(QDialog):
         self.populateTable()
 
 
-app = QApplication(sys.argv)
+app = QtWidgets.QApplication(sys.argv)
 form = MainForm()
 form.show()
 app.exec_()
-
