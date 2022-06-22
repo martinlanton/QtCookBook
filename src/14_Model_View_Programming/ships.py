@@ -252,7 +252,7 @@ class ShipTableModel(QtCore.QAbstractTableModel):
                 ship.teu = int(value)
             self.dirty = True
             self.emit(
-                QtCore.SIGNAL("dataChanged(QtCore.QModelIndex,QtCore.QModelIndex)"),
+                QtCore.SIGNAL("dataChanged(QModelIndex,QModelIndex)"),
                 index,
                 index,
             )
