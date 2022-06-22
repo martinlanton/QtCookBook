@@ -176,7 +176,11 @@ class Form(QtWidgets.QDialog):
         logo = QtGui.QPixmap("resources:logo.png")
         headFormat = QtGui.QTextBlockFormat()
         headFormat.setAlignment(QtCore.Qt.AlignLeft)
-        headFormat.setTextIndent(self.printer.pageRect(QtPrintSupport.QPrinter.Point).width() - logo.width() - 216)
+        headFormat.setTextIndent(
+            self.printer.pageRect(QtPrintSupport.QPrinter.Point).width()
+            - logo.width()
+            - 216
+        )
         bodyFormat = QtGui.QTextBlockFormat()
         bodyFormat.setAlignment(QtCore.Qt.AlignJustify)
         lastParaBodyFormat = QtGui.QTextBlockFormat(bodyFormat)

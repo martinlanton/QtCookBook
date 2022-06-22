@@ -9,7 +9,6 @@
 # warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
 # the GNU General Public License for more details.
 
-import platform
 import re
 from PySide6 import QtWidgets, QtGui, QtCore
 import richtextlineedit
@@ -376,7 +375,7 @@ class ShipDelegate(QtWidgets.QStyledItemDelegate):
     def sizeHint(self, option, index):
         fm = option.fontMetrics
         if index.column() == TEU:
-            return QtCore.QSize(fm.width("9,999,999"), fm.height())
+            return QtCore.QSize(fm.horizontalAdvance("9,999,999"), fm.height())
         if index.column() == DESCRIPTION:
             text = index.model().data(index)
             document = QtGui.QTextDocument()

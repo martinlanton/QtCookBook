@@ -56,7 +56,9 @@ class RichTextLineEdit(QtWidgets.QTextEdit):
 
     def toggleBold(self):
         self.setFontWeight(
-            QtGui.QFont.Normal if self.fontWeight() > QtGui.QFont.Normal else QtGui.QFont.Bold
+            QtGui.QFont.Normal
+            if self.fontWeight() > QtGui.QFont.Normal
+            else QtGui.QFont.Bold
         )
 
     def sizeHint(self):
@@ -230,9 +232,15 @@ class RichTextLineEdit(QtWidgets.QTextEdit):
                     family = format.fontFamily()
                     color = format.foreground().color()
                     text = QtCore.QRegularExpression.escape(fragment.text())
-                    if format.verticalAlignment() == QtGui.QTextCharFormat.AlignSubScript:
+                    if (
+                        format.verticalAlignment()
+                        == QtGui.QTextCharFormat.AlignSubScript
+                    ):
                         text = "<sub>{}</sub>".format(text)
-                    elif format.verticalAlignment() == QtGui.QTextCharFormat.AlignSuperScript:
+                    elif (
+                        format.verticalAlignment()
+                        == QtGui.QTextCharFormat.AlignSuperScript
+                    ):
                         text = "<sup>{}</sup>".format(text)
                     if format.fontUnderline():
                         text = "<u>{}</u>".format(text)

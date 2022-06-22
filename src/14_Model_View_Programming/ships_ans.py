@@ -9,7 +9,6 @@
 # warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
 # the GNU General Public License for more details.
 
-import platform
 import re
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
