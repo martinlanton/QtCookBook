@@ -11,10 +11,14 @@
 
 import os
 import sys
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from PyQt4.QtSql import *
-import qrc_resources
+from PySide6 import QtWidgets, QtGui, QtCore, QtSql
+
+#  Since pyrcc is no longer provided with PyQt or PySide, we
+#  need to change resources location using the information from this thread :
+#  https://stackoverflow.com/questions/66099225/how-can-resources-be-provided-in-pyqt6-which-has-no-pyrcc
+# import qrc_resources  # this means this needs to go, and we need to adjust all the resources calls
+QtCore.QDir.addSearchPath("resources", "images/")
+
 
 MAC = True
 try:
@@ -34,27 +38,27 @@ def createFakeData():
     import random
 
     print("Dropping tables...")
-    query = QSqlQuery()
-    query.exec_("DROP TABLE assets")
-    query.exec_("DROP TABLE logs")
-    query.exec_("DROP TABLE actions")
-    query.exec_("DROP TABLE categories")
-    QApplication.processEvents()
+    query = QtSql.QSqlQuery()
+    query.exec("DROP TABLE assets")
+    query.exec("DROP TABLE logs")
+    query.exec("DROP TABLE actions")
+    query.exec("DROP TABLE categories")
+    QtWidgets.QApplication.processEvents()
 
     print("Creating tables...")
-    query.exec_(
+    query.exec(
         """CREATE TABLE actions (
                 id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE NOT NULL,
                 name VARCHAR(20) NOT NULL,
                 description VARCHAR(40) NOT NULL)"""
     )
-    query.exec_(
+    query.exec(
         """CREATE TABLE categories (
                 id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE NOT NULL,
                 name VARCHAR(20) NOT NULL,
                 description VARCHAR(40) NOT NULL)"""
     )
-    query.exec_(
+    query.exec(
         """CREATE TABLE assets (
                 id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE NOT NULL,
                 name VARCHAR(40) NOT NULL,
@@ -62,7 +66,7 @@ def createFakeData():
                 room VARCHAR(4) NOT NULL,
                 FOREIGN KEY (categoryid) REFERENCES categories)"""
     )
-    query.exec_(
+    query.exec(
         """CREATE TABLE logs (
                 id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE NOT NULL,
                 assetid INTEGER NOT NULL,
@@ -71,40 +75,40 @@ def createFakeData():
                 FOREIGN KEY (assetid) REFERENCES assets,
                 FOREIGN KEY (actionid) REFERENCES actions)"""
     )
-    QApplication.processEvents()
+    QtWidgets.QApplication.processEvents()
 
     print("Populating tables...")
-    query.exec_(
+    query.exec(
         "INSERT INTO actions (name, description) "
         "VALUES ('Acquired', 'When installed')"
     )
-    query.exec_(
+    query.exec(
         "INSERT INTO actions (name, description) "
         "VALUES ('Broken', 'When failed and unusable')"
     )
-    query.exec_(
+    query.exec(
         "INSERT INTO actions (name, description) "
         "VALUES ('Repaired', 'When back in service')"
     )
-    query.exec_(
+    query.exec(
         "INSERT INTO actions (name, description) "
         "VALUES ('Routine maintenance', "
         "'When tested, refilled, etc.')"
     )
-    query.exec_(
+    query.exec(
         "INSERT INTO categories (name, description) VALUES "
         "('Computer Equipment', "
         "'Monitors, System Units, Peripherals, etc.')"
     )
-    query.exec_(
+    query.exec(
         "INSERT INTO categories (name, description) VALUES "
         "('Furniture', 'Chairs, Tables, Desks, etc.')"
     )
-    query.exec_(
+    query.exec(
         "INSERT INTO categories (name, description) VALUES "
         "('Electrical Equipment', 'Non-computer electricals')"
     )
-    today = QDate.currentDate()
+    today = QtCore.QDate.currentDate()
     floors = list(range(1, 12)) + list(range(14, 28))
     monitors = (
         ('17" LCD Monitor', 1),
@@ -161,7 +165,7 @@ def createFakeData():
         "INSERT INTO assets (name, categoryid, room) "
         "VALUES (:name, :categoryid, :room)"
     )
-    logQuery = QSqlQuery()
+    logQuery = QtSql.QSqlQuery()
     logQuery.prepare(
         "INSERT INTO logs (assetid, date, actionid) "
         "VALUES (:assetid, :date, :actionid)"
@@ -179,117 +183,117 @@ def createFakeData():
             query.bindValue(":name", name)
             query.bindValue(":categoryid", category)
             query.bindValue(":room", room)
-            query.exec_()
+            query.exec()
             logQuery.bindValue(":assetid", assetid)
             when = today.addDays(-random.randint(7, 1500))
             logQuery.bindValue(":date", when)
             logQuery.bindValue(":actionid", ACQUIRED)
-            logQuery.exec_()
+            logQuery.exec()
             if random.random() > 0.7:
                 logQuery.bindValue(":assetid", assetid)
                 when = when.addDays(random.randint(1, 1500))
                 if when <= today:
                     logQuery.bindValue(":date", when)
                     logQuery.bindValue(":actionid", random.choice((2, 4)))
-                    logQuery.exec_()
+                    logQuery.exec()
             assetid += 1
         if random.random() > 0.8:
             name, category = random.choice(printers)
             query.bindValue(":name", name)
             query.bindValue(":categoryid", category)
             query.bindValue(":room", room)
-            query.exec_()
+            query.exec()
             logQuery.bindValue(":assetid", assetid)
             when = today.addDays(-random.randint(7, 1500))
             logQuery.bindValue(":date", when)
             logQuery.bindValue(":actionid", ACQUIRED)
-            logQuery.exec_()
+            logQuery.exec()
             if random.random() > 0.6:
                 logQuery.bindValue(":assetid", assetid)
                 when = when.addDays(random.randint(1, 1500))
                 if when <= today:
                     logQuery.bindValue(":date", when)
                     logQuery.bindValue(":actionid", random.choice((2, 4)))
-                    logQuery.exec_()
+                    logQuery.exec()
             assetid += 1
         if random.random() > 0.6:
             name, category = random.choice(electrical)
             query.bindValue(":name", name)
             query.bindValue(":categoryid", category)
             query.bindValue(":room", room)
-            query.exec_()
+            query.exec()
             logQuery.bindValue(":assetid", assetid)
             when = today.addDays(-random.randint(7, 1500))
             logQuery.bindValue(":date", when)
             logQuery.bindValue(":actionid", ACQUIRED)
-            logQuery.exec_()
+            logQuery.exec()
             if random.random() > 0.5:
                 logQuery.bindValue(":assetid", assetid)
                 when = when.addDays(random.randint(1, 1500))
                 if when <= today:
                     logQuery.bindValue(":date", when)
                     logQuery.bindValue(":actionid", random.choice((2, 4)))
-                    logQuery.exec_()
+                    logQuery.exec()
             assetid += 1
-        QApplication.processEvents()
+        QtWidgets.QApplication.processEvents()
 
     print("Assets:")
-    query.exec_("SELECT id, name, categoryid, room FROM assets " "ORDER by id")
-    categoryQuery = QSqlQuery()
+    query.exec("SELECT id, name, categoryid, room FROM assets " "ORDER by id")
+    categoryQuery = QtSql.QSqlQuery()
     while query.next():
         id = int(query.value(0))
         name = query.value(1)
         categoryid = int(query.value(2))
         room = query.value(3)
-        categoryQuery.exec_(
+        categoryQuery.exec(
             "SELECT name FROM categories " "WHERE id = {}".format(categoryid)
         )
         category = "{}".format(categoryid)
         if categoryQuery.next():
             category = categoryQuery.value(0)
         print("{0}: {1} [{2}] {3}".format(id, name, category, room))
-    QApplication.processEvents()
+    QtWidgets.QApplication.processEvents()
 
 
-class ReferenceDataDlg(QDialog):
+class ReferenceDataDlg(QtWidgets.QDialog):
     def __init__(self, table, title, parent=None):
         super(ReferenceDataDlg, self).__init__(parent)
 
-        self.model = QSqlTableModel(self)
+        self.model = QtSql.QSqlTableModel(self)
         self.model.setTable(table)
-        self.model.setSort(NAME, Qt.AscendingOrder)
-        self.model.setHeaderData(ID, Qt.Horizontal, "ID")
-        self.model.setHeaderData(NAME, Qt.Horizontal, "Name")
-        self.model.setHeaderData(DESCRIPTION, Qt.Horizontal, "Description")
+        self.model.setSort(NAME, QtCore.Qt.AscendingOrder)
+        self.model.setHeaderData(ID, QtCore.Qt.Horizontal, "ID")
+        self.model.setHeaderData(NAME, QtCore.Qt.Horizontal, "Name")
+        self.model.setHeaderData(DESCRIPTION, QtCore.Qt.Horizontal, "Description")
         self.model.select()
 
-        self.view = QTableView()
+        self.view = QtWidgets.QTableView()
         self.view.setModel(self.model)
-        self.view.setSelectionMode(QTableView.SingleSelection)
-        self.view.setSelectionBehavior(QTableView.SelectRows)
+        self.view.setSelectionMode(QtWidgets.QTableView.SingleSelection)
+        self.view.setSelectionBehavior(QtWidgets.QTableView.SelectRows)
         self.view.setColumnHidden(ID, True)
         self.view.resizeColumnsToContents()
 
-        addButton = QPushButton("&Add")
-        deleteButton = QPushButton("&Delete")
-        okButton = QPushButton("&OK")
+        addButton = QtWidgets.QPushButton("&Add")
+        deleteButton = QtWidgets.QPushButton("&Delete")
+        okButton = QtWidgets.QPushButton("&OK")
         if not MAC:
-            addButton.setFocusPolicy(Qt.NoFocus)
-            deleteButton.setFocusPolicy(Qt.NoFocus)
+            addButton.setFocusPolicy(QtCore.Qt.NoFocus)
+            deleteButton.setFocusPolicy(QtCore.Qt.NoFocus)
 
-        buttonLayout = QHBoxLayout()
+        buttonLayout = QtWidgets.QHBoxLayout()
         buttonLayout.addWidget(addButton)
         buttonLayout.addWidget(deleteButton)
         buttonLayout.addStretch()
         buttonLayout.addWidget(okButton)
-        layout = QVBoxLayout()
+        layout = QtWidgets.QVBoxLayout()
         layout.addWidget(self.view)
         layout.addLayout(buttonLayout)
         self.setLayout(layout)
 
-        self.connect(addButton, SIGNAL("clicked()"), self.addRecord)
-        self.connect(deleteButton, SIGNAL("clicked()"), self.deleteRecord)
-        self.connect(okButton, SIGNAL("clicked()"), self.accept)
+        self.connect(addButton, QtCore.SIGNAL("clicked()"), self.addRecord)
+        self.connect(deleteButton, QtCore.SIGNAL("clicked()"), self.deleteRecord)
+        self.connect(okButton, QtCore.SIGNAL("clicked()"), self.accept)
 
         self.setWindowTitle("Asset Manager - Edit {} Reference Data".format(title))
 
@@ -304,166 +308,168 @@ class ReferenceDataDlg(QDialog):
         index = self.view.currentIndex()
         if not index.isValid():
             return
-        # QSqlDatabase.database().transaction()
+        # QtSql.QSqlDatabase.database().transaction()
         record = self.model.record(index.row())
         id = int(record.value(ID))
         table = self.model.tableName()
-        query = QSqlQuery()
+        query = QtSql.QSqlQuery()
         if table == "actions":
-            query.exec_("SELECT COUNT(*) FROM logs " "WHERE actionid = {}".format(id))
+            query.exec("SELECT COUNT(*) FROM logs " "WHERE actionid = {}".format(id))
         elif table == "categories":
-            query.exec_(
+            query.exec(
                 "SELECT COUNT(*) FROM assets " "WHERE categoryid = {}".format(id)
             )
         count = 0
         if query.next():
             count = int(query.value(0))
         if count:
-            QMessageBox.information(
+            QtWidgets.QMessageBox.information(
                 self,
                 "Delete {}".format(table),
                 "Cannot delete {}<br>"
                 "from the {} table because it is used by "
                 "{} records".format(record.value(NAME), table, count),
             )
-            # QSqlDatabase.database().rollback()
+            # QtSql.QSqlDatabase.database().rollback()
             return
         self.model.removeRow(index.row())
         self.model.submitAll()
-        # QSqlDatabase.database().commit()
+        # QtSql.QSqlDatabase.database().commit()
 
 
-class AssetDelegate(QSqlRelationalDelegate):
+class AssetDelegate(QtSql.QSqlRelationalDelegate):
     def __init__(self, parent=None):
         super(AssetDelegate, self).__init__(parent)
 
     def paint(self, painter, option, index):
-        myoption = QStyleOptionViewItem(option)
+        myoption = QtWidgets.QStyleOptionViewItem(option)
         if index.column() == ROOM:
-            myoption.displayAlignment |= Qt.AlignRight | Qt.AlignVCenter
-        QSqlRelationalDelegate.paint(self, painter, myoption, index)
+            myoption.displayAlignment |= QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter
+        QtSql.QSqlRelationalDelegate.paint(self, painter, myoption, index)
 
     def createEditor(self, parent, option, index):
         if index.column() == ROOM:
-            editor = QLineEdit(parent)
-            regex = QRegExp(
+            editor = QtWidgets.QLineEdit(parent)
+            regex = QtCore.QRegularExpression(
                 r"(?:0[1-9]|1[0124-9]|2[0-7])" r"(?:0[1-9]|[1-5][0-9]|6[012])"
             )
-            validator = QRegExpValidator(regex, parent)
+            validator = QtGui.QRegularExpressionValidator(regex, parent)
             editor.setValidator(validator)
             editor.setInputMask("9999")
-            editor.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+            editor.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
             return editor
         else:
-            return QSqlRelationalDelegate.createEditor(self, parent, option, index)
+            return QtSql.QSqlRelationalDelegate.createEditor(
+                self, parent, option, index
+            )
 
     def setEditorData(self, editor, index):
         if index.column() == ROOM:
-            text = index.model().data(index, Qt.DisplayRole)
+            text = index.model().data(index, QtCore.Qt.DisplayRole)
             editor.setText(text)
         else:
-            QSqlRelationalDelegate.setEditorData(self, editor, index)
+            QtSql.QSqlRelationalDelegate.setEditorData(self, editor, index)
 
     def setModelData(self, editor, model, index):
         if index.column() == ROOM:
             model.setData(index, editor.text())
         else:
-            QSqlRelationalDelegate.setModelData(self, editor, model, index)
+            QtSql.QSqlRelationalDelegate.setModelData(self, editor, model, index)
 
 
-class LogDelegate(QSqlRelationalDelegate):
+class LogDelegate(QtSql.QSqlRelationalDelegate):
     def __init__(self, parent=None):
         super(LogDelegate, self).__init__(parent)
 
     def paint(self, painter, option, index):
-        myoption = QStyleOptionViewItem(option)
+        myoption = QtWidgets.QStyleOptionViewItem(option)
         if index.column() == DATE:
-            myoption.displayAlignment |= Qt.AlignRight | Qt.AlignVCenter
-        QSqlRelationalDelegate.paint(self, painter, myoption, index)
+            myoption.displayAlignment |= QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter
+        QtSql.QSqlRelationalDelegate.paint(self, painter, myoption, index)
 
     def createEditor(self, parent, option, index):
         if index.column() == ACTIONID:
-            text = index.model().data(index, Qt.DisplayRole)
+            text = index.model().data(index, QtCore.Qt.DisplayRole)
             if text.isdigit() and int(text) == ACQUIRED:
                 return  # Acquired is read-only
         if index.column() == DATE:
-            editor = QDateEdit(parent)
-            editor.setMaximumDate(QDate.currentDate())
+            editor = QtWidgets.QDateEdit(parent)
+            editor.setMaximumDate(QtCore.QDate.currentDate())
             editor.setDisplayFormat("yyyy-MM-dd")
-            if PYQT_VERSION_STR >= "4.1.0":
-                editor.setCalendarPopup(True)
-            editor.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+            editor.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
             return editor
         else:
-            return QSqlRelationalDelegate.createEditor(self, parent, option, index)
+            return QtSql.QSqlRelationalDelegate.createEditor(
+                self, parent, option, index
+            )
 
     def setEditorData(self, editor, index):
         if index.column() == DATE:
-            date = index.model().data(index, Qt.DisplayRole)
+            date = index.model().data(index, QtCore.Qt.DisplayRole)
             editor.setDate(date)
         else:
-            QSqlRelationalDelegate.setEditorData(self, editor, index)
+            QtSql.QSqlRelationalDelegate.setEditorData(self, editor, index)
 
     def setModelData(self, editor, model, index):
         if index.column() == DATE:
             model.setData(index, editor.date())
         else:
-            QSqlRelationalDelegate.setModelData(self, editor, model, index)
+            QtSql.QSqlRelationalDelegate.setModelData(self, editor, model, index)
 
 
-class MainForm(QDialog):
+class MainForm(QtWidgets.QDialog):
     def __init__(self):
         super(MainForm, self).__init__()
 
-        self.assetModel = QSqlRelationalTableModel(self)
+        self.assetModel = QtSql.QSqlRelationalTableModel(self)
         self.assetModel.setTable("assets")
         self.assetModel.setRelation(
-            CATEGORYID, QSqlRelation("categories", "id", "name")
+            CATEGORYID, QtSql.QSqlRelation("categories", "id", "name")
         )
-        self.assetModel.setSort(ROOM, Qt.AscendingOrder)
-        self.assetModel.setHeaderData(ID, Qt.Horizontal, "ID")
-        self.assetModel.setHeaderData(NAME, Qt.Horizontal, "Name")
-        self.assetModel.setHeaderData(CATEGORYID, Qt.Horizontal, "Category")
-        self.assetModel.setHeaderData(ROOM, Qt.Horizontal, "Room")
+        self.assetModel.setSort(ROOM, QtCore.Qt.AscendingOrder)
+        self.assetModel.setHeaderData(ID, QtCore.Qt.Horizontal, "ID")
+        self.assetModel.setHeaderData(NAME, QtCore.Qt.Horizontal, "Name")
+        self.assetModel.setHeaderData(CATEGORYID, QtCore.Qt.Horizontal, "Category")
+        self.assetModel.setHeaderData(ROOM, QtCore.Qt.Horizontal, "Room")
         self.assetModel.select()
 
-        self.assetView = QTableView()
+        self.assetView = QtWidgets.QTableView()
         self.assetView.setModel(self.assetModel)
         self.assetView.setItemDelegate(AssetDelegate(self))
-        self.assetView.setSelectionMode(QTableView.SingleSelection)
-        self.assetView.setSelectionBehavior(QTableView.SelectRows)
+        self.assetView.setSelectionMode(QtWidgets.QTableView.SingleSelection)
+        self.assetView.setSelectionBehavior(QtWidgets.QTableView.SelectRows)
         self.assetView.setColumnHidden(ID, True)
         self.assetView.resizeColumnsToContents()
-        assetLabel = QLabel("A&ssets")
+        assetLabel = QtWidgets.QLabel("A&ssets")
         assetLabel.setBuddy(self.assetView)
 
-        self.logModel = QSqlRelationalTableModel(self)
+        self.logModel = QtSql.QSqlRelationalTableModel(self)
         self.logModel.setTable("logs")
-        self.logModel.setRelation(ACTIONID, QSqlRelation("actions", "id", "name"))
-        self.logModel.setSort(DATE, Qt.AscendingOrder)
-        self.logModel.setHeaderData(DATE, Qt.Horizontal, "Date")
-        self.logModel.setHeaderData(ACTIONID, Qt.Horizontal, "Action")
+        self.logModel.setRelation(ACTIONID, QtSql.QSqlRelation("actions", "id", "name"))
+        self.logModel.setSort(DATE, QtCore.Qt.AscendingOrder)
+        self.logModel.setHeaderData(DATE, QtCore.Qt.Horizontal, "Date")
+        self.logModel.setHeaderData(ACTIONID, QtCore.Qt.Horizontal, "Action")
         self.logModel.select()
 
-        self.logView = QTableView()
+        self.logView = QtWidgets.QTableView()
         self.logView.setModel(self.logModel)
         self.logView.setItemDelegate(LogDelegate(self))
-        self.logView.setSelectionMode(QTableView.SingleSelection)
-        self.logView.setSelectionBehavior(QTableView.SelectRows)
+        self.logView.setSelectionMode(QtWidgets.QTableView.SingleSelection)
+        self.logView.setSelectionBehavior(QtWidgets.QTableView.SelectRows)
         self.logView.setColumnHidden(ID, True)
         self.logView.setColumnHidden(ASSETID, True)
         self.logView.resizeColumnsToContents()
         self.logView.horizontalHeader().setStretchLastSection(True)
-        logLabel = QLabel("&Logs")
+        logLabel = QtWidgets.QLabel("&Logs")
         logLabel.setBuddy(self.logView)
 
-        addAssetButton = QPushButton("&Add Asset")
-        deleteAssetButton = QPushButton("&Delete Asset")
-        addActionButton = QPushButton("Add A&ction")
-        deleteActionButton = QPushButton("Delete Ac&tion")
-        editActionsButton = QPushButton("&Edit Actions...")
-        editCategoriesButton = QPushButton("Ed&it Categories...")
-        quitButton = QPushButton("&Quit")
+        addAssetButton = QtWidgets.QPushButton("&Add Asset")
+        deleteAssetButton = QtWidgets.QPushButton("&Delete Asset")
+        addActionButton = QtWidgets.QPushButton("Add A&ction")
+        deleteActionButton = QtWidgets.QPushButton("Delete Ac&tion")
+        editActionsButton = QtWidgets.QPushButton("&Edit Actions...")
+        editCategoriesButton = QtWidgets.QPushButton("Ed&it Categories...")
+        quitButton = QtWidgets.QPushButton("&Quit")
         for button in (
             addAssetButton,
             deleteAssetButton,
@@ -477,14 +483,14 @@ class MainForm(QDialog):
                 button.setDefault(False)
                 button.setAutoDefault(False)
             else:
-                button.setFocusPolicy(Qt.NoFocus)
+                button.setFocusPolicy(QtCore.Qt.NoFocus)
 
-        dataLayout = QVBoxLayout()
+        dataLayout = QtWidgets.QVBoxLayout()
         dataLayout.addWidget(assetLabel)
         dataLayout.addWidget(self.assetView, 1)
         dataLayout.addWidget(logLabel)
         dataLayout.addWidget(self.logView)
-        buttonLayout = QVBoxLayout()
+        buttonLayout = QtWidgets.QVBoxLayout()
         buttonLayout.addWidget(addAssetButton)
         buttonLayout.addWidget(deleteAssetButton)
         buttonLayout.addWidget(addActionButton)
@@ -493,34 +499,36 @@ class MainForm(QDialog):
         buttonLayout.addWidget(editCategoriesButton)
         buttonLayout.addStretch()
         buttonLayout.addWidget(quitButton)
-        layout = QHBoxLayout()
+        layout = QtWidgets.QHBoxLayout()
         layout.addLayout(dataLayout, 1)
         layout.addLayout(buttonLayout)
         self.setLayout(layout)
 
         self.connect(
             self.assetView.selectionModel(),
-            SIGNAL(("currentRowChanged(QModelIndex,QModelIndex)")),
+            QtCore.SIGNAL(("currentRowChanged(QModelIndex,QModelIndex)")),
             self.assetChanged,
         )
-        self.connect(addAssetButton, SIGNAL("clicked()"), self.addAsset)
-        self.connect(deleteAssetButton, SIGNAL("clicked()"), self.deleteAsset)
-        self.connect(addActionButton, SIGNAL("clicked()"), self.addAction)
-        self.connect(deleteActionButton, SIGNAL("clicked()"), self.deleteAction)
-        self.connect(editActionsButton, SIGNAL("clicked()"), self.editActions)
-        self.connect(editCategoriesButton, SIGNAL("clicked()"), self.editCategories)
-        self.connect(quitButton, SIGNAL("clicked()"), self.done)
+        self.connect(addAssetButton, QtCore.SIGNAL("clicked()"), self.addAsset)
+        self.connect(deleteAssetButton, QtCore.SIGNAL("clicked()"), self.deleteAsset)
+        self.connect(addActionButton, QtCore.SIGNAL("clicked()"), self.addAction)
+        self.connect(deleteActionButton, QtCore.SIGNAL("clicked()"), self.deleteAction)
+        self.connect(editActionsButton, QtCore.SIGNAL("clicked()"), self.editActions)
+        self.connect(
+            editCategoriesButton, QtCore.SIGNAL("clicked()"), self.editCategories
+        )
+        self.connect(quitButton, QtCore.SIGNAL("clicked()"), self.done)
 
         self.assetChanged(self.assetView.currentIndex())
         self.setMinimumWidth(650)
         self.setWindowTitle("Asset Manager")
 
     def done(self, result=1):
-        query = QSqlQuery()
-        query.exec_(
+        query = QtSql.QSqlQuery()
+        query.exec(
             "DELETE FROM logs WHERE logs.assetid NOT IN" "(SELECT id FROM assets)"
         )
-        QDialog.done(self, 1)
+        QtWidgets.QDialog.done(self, 1)
 
     def assetChanged(self, index):
         if index.isValid():
@@ -529,12 +537,8 @@ class MainForm(QDialog):
             self.logModel.setFilter("assetid = {}".format(id))
         else:
             self.logModel.setFilter("assetid = -1")
-        self.logModel.reset()  # workaround for Qt <= 4.3.3/SQLite bug
         self.logModel.select()
         self.logView.horizontalHeader().setVisible(self.logModel.rowCount() > 0)
-        if PYQT_VERSION_STR < "4.1.0":
-            self.logView.setColumnHidden(ID, True)
-            self.logView.setColumnHidden(ASSETID, True)
 
     def addAsset(self):
         row = (
@@ -543,14 +547,14 @@ class MainForm(QDialog):
             else 0
         )
 
-        QSqlDatabase.database().transaction()
+        QtSql.QSqlDatabase.database().transaction()
         self.assetModel.insertRow(row)
         index = self.assetModel.index(row, NAME)
         self.assetView.setCurrentIndex(index)
 
         assetid = 1
-        query = QSqlQuery()
-        query.exec_("SELECT MAX(id) FROM assets")
+        query = QtSql.QSqlQuery()
+        query.exec("SELECT MAX(id) FROM assets")
         if query.next():
             assetid = int(query.value(0))
         query.prepare(
@@ -558,21 +562,21 @@ class MainForm(QDialog):
             "VALUES (:assetid, :date, :actionid)"
         )
         query.bindValue(":assetid", assetid + 1)
-        query.bindValue(":date", QDate.currentDate())
+        query.bindValue(":date", QtCore.QDate.currentDate())
         query.bindValue(":actionid", ACQUIRED)
-        query.exec_()
-        QSqlDatabase.database().commit()
+        query.exec()
+        QtSql.QSqlDatabase.database().commit()
         self.assetView.edit(index)
 
     def deleteAsset(self):
         index = self.assetView.currentIndex()
         if not index.isValid():
             return
-        QSqlDatabase.database().transaction()
+        QtSql.QSqlDatabase.database().transaction()
         record = self.assetModel.record(index.row())
         assetid = int(record.value(ID))
         logrecords = 1
-        query = QSqlQuery(
+        query = QtSql.QSqlQuery(
             "SELECT COUNT(*) FROM logs WHERE assetid = {}".format(assetid)
         )
         if query.next():
@@ -584,32 +588,37 @@ class MainForm(QDialog):
             msg += ", along with {} log records".format(logrecords)
         msg += "?"
         if (
-            QMessageBox.question(
-                self, "Delete Asset", msg, QMessageBox.Yes | QMessageBox.No
+            QtWidgets.QMessageBox.question(
+                self,
+                "Delete Asset",
+                msg,
+                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
             )
-            == QMessageBox.No
+            == QtWidgets.QMessageBox.No
         ):
-            QSqlDatabase.database().rollback()
+            QtSql.QSqlDatabase.database().rollback()
             return
-        query.exec_("DELETE FROM logs WHERE assetid = {}".format(assetid))
+        query.exec("DELETE FROM logs WHERE assetid = {}".format(assetid))
         self.assetModel.removeRow(index.row())
         self.assetModel.submitAll()
-        QSqlDatabase.database().commit()
+        QtSql.QSqlDatabase.database().commit()
         self.assetChanged(self.assetView.currentIndex())
 
     def addAction(self):
         index = self.assetView.currentIndex()
         if not index.isValid():
             return
-        QSqlDatabase.database().transaction()
+        QtSql.QSqlDatabase.database().transaction()
         record = self.assetModel.record(index.row())
         assetid = int(record.value(ID))
 
         row = self.logModel.rowCount()
         self.logModel.insertRow(row)
         self.logModel.setData(self.logModel.index(row, ASSETID), assetid)
-        self.logModel.setData(self.logModel.index(row, DATE), QDate.currentDate())
-        QSqlDatabase.database().commit()
+        self.logModel.setData(
+            self.logModel.index(row, DATE), QtCore.QDate.currentDate()
+        )
+        QtSql.QSqlDatabase.database().commit()
         index = self.logModel.index(row, ACTIONID)
         self.logView.setCurrentIndex(index)
         self.logView.edit(index)
@@ -621,7 +630,7 @@ class MainForm(QDialog):
         record = self.logModel.record(index.row())
         action = record.value(ACTIONID)
         if action == "Acquired":
-            QMessageBox.information(
+            QtWidgets.QMessageBox.information(
                 self,
                 "Delete Log",
                 "The 'Acquired' log record cannot be deleted.<br>"
@@ -630,13 +639,13 @@ class MainForm(QDialog):
             return
         when = record.value(DATE)
         if (
-            QMessageBox.question(
+            QtWidgets.QMessageBox.question(
                 self,
                 "Delete Log",
                 "Delete log<br>{} {}?".format(when, action),
-                QMessageBox.Yes | QMessageBox.No,
+                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
             )
-            == QMessageBox.No
+            == QtWidgets.QMessageBox.No
         ):
             return
         self.logModel.removeRow(index.row())
@@ -644,34 +653,34 @@ class MainForm(QDialog):
 
     def editActions(self):
         form = ReferenceDataDlg("actions", "Action", self)
-        form.exec_()
+        form.exec()
 
     def editCategories(self):
         form = ReferenceDataDlg("categories", "Category", self)
-        form.exec_()
+        form.exec()
 
 
 def main():
-    app = QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
 
     filename = os.path.join(os.path.dirname(__file__), "assets.db")
-    create = not QFile.exists(filename)
-    db = QSqlDatabase.addDatabase("QSQLITE")
+    create = not QtCore.QFile.exists(filename)
+    db = QtSql.QSqlDatabase.addDatabase("QSQLITE")
     db.setDatabaseName(filename)
     if not db.open():
-        QMessageBox.warning(
+        QtWidgets.QMessageBox.warning(
             None, "Asset Manager", "Database Error: {}".format(db.lastError().text())
         )
         sys.exit(1)
 
     splash = None
     if create:
-        app.setOverrideCursor(QCursor(Qt.WaitCursor))
-        splash = QLabel()
-        pixmap = QPixmap(":/assetmanagersplash.png")
+        app.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
+        splash = QtWidgets.QLabel()
+        pixmap = QtGui.QPixmap("resources:assetmanagersplash.png")
         splash.setPixmap(pixmap)
         splash.setMask(pixmap.createHeuristicMask())
-        splash.setWindowFlags(Qt.SplashScreen)
+        splash.setWindowFlags(QtCore.Qt.SplashScreen)
         rect = app.desktop().availableGeometry()
         splash.move(
             (rect.width() - pixmap.width()) / 2, (rect.height() - pixmap.height()) / 2
@@ -686,7 +695,7 @@ def main():
         splash.close()
         app.processEvents()
         app.restoreOverrideCursor()
-    app.exec_()
+    app.exec()
     del form
     del db
 
