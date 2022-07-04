@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # Copyright (c) 2008-10 Qtrac Ltd. All rights reserved.
 # This program or module is free software: you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as published
@@ -11,80 +10,70 @@
 
 import os
 import sys
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from PyQt4.QtSql import *
+from PySide6 import QtWidgets, QtCore, QtSql
 
 MAC = True
 try:
-    from PyQt4.QtGui import qt_mac_set_native_menubar
+    from PySide6.QtGui import qt_mac_set_native_menubar
 except ImportError:
     MAC = False
 
 ID, CATEGORY, SHORTDESC, LONGDESC = range(4)
 
 
-class ReferenceDataDlg(QDialog):
-
+class ReferenceDataDlg(QtWidgets.QDialog):
     def __init__(self, parent=None):
         super(ReferenceDataDlg, self).__init__(parent)
 
-        self.model = QSqlTableModel(self)
+        self.model = QtSql.QSqlTableModel(self)
         self.model.setTable("reference")
-        self.model.setSort(ID, Qt.AscendingOrder)
-        self.model.setHeaderData(ID, Qt.Horizontal, "ID")
-        self.model.setHeaderData(CATEGORY, Qt.Horizontal,
-                "Category")
-        self.model.setHeaderData(SHORTDESC, Qt.Horizontal,
-                "Short Desc.")
-        self.model.setHeaderData(LONGDESC, Qt.Horizontal,
-                "Long Desc.")
+        self.model.setSort(ID, QtCore.Qt.AscendingOrder)
+        self.model.setHeaderData(ID, QtCore.Qt.Horizontal, "ID")
+        self.model.setHeaderData(CATEGORY, QtCore.Qt.Horizontal, "Category")
+        self.model.setHeaderData(SHORTDESC, QtCore.Qt.Horizontal, "Short Desc.")
+        self.model.setHeaderData(LONGDESC, QtCore.Qt.Horizontal, "Long Desc.")
         self.model.select()
 
-        self.view = QTableView()
+        self.view = QtWidgets.QTableView()
         self.view.setModel(self.model)
-        self.view.setSelectionMode(QTableView.SingleSelection)
-        self.view.setSelectionBehavior(QTableView.SelectRows)
+        self.view.setSelectionMode(QtWidgets.QTableView.SingleSelection)
+        self.view.setSelectionBehavior(QtWidgets.QTableView.SelectRows)
         self.view.setColumnHidden(ID, True)
         self.view.resizeColumnsToContents()
 
-        buttonBox = QDialogButtonBox()
-        addButton = buttonBox.addButton("&Add",
-                QDialogButtonBox.ActionRole)
-        deleteButton = buttonBox.addButton("&Delete",
-                QDialogButtonBox.ActionRole)
-        sortButton = buttonBox.addButton("&Sort",
-                QDialogButtonBox.ActionRole)
+        buttonBox = QtWidgets.QDialogButtonBox()
+        addButton = buttonBox.addButton("&Add", QtWidgets.QDialogButtonBox.ActionRole)
+        deleteButton = buttonBox.addButton("&Delete", QtWidgets.QDialogButtonBox.ActionRole)
+        sortButton = buttonBox.addButton("&Sort", QtWidgets.QDialogButtonBox.ActionRole)
         if not MAC:
-            addButton.setFocusPolicy(Qt.NoFocus)
-            deleteButton.setFocusPolicy(Qt.NoFocus)
-            sortButton.setFocusPolicy(Qt.NoFocus)
+            addButton.setFocusPolicy(QtCore.Qt.NoFocus)
+            deleteButton.setFocusPolicy(QtCore.Qt.NoFocus)
+            sortButton.setFocusPolicy(QtCore.Qt.NoFocus)
 
-        menu = QMenu(self)
+        menu = QtWidgets.QMenu(self)
         sortByCategoryAction = menu.addAction("Sort by &Category")
         sortByDescriptionAction = menu.addAction("Sort by &Description")
         sortByIDAction = menu.addAction("Sort by &ID")
         sortButton.setMenu(menu)
-        closeButton = buttonBox.addButton(QDialogButtonBox.Close)
+        closeButton = buttonBox.addButton(QtWidgets.QDialogButtonBox.Close)
 
-        layout = QVBoxLayout()
+        layout = QtWidgets.QVBoxLayout()
         layout.addWidget(self.view)
         layout.addWidget(buttonBox)
         self.setLayout(layout)
 
-        self.connect(addButton, SIGNAL("clicked()"), self.addRecord)
-        self.connect(deleteButton, SIGNAL("clicked()"),
-                     self.deleteRecord)
-        self.connect(sortByCategoryAction, SIGNAL("triggered()"),
-                     lambda: self.sort(CATEGORY))
-        self.connect(sortByDescriptionAction, SIGNAL("triggered()"),
-                     lambda: self.sort(SHORTDESC))
-        self.connect(sortByIDAction, SIGNAL("triggered()"),
-                     lambda: self.sort(ID))
-        self.connect(closeButton, SIGNAL("clicked()"), self.accept)
+        self.connect(addButton, QtCore.SIGNAL("clicked()"), self.addRecord)
+        self.connect(deleteButton, QtCore.SIGNAL("clicked()"), self.deleteRecord)
+        self.connect(
+            sortByCategoryAction, QtCore.SIGNAL("triggered()"), lambda: self.sort(CATEGORY)
+        )
+        self.connect(
+            sortByDescriptionAction, QtCore.SIGNAL("triggered()"), lambda: self.sort(SHORTDESC)
+        )
+        self.connect(sortByIDAction, QtCore.SIGNAL("triggered()"), lambda: self.sort(ID))
+        self.connect(closeButton, QtCore.SIGNAL("clicked()"), self.accept)
 
         self.setWindowTitle("Reference Data")
-
 
     def addRecord(self):
         row = self.model.rowCount()
@@ -93,7 +82,6 @@ class ReferenceDataDlg(QDialog):
         self.view.setCurrentIndex(index)
         self.view.edit(index)
 
-
     def deleteRecord(self):
         index = self.view.currentIndex()
         if not index.isValid():
@@ -101,46 +89,51 @@ class ReferenceDataDlg(QDialog):
         record = self.model.record(index.row())
         category = record.value(CATEGORY)
         desc = record.value(SHORTDESC)
-        if (QMessageBox.question(self, "Reference Data",
-                "Delete {} from category {}?".format(
-                desc, category),
-                QMessageBox.Yes|QMessageBox.No) ==
-                QMessageBox.No):
+        if (
+            QtWidgets.QMessageBox.question(
+                self,
+                "Reference Data",
+                "Delete {} from category {}?".format(desc, category),
+                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+            )
+            == QtWidgets.QMessageBox.No
+        ):
             return
         self.model.removeRow(index.row())
         self.model.submitAll()
 
-
     def sort(self, column):
-        self.model.setSort(column, Qt.AscendingOrder)
+        self.model.setSort(column, QtCore.Qt.AscendingOrder)
         self.model.select()
 
 
 def main():
-    app = QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
 
     filename = os.path.join(os.path.dirname(__file__), "reference.db")
-    create = not QFile.exists(filename)
+    create = not QtCore.QFile.exists(filename)
 
-    db = QSqlDatabase.addDatabase("QSQLITE")
+    db = QtSql.QSqlDatabase.addDatabase("QSQLITE")
     db.setDatabaseName(filename)
     if not db.open():
-        QMessageBox.warning(None, "Reference Data",
-            "Database Error: {}".format(db.lastError().text()))
+        QtWidgets.QMessageBox.warning(
+            None, "Reference Data", "Database Error: {}".format(db.lastError().text())
+        )
         sys.exit(1)
 
     if create:
-        query = QSqlQuery()
-        query.exec_("""CREATE TABLE reference (
+        query = QtSql.QSqlQuery()
+        query.exec_(
+            """CREATE TABLE reference (
                 id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE NOT NULL,
                 category VARCHAR(30) NOT NULL,
                 shortdesc VARCHAR(20) NOT NULL,
-                longdesc VARCHAR(80))""")
+                longdesc VARCHAR(80))"""
+        )
 
     form = ReferenceDataDlg()
     form.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
 
 
 main()
-
