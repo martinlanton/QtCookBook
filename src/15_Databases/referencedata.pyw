@@ -123,7 +123,7 @@ def main():
 
     if create:
         query = QtSql.QSqlQuery()
-        query.exec_(
+        query.exec(
             """CREATE TABLE reference (
                 id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE NOT NULL,
                 category VARCHAR(30) NOT NULL,
