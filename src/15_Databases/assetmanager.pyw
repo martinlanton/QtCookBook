@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # Copyright (c) 2008-10 Qtrac Ltd. All rights reserved.
 # This program or module is free software: you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as published
@@ -681,7 +680,7 @@ def main():
         splash.setPixmap(pixmap)
         splash.setMask(pixmap.createHeuristicMask())
         splash.setWindowFlags(QtCore.Qt.SplashScreen)
-        rect = app.desktop().availableGeometry()
+        rect = QtGui.QScreen().availableGeometry()
         splash.move(
             (rect.width() - pixmap.width()) / 2, (rect.height() - pixmap.height()) / 2
         )
