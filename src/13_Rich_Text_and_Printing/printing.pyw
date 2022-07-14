@@ -11,9 +11,10 @@
 import sys
 from PySide6 import QtWidgets, QtCore, QtGui, QtPrintSupport
 
-#  Since pyrcc is no longer provided with PyQt or PySide, we
-#  need to change resources location using the information from this thread :
-#  https://stackoverflow.com/questions/66099225/how-can-resources-be-provided-in-pyqt6-which-has-no-pyrcc
+# Since pyrcc is no longer provided with PyQt or PySide, we
+# need to change resources location using the information from this thread :
+# https://stackoverflow.com/questions/66099225/how-can-resources-be-provided-in-pyqt6-which-has-no-pyrcc
+# That said PySide6 does still provide an alternative : https://doc.qt.io/qtforpython-6/tutorials/basictutorial/qrcfiles.html
 # import qrc_resources  # this means this needs to go, and we need to adjust all the resources calls
 QtCore.QDir.addSearchPath("resources", "images/")
 
