@@ -16,43 +16,35 @@ KEY, NODE = range(2)
 
 
 class BranchNode(object):
-
     def __init__(self, name, parent=None):
         super(BranchNode, self).__init__()
         self.name = name
         self.parent = parent
         self.children = []
 
-
     def __lt__(self, other):
         if isinstance(other, BranchNode):
             return self.orderKey() < other.orderKey()
         return False
 
-
     def orderKey(self):
         return self.name.lower()
-
 
     def toString(self):
         return self.name
 
-
     def __len__(self):
         return len(self.children)
-
 
     def childAtRow(self, row):
         assert 0 <= row < len(self.children)
         return self.children[row][NODE]
-        
 
     def rowOfChild(self, child):
         for i, item in enumerate(self.children):
             if item[NODE] == child:
                 return i
         return -1
-
 
     def childWithKey(self, key):
         if not self.children:
@@ -66,11 +58,9 @@ class BranchNode(object):
             return self.children[i][NODE]
         return None
 
-
     def insertChild(self, child):
         child.parent = self
         bisect.insort(self.children, (child.orderKey(), child))
-
 
     def hasLeaves(self):
         if not self.children:
@@ -79,24 +69,19 @@ class BranchNode(object):
 
 
 class LeafNode(object):
-
     def __init__(self, fields, parent=None):
         super(LeafNode, self).__init__()
         self.parent = parent
         self.fields = fields
 
-
     def orderKey(self):
         return "\t".join(self.fields).lower()
-
 
     def toString(self, separator="\t"):
         return separator.join(self.fields)
 
-
     def __len__(self):
         return len(self.fields)
-
 
     def asRecord(self):
         record = []
@@ -108,22 +93,19 @@ class LeafNode(object):
         record = record[1:]
         return record + self.fields
 
-
     def field(self, column):
         assert 0 <= column <= len(self.fields)
         return self.fields[column]
 
 
 class TreeOfTableModel(QAbstractItemModel):
-
     def __init__(self, parent=None):
         super(TreeOfTableModel, self).__init__(parent)
         self.columns = 0
         self.root = BranchNode("")
         self.headers = []
 
-
-    def load(self, filename, nesting, separator): 
+    def load(self, filename, nesting, separator):
         assert nesting > 0
         self.nesting = nesting
         self.root = BranchNode("")
@@ -145,7 +127,6 @@ class TreeOfTableModel(QAbstractItemModel):
             if exception is not None:
                 raise exception
 
-
     def addRecord(self, fields, callReset=True):
         assert len(fields) > self.nesting
         root = self.root
@@ -160,12 +141,11 @@ class TreeOfTableModel(QAbstractItemModel):
                 root.insertChild(branch)
                 root = branch
         assert branch is not None
-        items = fields[self.nesting:]
+        items = fields[self.nesting :]
         self.columns = max(self.columns, len(items))
         branch.insertChild(LeafNode(items, branch))
         if callReset:
             self.reset()
-
 
     def asRecord(self, index):
         leaf = self.nodeFromIndex(index)
@@ -173,21 +153,18 @@ class TreeOfTableModel(QAbstractItemModel):
             return leaf.asRecord()
         return []
 
-
     def rowCount(self, parent):
         node = self.nodeFromIndex(parent)
         if node is None or isinstance(node, LeafNode):
             return 0
         return len(node)
 
-
     def columnCount(self, parent):
         return self.columns
 
-
     def data(self, index, role):
         if role == Qt.TextAlignmentRole:
-            return int(Qt.AlignTop|Qt.AlignLeft)
+            return int(Qt.AlignTop | Qt.AlignLeft)
         if role != Qt.DisplayRole:
             return None
         node = self.nodeFromIndex(index)
@@ -196,22 +173,17 @@ class TreeOfTableModel(QAbstractItemModel):
             return node.toString() if index.column() == 0 else ""
         return node.field(index.column())
 
-
     def headerData(self, section, orientation, role):
-        if (orientation == Qt.Horizontal and
-            role == Qt.DisplayRole):
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             assert 0 <= section <= len(self.headers)
             return self.headers[section]
         return None
-
 
     def index(self, row, column, parent):
         assert self.root
         branch = self.nodeFromIndex(parent)
         assert branch is not None
-        return self.createIndex(row, column,
-                                branch.childAtRow(row))
-
+        return self.createIndex(row, column, branch.childAtRow(row))
 
     def parent(self, child):
         node = self.nodeFromIndex(child)
@@ -227,9 +199,5 @@ class TreeOfTableModel(QAbstractItemModel):
         assert row != -1
         return self.createIndex(row, 0, parent)
 
-
     def nodeFromIndex(self, index):
-        return (index.internalPointer()
-                if index.isValid() else self.root)
-
-
+        return index.internalPointer() if index.isValid() else self.root
