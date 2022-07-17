@@ -52,10 +52,18 @@ class BarGraphModel(QtCore.QAbstractListModel):
             changed = True
         elif role == QtCore.Qt.UserRole:
             self.__colors[row] = value
-            self.emit(QtCore.SIGNAL("dataChanged(QtCore.QModelIndex,QtCore.QModelIndex)"), index, index)
+            self.emit(
+                QtCore.SIGNAL("dataChanged(QtCore.QModelIndex,QtCore.QModelIndex)"),
+                index,
+                index,
+            )
             changed = True
         if changed:
-            self.emit(QtCore.SIGNAL("dataChanged(QtCore.QModelIndex,QtCore.QModelIndex)"), index, index)
+            self.emit(
+                QtCore.SIGNAL("dataChanged(QtCore.QModelIndex,QtCore.QModelIndex)"),
+                index,
+                index,
+            )
         return changed
 
     def data(self, index, role=QtCore.Qt.DisplayRole):
@@ -111,7 +119,9 @@ class BarGraphView(QtWidgets.QWidget):
     def setModel(self, model):
         self.model = model
         self.connect(
-            self.model, QtCore.SIGNAL("dataChanged(QtCore.QModelIndex,QtCore.QModelIndex)"), self.update
+            self.model,
+            QtCore.SIGNAL("dataChanged(QtCore.QModelIndex,QtCore.QModelIndex)"),
+            self.update,
         )
         self.connect(self.model, QtCore.SIGNAL("modelReset()"), self.update)
 
