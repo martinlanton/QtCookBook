@@ -9,12 +9,11 @@
 # warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
 # the GNU General Public License for more details.
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PySide6 import QtWidgets, QtCore, QtGui
 import richtextlineedit
 
 
-class GenericDelegate(QStyledItemDelegate):
+class GenericDelegate(QtWidgets.QStyledItemDelegate):
     def __init__(self, parent=None):
         super(GenericDelegate, self).__init__(parent)
         self.delegates = {}
@@ -32,44 +31,46 @@ class GenericDelegate(QStyledItemDelegate):
         if delegate is not None:
             delegate.paint(painter, option, index)
         else:
-            QStyledItemDelegate.paint(self, painter, option, index)
+            QtWidgets.QStyledItemDelegate.paint(self, painter, option, index)
 
     def createEditor(self, parent, option, index):
         delegate = self.delegates.get(index.column())
         if delegate is not None:
             return delegate.createEditor(parent, option, index)
         else:
-            return QStyledItemDelegate.createEditor(self, parent, option, index)
+            return QtWidgets.QStyledItemDelegate.createEditor(
+                self, parent, option, index
+            )
 
     def setEditorData(self, editor, index):
         delegate = self.delegates.get(index.column())
         if delegate is not None:
             delegate.setEditorData(editor, index)
         else:
-            QStyledItemDelegate.setEditorData(self, editor, index)
+            QtWidgets.QStyledItemDelegate.setEditorData(self, editor, index)
 
     def setModelData(self, editor, model, index):
         delegate = self.delegates.get(index.column())
         if delegate is not None:
             delegate.setModelData(editor, model, index)
         else:
-            QStyledItemDelegate.setModelData(self, editor, model, index)
+            QtWidgets.QStyledItemDelegate.setModelData(self, editor, model, index)
 
 
-class IntegerColumnDelegate(QStyledItemDelegate):
+class IntegerColumnDelegate(QtWidgets.QStyledItemDelegate):
     def __init__(self, minimum=0, maximum=100, parent=None):
         super(IntegerColumnDelegate, self).__init__(parent)
         self.minimum = minimum
         self.maximum = maximum
 
     def createEditor(self, parent, option, index):
-        spinbox = QSpinBox(parent)
+        spinbox = QtWidgets.QSpinBox(parent)
         spinbox.setRange(self.minimum, self.maximum)
-        spinbox.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        spinbox.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         return spinbox
 
     def setEditorData(self, editor, index):
-        value = int(index.model().data(index, Qt.DisplayRole))
+        value = int(index.model().data(index, QtCore.Qt.DisplayRole))
         editor.setValue(value)
 
     def setModelData(self, editor, model, index):
@@ -77,11 +78,11 @@ class IntegerColumnDelegate(QStyledItemDelegate):
         model.setData(index, editor.value())
 
 
-class DateColumnDelegate(QStyledItemDelegate):
+class DateColumnDelegate(QtWidgets.QStyledItemDelegate):
     def __init__(
         self,
-        minimum=QDate(),
-        maximum=QDate.currentDate(),
+        minimum=QtCore.QDate(),
+        maximum=QtCore.QDate.currentDate(),
         format="yyyy-MM-dd",
         parent=None,
     ):
@@ -91,47 +92,47 @@ class DateColumnDelegate(QStyledItemDelegate):
         self.format = format
 
     def createEditor(self, parent, option, index):
-        dateedit = QDateEdit(parent)
+        dateedit = QtWidgets.QDateEdit(parent)
         dateedit.setDateRange(self.minimum, self.maximum)
-        dateedit.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        dateedit.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         dateedit.setDisplayFormat(self.format)
         dateedit.setCalendarPopup(True)
         return dateedit
 
     def setEditorData(self, editor, index):
-        value = index.model().data(index, Qt.DisplayRole)
+        value = index.model().data(index, QtCore.Qt.DisplayRole)
         editor.setDate(value)
 
     def setModelData(self, editor, model, index):
         model.setData(index, editor.date())
 
 
-class PlainTextColumnDelegate(QStyledItemDelegate):
+class PlainTextColumnDelegate(QtWidgets.QStyledItemDelegate):
     def __init__(self, parent=None):
         super(PlainTextColumnDelegate, self).__init__(parent)
 
     def createEditor(self, parent, option, index):
-        lineedit = QLineEdit(parent)
+        lineedit = QtWidgets.QLineEdit(parent)
         return lineedit
 
     def setEditorData(self, editor, index):
-        value = index.model().data(index, Qt.DisplayRole)
+        value = index.model().data(index, QtCore.Qt.DisplayRole)
         editor.setText(value)
 
     def setModelData(self, editor, model, index):
         model.setData(index, editor.text())
 
 
-class RichTextColumnDelegate(QStyledItemDelegate):
+class RichTextColumnDelegate(QtWidgets.QStyledItemDelegate):
     def __init__(self, parent=None):
         super(RichTextColumnDelegate, self).__init__(parent)
 
     def paint(self, painter, option, index):
-        text = index.model().data(index, Qt.DisplayRole)
-        palette = QApplication.palette()
-        document = QTextDocument()
+        text = index.model().data(index, QtCore.Qt.DisplayRole)
+        palette = QtWidgets.QApplication.palette()
+        document = QtGui.QTextDocument()
         document.setDefaultFont(option.font)
-        if option.state & QStyle.State_Selected:
+        if option.state & QtWidgets.QStyle.State_Selected:
             document.setHtml(
                 "<font color={}>{}</font>".format(
                     palette.highlightedText().color().name(), text
@@ -142,8 +143,8 @@ class RichTextColumnDelegate(QStyledItemDelegate):
         painter.save()
         color = (
             palette.highlight().color()
-            if option.state & QStyle.State_Selected
-            else QColor(index.model().data(index, Qt.BackgroundColorRole))
+            if option.state & QtWidgets.QStyle.State_Selected
+            else QtGui.QColor(index.model().data(index, QtCore.Qt.BackgroundColorRole))
         )
         painter.fillRect(option.rect, color)
         painter.translate(option.rect.x(), option.rect.y())
@@ -152,17 +153,17 @@ class RichTextColumnDelegate(QStyledItemDelegate):
 
     def sizeHint(self, option, index):
         text = index.model().data(index)
-        document = QTextDocument()
+        document = QtGui.QTextDocument()
         document.setDefaultFont(option.font)
         document.setHtml(text)
-        return QSize(document.idealWidth() + 5, option.fontMetrics.height())
+        return QtGui.QSize(document.idealWidth() + 5, option.fontMetrics.height())
 
     def createEditor(self, parent, option, index):
         lineedit = richtextlineedit.RichTextLineEdit(parent)
         return lineedit
 
     def setEditorData(self, editor, index):
-        value = index.model().data(index, Qt.DisplayRole)
+        value = index.model().data(index, QtCore.Qt.DisplayRole)
         editor.setHtml(value)
 
     def setModelData(self, editor, model, index):
