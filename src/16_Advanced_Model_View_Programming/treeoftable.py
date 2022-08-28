@@ -10,7 +10,7 @@
 # the GNU General Public License for more details.
 
 import bisect
-from PyQt4.QtCore import *
+from PySide6 import QtCore
 
 KEY, NODE = range(2)
 
@@ -98,7 +98,7 @@ class LeafNode(object):
         return self.fields[column]
 
 
-class TreeOfTableModel(QAbstractItemModel):
+class TreeOfTableModel(QtCore.QAbstractItemModel):
     def __init__(self, parent=None):
         super(TreeOfTableModel, self).__init__(parent)
         self.columns = 0
@@ -163,9 +163,9 @@ class TreeOfTableModel(QAbstractItemModel):
         return self.columns
 
     def data(self, index, role):
-        if role == Qt.TextAlignmentRole:
-            return int(Qt.AlignTop | Qt.AlignLeft)
-        if role != Qt.DisplayRole:
+        if role == QtCore.Qt.TextAlignmentRole:
+            return int(QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
+        if role != QtCore.Qt.DisplayRole:
             return None
         node = self.nodeFromIndex(index)
         assert node is not None
@@ -174,7 +174,7 @@ class TreeOfTableModel(QAbstractItemModel):
         return node.field(index.column())
 
     def headerData(self, section, orientation, role):
-        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
+        if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
             assert 0 <= section <= len(self.headers)
             return self.headers[section]
         return None
@@ -188,13 +188,13 @@ class TreeOfTableModel(QAbstractItemModel):
     def parent(self, child):
         node = self.nodeFromIndex(child)
         if node is None:
-            return QModelIndex()
+            return QtCore.QModelIndex()
         parent = node.parent
         if parent is None:
-            return QModelIndex()
+            return QtCore.QModelIndex()
         grandparent = parent.parent
         if grandparent is None:
-            return QModelIndex()
+            return QtCore.QModelIndex()
         row = grandparent.rowOfChild(parent)
         assert row != -1
         return self.createIndex(row, 0, parent)
