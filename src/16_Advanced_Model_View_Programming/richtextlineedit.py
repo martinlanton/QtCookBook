@@ -56,17 +56,15 @@ class RichTextLineEdit(QtWidgets.QTextEdit):
 
     def toggleBold(self):
         self.setFontWeight(
-            QtGui.QFont.Normal
-            if self.fontWeight() > QtGui.QFont.Normal
-            else QtGui.QFont.Bold
+            QFont.Normal if self.fontWeight() > QFont.Normal else QFont.Bold
         )
 
     def sizeHint(self):
-        return QtCore.QSize(self.document().idealWidth() + 5, self.maximumHeight())
+        return QSize(self.document().idealWidth() + 5, self.maximumHeight())
 
     def minimumSizeHint(self):
-        fm = QtGui.QFontMetrics(self.font())
-        return QtCore.QSize(fm.horizontalAdvance("WWWW"), self.minimumHeight())
+        fm = QFontMetrics(self.font())
+        return QSize(fm.width("WWWW"), self.minimumHeight())
 
     def contextMenuEvent(self, event):
         self.textEffectMenu()

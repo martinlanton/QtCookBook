@@ -11,8 +11,7 @@
 
 import os
 import sys
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PySide6 import QtWidgets, QtCore, QtGui
 import treeoftable
 
 
@@ -21,7 +20,7 @@ class ServerModel(treeoftable.TreeOfTableModel):
         super(ServerModel, self).__init__(parent)
 
     def data(self, index, role):
-        if role == Qt.DecorationRole:
+        if role == QtCore.Qt.DecorationRole:
             node = self.nodeFromIndex(index)
             if node is None:
                 return None
@@ -37,40 +36,40 @@ class ServerModel(treeoftable.TreeOfTableModel):
                 filename = os.path.join(
                     os.path.dirname(__file__), "flags", filename + ".png"
                 )
-                pixmap = QPixmap(filename)
+                pixmap = QtGui.QPixmap(filename)
                 if pixmap.isNull():
                     return None
                 return pixmap
         return treeoftable.TreeOfTableModel.data(self, index, role)
 
 
-class TreeOfTableWidget(QTreeView):
+class TreeOfTableWidget(QtWidgets.QTreeView):
     def __init__(self, filename, nesting, separator, parent=None):
         super(TreeOfTableWidget, self).__init__(parent)
-        self.setSelectionBehavior(QTreeView.SelectItems)
+        self.setSelectionBehavior(QtWidgets.QTreeView.SelectItems)
         self.setUniformRowHeights(True)
         model = ServerModel(self)
         self.setModel(model)
         try:
             model.load(filename, nesting, separator)
         except IOError as e:
-            QMessageBox.warning(self, "Server Info - Error", e)
-        self.connect(self, SIGNAL("activated(QModelIndex)"), self.activated)
-        self.connect(self, SIGNAL("expanded(QModelIndex)"), self.expanded)
+            QtWidgets.QMessageBox.warning(self, "Server Info - Error", e)
+        self.connect(self, QtCore.SIGNAL("activated(QtCore.QModelIndex)"), self.activated)
+        self.connect(self, QtCore.SIGNAL("expanded(QtCore.QModelIndex)"), self.expanded)
         self.expanded()
 
     def currentFields(self):
         return self.model().asRecord(self.currentIndex())
 
     def activated(self, index):
-        self.emit(SIGNAL("activated"), self.model().asRecord(index))
+        self.emit(QtCore.SIGNAL("activated"), self.model().asRecord(index))
 
     def expanded(self):
-        for column in range(self.model().columnCount(QModelIndex())):
+        for column in range(self.model().columnCount(QtCore.QModelIndex())):
             self.resizeColumnToContents(column)
 
 
-class MainForm(QMainWindow):
+class MainForm(QtWidgets.QMainWindow):
     def __init__(self, filename, nesting, separator, parent=None):
         super(MainForm, self).__init__(parent)
         headers = ["Country/State (US)/City/Provider", "Server", "IP"]
@@ -87,10 +86,10 @@ class MainForm(QMainWindow):
         self.treeWidget.model().headers = headers
         self.setCentralWidget(self.treeWidget)
 
-        QShortcut(QKeySequence("Escape"), self, self.close)
-        QShortcut(QKeySequence("Ctrl+Q"), self, self.close)
+        QtGui.QShortcut(QtGui.QKeySequence("Escape"), self, self.close)
+        QtGui.QShortcut(QtGui.QKeySequence("Ctrl+Q"), self, self.close)
 
-        self.connect(self.treeWidget, SIGNAL("activated"), self.activated)
+        self.connect(self.treeWidget, QtCore.SIGNAL("activated"), self.activated)
 
         self.setWindowTitle("Server Info")
         self.statusBar().showMessage("Ready...", 5000)
@@ -102,7 +101,7 @@ class MainForm(QMainWindow):
         self.statusBar().showMessage("*".join(fields), 60000)
 
 
-app = QApplication(sys.argv)
+app = QtWidgets.QApplication(sys.argv)
 nesting = 3
 if len(sys.argv) > 1:
     try:
@@ -115,5 +114,5 @@ if len(sys.argv) > 1:
 form = MainForm(os.path.join(os.path.dirname(__file__), "servers.txt"), nesting, "*")
 form.resize(750, 550)
 form.show()
-app.exec_()
+app.exec()
 print("*".join(form.picked()))

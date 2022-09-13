@@ -10,7 +10,6 @@
 
 import bisect
 import os
-import platform
 import sys
 from PySide6 import QtWidgets, QtCore, QtGui
 import genericdelegates
