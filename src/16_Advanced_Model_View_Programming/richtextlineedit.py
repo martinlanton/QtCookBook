@@ -11,11 +11,10 @@
 
 import platform
 import sys
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PySide6 import QtWidgets, QtCore, QtGui
 
 
-class RichTextLineEdit(QTextEdit):
+class RichTextLineEdit(QtWidgets.QTextEdit):
 
     (
         Bold,
@@ -36,11 +35,11 @@ class RichTextLineEdit(QTextEdit):
         self.monofamily = "courier"
         self.sansfamily = "helvetica"
         self.seriffamily = "times"
-        self.setLineWrapMode(QTextEdit.NoWrap)
+        self.setLineWrapMode(QtWidgets.QTextEdit.NoWrap)
         self.setTabChangesFocus(True)
-        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        fm = QFontMetrics(self.font())
+        self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        fm = QtGui.QFontMetrics(self.font())
         h = int(fm.height() * (1.4 if platform.system() == "Windows" else 1.2))
         self.setMinimumHeight(h)
         self.setMaximumHeight(int(h * 1.2))
@@ -57,85 +56,87 @@ class RichTextLineEdit(QTextEdit):
 
     def toggleBold(self):
         self.setFontWeight(
-            QFont.Normal if self.fontWeight() > QFont.Normal else QFont.Bold
+            QtGui.QFont.Normal
+            if self.fontWeight() > QtGui.QFont.Normal
+            else QtGui.QFont.Bold
         )
 
     def sizeHint(self):
-        return QSize(self.document().idealWidth() + 5, self.maximumHeight())
+        return QtCore.QSize(self.document().idealWidth() + 5, self.maximumHeight())
 
     def minimumSizeHint(self):
-        fm = QFontMetrics(self.font())
-        return QSize(fm.width("WWWW"), self.minimumHeight())
+        fm = QtGui.QFontMetrics(self.font())
+        return QtCore.QSize(fm.horizontalAdvance("WWWW"), self.minimumHeight())
 
     def contextMenuEvent(self, event):
         self.textEffectMenu()
 
     def keyPressEvent(self, event):
-        if event.modifiers() & Qt.ControlModifier:
+        if event.modifiers() & QtCore.Qt.ControlModifier:
             handled = False
-            if event.key() == Qt.Key_B:
+            if event.key() == QtCore.Qt.Key_B:
                 self.toggleBold()
                 handled = True
-            elif event.key() == Qt.Key_I:
+            elif event.key() == QtCore.Qt.Key_I:
                 self.toggleItalic()
                 handled = True
-            elif event.key() == Qt.Key_K:
+            elif event.key() == QtCore.Qt.Key_K:
                 self.colorMenu()
                 handled = True
-            elif event.key() == Qt.Key_M:
+            elif event.key() == QtCore.Qt.Key_M:
                 self.textEffectMenu()
                 handled = True
-            elif event.key() == Qt.Key_U:
+            elif event.key() == QtCore.Qt.Key_U:
                 self.toggleUnderline()
                 handled = True
             if handled:
                 event.accept()
                 return
-        if event.key() in (Qt.Key_Enter, Qt.Key_Return):
-            self.emit(SIGNAL("returnPressed()"))
+        if event.key() in (QtCore.Qt.Key_Enter, QtCore.Qt.Key_Return):
+            self.emit(QtCore.SIGNAL("returnPressed()"))
             event.accept()
         else:
-            QTextEdit.keyPressEvent(self, event)
+            QtWidgets.QTextEdit.keyPressEvent(self, event)
 
     def colorMenu(self):
-        pixmap = QPixmap(22, 22)
-        menu = QMenu("Colour")
+        pixmap = QtGui.QPixmap(22, 22)
+        menu = QtWidgets.QMenu("Colour")
         for text, color in (
-            ("&Black", Qt.black),
-            ("B&lue", Qt.blue),
-            ("Dark Bl&ue", Qt.darkBlue),
-            ("&Cyan", Qt.cyan),
-            ("Dar&k Cyan", Qt.darkCyan),
-            ("&Green", Qt.green),
-            ("Dark Gr&een", Qt.darkGreen),
-            ("M&agenta", Qt.magenta),
-            ("Dark Mage&nta", Qt.darkMagenta),
-            ("&Red", Qt.red),
-            ("&Dark Red", Qt.darkRed),
+            ("&Black", QtCore.Qt.black),
+            ("B&lue", QtCore.Qt.blue),
+            ("Dark Bl&ue", QtCore.Qt.darkBlue),
+            ("&Cyan", QtCore.Qt.cyan),
+            ("Dar&k Cyan", QtCore.Qt.darkCyan),
+            ("&Green", QtCore.Qt.green),
+            ("Dark Gr&een", QtCore.Qt.darkGreen),
+            ("M&agenta", QtCore.Qt.magenta),
+            ("Dark Mage&nta", QtCore.Qt.darkMagenta),
+            ("&Red", QtCore.Qt.red),
+            ("&Dark Red", QtCore.Qt.darkRed),
         ):
-            color = QColor(color)
+            color = QtGui.QColor(color)
             pixmap.fill(color)
-            action = menu.addAction(QIcon(pixmap), text, self.setColor)
+            action = menu.addAction(QtGui.QIcon(pixmap), text, self.setColor)
             action.setData(color)
         self.ensureCursorVisible()
-        menu.exec_(self.viewport().mapToGlobal(self.cursorRect().center()))
+        menu.exec(self.viewport().mapToGlobal(self.cursorRect().center()))
 
     def setColor(self):
         action = self.sender()
-        if action is not None and isinstance(action, QAction):
-            color = QColor(action.data())
+        if action is not None and isinstance(action, QtGui.QAction):
+            color = QtGui.QColor(action.data())
             if color.isValid():
                 self.setTextColor(color)
 
     def textEffectMenu(self):
         format = self.currentCharFormat()
-        menu = QMenu("Text Effect")
+        menu = QtWidgets.QMenu("Text Effect")
         for text, shortcut, data, checked in (
             (
                 "&Bold",
                 "Ctrl+B",
                 RichTextLineEdit.Bold,
-                self.fontWeight() > QFont.Normal,
+                self.fontWeight() > QtGui.QFont.Normal,
             ),
             ("&Italic", "Ctrl+I", RichTextLineEdit.Italic, self.fontItalic()),
             ("Strike &out", None, RichTextLineEdit.StrikeOut, format.fontStrikeOut()),
@@ -162,33 +163,33 @@ class RichTextLineEdit(QTextEdit):
                 "&No super or subscript",
                 None,
                 RichTextLineEdit.NoSuperOrSubscript,
-                format.verticalAlignment() == QTextCharFormat.AlignNormal,
+                format.verticalAlignment() == QtGui.QTextCharFormat.AlignNormal,
             ),
             (
                 "Su&perscript",
                 None,
                 RichTextLineEdit.Superscript,
-                format.verticalAlignment() == QTextCharFormat.AlignSuperScript,
+                format.verticalAlignment() == QtGui.QTextCharFormat.AlignSuperScript,
             ),
             (
                 "Subs&cript",
                 None,
                 RichTextLineEdit.Subscript,
-                format.verticalAlignment() == QTextCharFormat.AlignSubScript,
+                format.verticalAlignment() == QtGui.QTextCharFormat.AlignSubScript,
             ),
         ):
             action = menu.addAction(text, self.setTextEffect)
             if shortcut is not None:
-                action.setShortcut(QKeySequence(shortcut))
+                action.setShortcut(QtGui.QKeySequence(shortcut))
             action.setData(data)
             action.setCheckable(True)
             action.setChecked(checked)
         self.ensureCursorVisible()
-        menu.exec_(self.viewport().mapToGlobal(self.cursorRect().center()))
+        menu.exec(self.viewport().mapToGlobal(self.cursorRect().center()))
 
     def setTextEffect(self):
         action = self.sender()
-        if action is not None and isinstance(action, QAction):
+        if action is not None and isinstance(action, QtGui.QAction):
             what = int(action.data())
             if what == RichTextLineEdit.Bold:
                 self.toggleBold()
@@ -209,16 +210,16 @@ class RichTextLineEdit(QTextEdit):
             if what == RichTextLineEdit.StrikeOut:
                 format.setFontStrikeOut(not format.fontStrikeOut())
             if what == RichTextLineEdit.NoSuperOrSubscript:
-                format.setVerticalAlignment(QTextCharFormat.AlignNormal)
+                format.setVerticalAlignment(QtGui.QTextCharFormat.AlignNormal)
             elif what == RichTextLineEdit.Superscript:
-                format.setVerticalAlignment(QTextCharFormat.AlignSuperScript)
+                format.setVerticalAlignment(QtGui.QTextCharFormat.AlignSuperScript)
             elif what == RichTextLineEdit.Subscript:
-                format.setVerticalAlignment(QTextCharFormat.AlignSubScript)
+                format.setVerticalAlignment(QtGui.QTextCharFormat.AlignSubScript)
             self.mergeCurrentCharFormat(format)
 
     def toSimpleHtml(self):
         html = ""
-        black = QColor(Qt.black)
+        black = QtGui.QColor(QtCore.Qt.black)
         block = self.document().begin()
         while block.isValid():
             iterator = block.begin()
@@ -228,16 +229,22 @@ class RichTextLineEdit(QTextEdit):
                     format = fragment.charFormat()
                     family = format.fontFamily()
                     color = format.foreground().color()
-                    text = Qt.escape(fragment.text())
-                    if format.verticalAlignment() == QTextCharFormat.AlignSubScript:
+                    text = QtCore.QRegularExpression.escape(fragment.text())
+                    if (
+                        format.verticalAlignment()
+                        == QtGui.QTextCharFormat.AlignSubScript
+                    ):
                         text = "<sub>{}</sub>".format(text)
-                    elif format.verticalAlignment() == QTextCharFormat.AlignSuperScript:
+                    elif (
+                        format.verticalAlignment()
+                        == QtGui.QTextCharFormat.AlignSuperScript
+                    ):
                         text = "<sup>{}</sup>".format(text)
                     if format.fontUnderline():
                         text = "<u>{}</u>".format(text)
                     if format.fontItalic():
                         text = "<i>{}</i>".format(text)
-                    if format.fontWeight() > QFont.Normal:
+                    if format.fontWeight() > QtGui.QFont.Normal:
                         text = "<b>{}</b>".format(text)
                     if format.fontStrikeOut():
                         text = "<s>{}</s>".format(text)
@@ -255,11 +262,11 @@ class RichTextLineEdit(QTextEdit):
 
 
 if __name__ == "__main__":
-    app = QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     lineedit = RichTextLineEdit()
     lineedit.show()
     lineedit.setWindowTitle("RichTextEdit")
-    app.exec_()
+    app.exec()
     print(lineedit.toHtml())
     print(lineedit.toPlainText())
     print(lineedit.toSimpleHtml())
