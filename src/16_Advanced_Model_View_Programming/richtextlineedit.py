@@ -56,15 +56,15 @@ class RichTextLineEdit(QtWidgets.QTextEdit):
 
     def toggleBold(self):
         self.setFontWeight(
-            QtGui.QFont.Normal if self.fontWeight() > QtGui.QFont.Normal else QtGui.QFont.Bold
+            QFont.Normal if self.fontWeight() > QFont.Normal else QFont.Bold
         )
 
     def sizeHint(self):
-        return QtGui.QSize(self.document().idealWidth() + 5, self.maximumHeight())
+        return QSize(self.document().idealWidth() + 5, self.maximumHeight())
 
     def minimumSizeHint(self):
-        fm = QtGui.QFontMetrics(self.font())
-        return QtGui.QSize(fm.width("WWWW"), self.minimumHeight())
+        fm = QFontMetrics(self.font())
+        return QSize(fm.width("WWWW"), self.minimumHeight())
 
     def contextMenuEvent(self, event):
         self.textEffectMenu()
@@ -227,10 +227,16 @@ class RichTextLineEdit(QtWidgets.QTextEdit):
                     format = fragment.charFormat()
                     family = format.fontFamily()
                     color = format.foreground().color()
-                    text = QtCore.Qt.escape(fragment.text())
-                    if format.verticalAlignment() == QtGui.QTextCharFormat.AlignSubScript:
+                    text = QtCore.QRegularExpression.escape(fragment.text())
+                    if (
+                        format.verticalAlignment()
+                        == QtGui.QTextCharFormat.AlignSubScript
+                    ):
                         text = "<sub>{}</sub>".format(text)
-                    elif format.verticalAlignment() == QtGui.QTextCharFormat.AlignSuperScript:
+                    elif (
+                        format.verticalAlignment()
+                        == QtGui.QTextCharFormat.AlignSuperScript
+                    ):
                         text = "<sup>{}</sup>".format(text)
                     if format.fontUnderline():
                         text = "<u>{}</u>".format(text)
