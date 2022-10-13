@@ -166,7 +166,7 @@ class CarHireModel(QtCore.QAbstractTableModel):
             NOTES,
         ):
             return int(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
-        if role == QtCore.Qt.BackgroundColorRole:
+        if role == QtCore.Qt.ForegroundRole:
             palette = QtWidgets.QApplication.palette()
             if index.column() in (LICENSE, MILEAGE, DAYS):
                 return palette.alternateBase()

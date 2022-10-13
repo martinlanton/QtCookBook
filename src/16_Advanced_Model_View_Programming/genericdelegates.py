@@ -116,6 +116,13 @@ class PlainTextColumnDelegate(QtWidgets.QStyledItemDelegate):
         return lineedit
 
     def setEditorData(self, editor, index):
+        """
+
+        :param editor:
+        :type editor: PySide6.QtWidgets.QLineEdit.QLineEdit
+        :param index:
+        :return:
+        """
         value = index.model().data(index, QtCore.Qt.DisplayRole)
         editor.setText(value)
 
@@ -144,7 +151,7 @@ class RichTextColumnDelegate(QtWidgets.QStyledItemDelegate):
         color = (
             palette.highlight().color()
             if option.state & QtWidgets.QStyle.State_Selected
-            else QtGui.QColor(index.model().data(index, QtCore.Qt.BackgroundColorRole))
+            else QtGui.QColor(index.model().data(index, QtCore.Qt.ForegroundRole).color())
         )
         painter.fillRect(option.rect, color)
         painter.translate(option.rect.x(), option.rect.y())
@@ -156,7 +163,7 @@ class RichTextColumnDelegate(QtWidgets.QStyledItemDelegate):
         document = QtGui.QTextDocument()
         document.setDefaultFont(option.font)
         document.setHtml(text)
-        return QtGui.QSize(document.idealWidth() + 5, option.fontMetrics.height())
+        return QtCore.QSize(document.idealWidth() + 5, option.fontMetrics.height())
 
     def createEditor(self, parent, option, index):
         lineedit = richtextlineedit.RichTextLineEdit(parent)
