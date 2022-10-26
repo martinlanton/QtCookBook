@@ -13,8 +13,7 @@ import gzip
 import os
 import platform
 import sys
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PySide6 import QtWidgets, QtCore, QtGui
 
 
 (
@@ -31,7 +30,7 @@ from PyQt4.QtGui import *
 TIMESTAMPFORMAT = "yyyy-MM-dd hh:mm"
 
 
-class WaterQualityModel(QAbstractTableModel):
+class WaterQualityModel(QtCore.QAbstractTableModel):
     def __init__(self, filename):
         super(WaterQualityModel, self).__init__()
         self.filename = filename
@@ -47,7 +46,7 @@ class WaterQualityModel(QAbstractTableModel):
             line_data = gzip.open(self.filename).read()
             for line in line_data.decode("utf-8").splitlines():
                 parts = line.rstrip().split(",")
-                date = QDateTime.fromString(parts[0] + ":00", Qt.ISODate)
+                date = QtCore.QDateTime.fromString(parts[0] + ":00", QtCore.Qt.ISODate)
                 result = [date]
                 for part in parts[1:]:
                     result.append(float(part))
@@ -61,12 +60,12 @@ class WaterQualityModel(QAbstractTableModel):
             if exception is not None:
                 raise exception
 
-    def data(self, index, role=Qt.DisplayRole):
+    def data(self, index, role=QtCore.Qt.DisplayRole):
         if not index.isValid() or not (0 <= index.row() < len(self.results)):
             return None
         column = index.column()
         result = self.results[index.row()]
-        if role == Qt.DisplayRole:
+        if role == QtCore.Qt.DisplayRole:
             item = result[column]
             if column == TIMESTAMP:
                 # TODO set time format
@@ -74,31 +73,31 @@ class WaterQualityModel(QAbstractTableModel):
             else:
                 item = "{:.2f}".format(item)
             return item
-        elif role == Qt.TextAlignmentRole:
+        elif role == QtCore.Qt.TextAlignmentRole:
             if column != TIMESTAMP:
-                return int(Qt.AlignRight | Qt.AlignVCenter)
-            return int(Qt.AlignLeft | Qt.AlignVCenter)
-        elif role == Qt.TextColorRole and column == INLETFLOW:
+                return int(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+            return int(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
+        elif role == QtCore.Qt.TextColorRole and column == INLETFLOW:
             if result[column] < 0:
-                return QColor(Qt.red)
-        elif role == Qt.TextColorRole and column in (RAWPH, FLOCCULATEDPH):
+                return QtGui.QColor(QtCore.Qt.red)
+        elif role == QtCore.Qt.TextColorRole and column in (RAWPH, FLOCCULATEDPH):
             ph = result[column]
             if ph < 7:
-                return QColor(Qt.red)
+                return QtGui.QColor(QtCore.Qt.red)
             elif ph >= 8:
-                return QColor(Qt.blue)
+                return QtGui.QColor(QtCore.Qt.blue)
             else:
-                return QColor(Qt.darkGreen)
+                return QtGui.QColor(QtCore.Qt.darkGreen)
         return None
 
-    def headerData(self, section, orientation, role=Qt.DisplayRole):
-        if role == Qt.TextAlignmentRole:
-            if orientation == Qt.Horizontal:
-                return int(Qt.AlignCenter)
-            return int(Qt.AlignRight | Qt.AlignVCenter)
-        if role != Qt.DisplayRole:
+    def headerData(self, section, orientation, role=QtCore.Qt.DisplayRole):
+        if role == QtCore.Qt.TextAlignmentRole:
+            if orientation == QtCore.Qt.Horizontal:
+                return int(QtCore.Qt.AlignCenter)
+            return int(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+        if role != QtCore.Qt.DisplayRole:
             return None
-        if orientation == Qt.Horizontal:
+        if orientation == QtCore.Qt.Horizontal:
             if section == TIMESTAMP:
                 return "Timestamp"
             elif section == TEMPERATURE:
@@ -117,14 +116,14 @@ class WaterQualityModel(QAbstractTableModel):
                 return "Floc Ph"
         return int(section + 1)
 
-    def rowCount(self, index=QModelIndex()):
+    def rowCount(self, index=QtCore.QModelIndex()):
         return len(self.results)
 
-    def columnCount(self, index=QModelIndex()):
+    def columnCount(self, index=QtCore.QModelIndex()):
         return 8
 
 
-class WaterQualityView(QWidget):
+class WaterQualityView(QtWidgets.QWidget):
 
     FLOWCHARS = (chr(0x21DC), chr(0x21DD), chr(0x21C9))
 
@@ -132,26 +131,28 @@ class WaterQualityView(QWidget):
         super(WaterQualityView, self).__init__(parent)
         self.scrollarea = None
         self.model = None
-        self.setFocusPolicy(Qt.StrongFocus)
+        self.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.selectedRow = -1
         self.flowfont = self.font()
         size = self.font().pointSize()
         if platform.system() == "Windows":
-            fontDb = QFontDatabase()
+            fontDb = QtGui.QtGui.QFontDatabase()
             for face in [face.lower() for face in fontDb.families()]:
                 if face.contains("unicode"):
-                    self.flowfont = QFont(face, size)
+                    self.flowfont = QtGui.QFont(face, size)
                     break
             else:
-                self.flowfont = QFont("symbol", size)
+                self.flowfont = QtGui.QFont("symbol", size)
                 WaterQualityView.FLOWCHARS = (chr(0xAC), chr(0xAE), chr(0xDE))
 
     def setModel(self, model):
         self.model = model
         self.connect(
-            self.model, SIGNAL("dataChanged(QModelIndex,QModelIndex)"), self.setNewSize
+            self.model,
+            QtCore.SIGNAL("dataChanged(QtCore.QModelIndex,QtCore.QModelIndex)"),
+            self.setNewSize,
         )
-        self.connect(self.model, SIGNAL("modelReset()"), self.setNewSize)
+        self.connect(self.model, QtCore.SIGNAL("modelReset()"), self.setNewSize)
         self.setNewSize()
 
     def setNewSize(self):
@@ -161,14 +162,14 @@ class WaterQualityView(QWidget):
 
     def minimumSizeHint(self):
         size = self.sizeHint()
-        fm = QFontMetrics(self.font())
+        fm = QtGui.QFontMetrics(self.font())
         size.setHeight(fm.height() * 3)
         return size
 
     def sizeHint(self):
-        fm = QFontMetrics(self.font())
+        fm = QtGui.QFontMetrics(self.font())
         size = fm.height()
-        return QSize(
+        return QtCore.QSize(
             fm.width("9999-99-99 99:99 ") + (size * 4),
             (size / 4) + (size * self.model.rowCount()),
         )
@@ -176,7 +177,7 @@ class WaterQualityView(QWidget):
     def paintEvent(self, event):
         if self.model is None:
             return
-        fm = QFontMetrics(self.font())
+        fm = QtGui.QFontMetrics(self.font())
         timestampWidth = fm.width("9999-99-99 99:99 ")
         size = fm.height()
         indicatorSize = int(size * 0.8)
@@ -184,55 +185,55 @@ class WaterQualityView(QWidget):
         minY = event.rect().y()
         maxY = minY + event.rect().height() + size
         minY -= size
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
-        painter.setRenderHint(QPainter.TextAntialiasing)
+        painter = QtGui.QPainter(self)
+        painter.setRenderHint(QtGui.QPainter.Antialiasing)
+        painter.setRenderHint(QtGui.QPainter.TextAntialiasing)
         y = 0
         for row in range(self.model.rowCount()):
             x = 0
             if minY <= y <= maxY:
                 painter.save()
-                painter.setPen(self.palette().color(QPalette.Text))
+                painter.setPen(self.palette().color(QtGui.QPalette.Text))
                 if row == self.selectedRow:
                     painter.fillRect(
                         x,
-                        y + (offset * 0.8),
+                        int(y + (offset * 0.8)),
                         self.width(),
                         size,
                         self.palette().highlight(),
                     )
-                    painter.setPen(self.palette().color(QPalette.HighlightedText))
+                    painter.setPen(self.palette().color(QtGui.QPalette.HighlightedText))
                 timestamp = self.model.data(self.model.index(row, TIMESTAMP))
                 painter.drawText(x, y + size, timestamp.toString("yyyy-MM-dd hh:mm"))
                 x += timestampWidth
                 temperature = float(self.model.data(self.model.index(row, TEMPERATURE)))
                 if temperature < 20:
-                    color = QColor(0, 0, int(255 * (20 - temperature) / 20))
+                    color = QtGui.QColor(0, 0, int(255 * (20 - temperature) / 20))
                 elif temperature > 25:
-                    color = QColor(int(255 * temperature / 100), 0, 0)
+                    color = QtGui.QColor(int(255 * temperature / 100), 0, 0)
                 else:
-                    color = QColor(0, int(255 * temperature / 100), 0)
-                painter.setPen(Qt.NoPen)
+                    color = QtGui.QColor(0, int(255 * temperature / 100), 0)
+                painter.setPen(QtCore.Qt.NoPen)
                 painter.setBrush(color)
                 painter.drawEllipse(x, y + offset, indicatorSize, indicatorSize)
                 x += size
                 rawPh = float(self.model.data(self.model.index(row, RAWPH)))
                 if rawPh < 7:
-                    color = QColor(int(255 * rawPh / 10), 0, 0)
+                    color = QtGui.QColor(int(255 * rawPh / 10), 0, 0)
                 elif rawPh >= 8:
-                    color = QColor(0, 0, int(255 * rawPh / 10))
+                    color = QtGui.QColor(0, 0, int(255 * rawPh / 10))
                 else:
-                    color = QColor(0, int(255 * rawPh / 10), 0)
+                    color = QtGui.QColor(0, int(255 * rawPh / 10), 0)
                 painter.setBrush(color)
                 painter.drawEllipse(x, y + offset, indicatorSize, indicatorSize)
                 x += size
                 flocPh = float(self.model.data(self.model.index(row, FLOCCULATEDPH)))
                 if flocPh < 7:
-                    color = QColor(int(255 * flocPh / 10), 0, 0)
+                    color = QtGui.QColor(int(255 * flocPh / 10), 0, 0)
                 elif flocPh >= 8:
-                    color = QColor(0, 0, int(255 * flocPh / 10))
+                    color = QtGui.QColor(0, 0, int(255 * flocPh / 10))
                 else:
-                    color = QColor(0, int(255 * flocPh / 10), 0)
+                    color = QtGui.QColor(0, int(255 * flocPh / 10), 0)
                 painter.setBrush(color)
                 painter.drawEllipse(x, y + offset, indicatorSize, indicatorSize)
                 painter.restore()
@@ -255,86 +256,92 @@ class WaterQualityView(QWidget):
                 break
 
     def mousePressEvent(self, event):
-        fm = QFontMetrics(self.font())
+        fm = QtGui.QFontMetrics(self.font())
         self.selectedRow = event.y() // fm.height()
         self.update()
-        self.emit(SIGNAL("clicked(QModelIndex)"), self.model.index(self.selectedRow, 0))
+        self.emit(
+            QtCore.SIGNAL("clicked(QtCore.QModelIndex)"),
+            self.model.index(self.selectedRow, 0),
+        )
 
     def keyPressEvent(self, event):
         if self.model is None:
             return
         row = -1
-        if event.key() == Qt.Key_Up:
+        if event.key() == QtCore.Qt.Key_Up:
             row = max(0, self.selectedRow - 1)
-        elif event.key() == Qt.Key_Down:
+        elif event.key() == QtCore.Qt.Key_Down:
             row = min(self.selectedRow + 1, self.model.rowCount() - 1)
         if row != -1 and row != self.selectedRow:
             self.selectedRow = row
             if self.scrollarea is not None:
-                fm = QFontMetrics(self.font())
+                fm = QtGui.QFontMetrics(self.font())
                 y = fm.height() * self.selectedRow
                 self.scrollarea.ensureVisible(0, y)
             self.update()
             self.emit(
-                SIGNAL("clicked(QModelIndex)"), self.model.index(self.selectedRow, 0)
+                QtCore.SIGNAL("clicked(QtCore.QModelIndex)"),
+                self.model.index(self.selectedRow, 0),
             )
         else:
-            QWidget.keyPressEvent(self, event)
+            QtWidgets.QWidget.keyPressEvent(self, event)
 
 
-class MainForm(QDialog):
+class MainForm(QtWidgets.QDialog):
     def __init__(self, parent=None):
         super(MainForm, self).__init__(parent)
 
         self.model = WaterQualityModel(
             os.path.join(os.path.dirname(__file__), "waterdata.csv.gz")
         )
-        self.tableView = QTableView()
+        self.tableView = QtWidgets.QTableView()
         self.tableView.setAlternatingRowColors(True)
         self.tableView.setModel(self.model)
         self.waterView = WaterQualityView()
         self.waterView.setModel(self.model)
-        scrollArea = QScrollArea()
-        scrollArea.setBackgroundRole(QPalette.Light)
+        scrollArea = QtWidgets.QScrollArea()
+        scrollArea.setBackgroundRole(QtGui.QPalette.Light)
         scrollArea.setWidget(self.waterView)
         self.waterView.scrollarea = scrollArea
 
-        splitter = QSplitter(Qt.Horizontal)
+        splitter = QtWidgets.QSplitter(QtCore.Qt.Horizontal)
         splitter.addWidget(self.tableView)
         splitter.addWidget(scrollArea)
         splitter.setSizes([600, 250])
-        layout = QHBoxLayout()
+        layout = QtWidgets.QHBoxLayout()
         layout.addWidget(splitter)
         self.setLayout(layout)
 
         self.setWindowTitle("Water Quality Data")
-        QTimer.singleShot(0, self.initialLoad)
+        QtCore.QTimer.singleShot(0, self.initialLoad)
 
     def initialLoad(self):
-        QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
-        splash = QLabel(self)
-        pixmap = QPixmap(os.path.join(os.path.dirname(__file__), "iss013-e-14802.jpg"))
+        QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
+        splash = QtWidgets.QLabel(self)
+        pixmap = QtGui.QPixmap(
+            os.path.join(os.path.dirname(__file__), "iss013-e-14802.jpg")
+        )
         splash.setPixmap(pixmap)
-        splash.setWindowFlags(Qt.SplashScreen)
+        splash.setWindowFlags(QtCore.Qt.SplashScreen)
         splash.move(
-            self.x() + ((self.width() - pixmap.width()) / 2),
-            self.y() + ((self.height() - pixmap.height()) / 2),
+            int(self.x() + ((self.width() - pixmap.width()) / 2)),
+            int(self.y() + ((self.height() - pixmap.height()) / 2)),
         )
         splash.show()
-        QApplication.processEvents()
+        QtWidgets.QApplication.processEvents()
         try:
             self.model.load()
         except IOError as e:
-            QMessageBox.warning(self, "Water Quality - Error", e)
+            QtWidgets.QMessageBox.warning(self, "Water Quality - Error", e)
         else:
             self.tableView.resizeColumnsToContents()
         splash.close()
-        QApplication.processEvents()
-        QApplication.restoreOverrideCursor()
+        QtWidgets.QApplication.processEvents()
+        QtWidgets.QApplication.restoreOverrideCursor()
 
 
-app = QApplication(sys.argv)
+app = QtWidgets.QApplication(sys.argv)
 form = MainForm()
 form.resize(850, 620)
 form.show()
-app.exec_()
+app.exec()
