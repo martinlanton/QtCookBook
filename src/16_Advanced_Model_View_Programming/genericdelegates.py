@@ -70,7 +70,10 @@ class IntegerColumnDelegate(QtWidgets.QStyledItemDelegate):
         return spinbox
 
     def setEditorData(self, editor, index):
-        value = int(index.model().data(index, QtCore.Qt.DisplayRole))
+        try:
+            value = int(index.model().data(index, QtCore.Qt.DisplayRole))
+        except TypeError:
+            value = 0
         editor.setValue(value)
 
     def setModelData(self, editor, model, index):
@@ -151,7 +154,7 @@ class RichTextColumnDelegate(QtWidgets.QStyledItemDelegate):
         color = (
             palette.highlight().color()
             if option.state & QtWidgets.QStyle.State_Selected
-            else QtGui.QColor(index.model().data(index, QtCore.Qt.ForegroundRole).color())
+            else QtGui.QColor(index.model().data(index, QtCore.Qt.BackgroundRole).color())
         )
         painter.fillRect(option.rect, color)
         painter.translate(option.rect.x(), option.rect.y())

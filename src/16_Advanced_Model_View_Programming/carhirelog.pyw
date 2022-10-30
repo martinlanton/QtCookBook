@@ -168,9 +168,12 @@ class CarHireModel(QtCore.QAbstractTableModel):
         if role == QtCore.Qt.ForegroundRole:
             palette = QtWidgets.QApplication.palette()
             if index.column() in (LICENSE, MILEAGE, DAYS):
-                return palette.alternateBase()
+                return palette.placeholderText()
             else:
-                return palette.base()
+                return palette.text()
+        if role == QtCore.Qt.BackgroundRole:
+            palette = QtWidgets.QApplication.palette()
+            return palette.light()
         return None
 
     def setData(self, index, value, role=QtCore.Qt.EditRole):
