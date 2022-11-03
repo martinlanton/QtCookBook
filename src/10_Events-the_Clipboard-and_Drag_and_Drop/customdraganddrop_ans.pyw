@@ -126,7 +126,7 @@ class DnDCtrlListWidget(QtWidgets.QListWidget):
     def dragMoveEvent(self, event):
         if event.mimeData().hasFormat("application/x-icon-and-text"):
             action = QtCore.Qt.MoveAction
-            if event.keyboardModifiers() & Qt.ControlModifier:
+            if event.keyboardModifiers() & QtCore.Qt.ControlModifier:
                 action = QtCore.Qt.CopyAction
             event.setDropAction(action)
             event.accept()
