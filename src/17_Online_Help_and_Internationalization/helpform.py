@@ -9,48 +9,53 @@
 # warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
 # the GNU General Public License for more details.
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-import qrc_resources
+from PySide6 import QtWidgets, QtCore, QtGui
+
+# Since pyrcc is no longer provided with PyQt or PySide, we
+# need to change resources location using the information from this thread :
+# https://stackoverflow.com/questions/66099225/how-can-resources-be-provided-in-pyqt6-which-has-no-pyrcc
+# That said PySide6 does still provide an alternative : https://doc.QtCore.Qt.io/qtforpython-6/tutorials/basictutorial/qrcfiles.html
+# import qrc_resources  # this means this needs to go, and we need to adjust all the resources calls
+QtCore.QDir.addSearchPath("resources", "images/")
 
 
-class HelpForm(QDialog):
+class HelpForm(QtWidgets.QDialog):
     def __init__(self, page, parent=None):
         super(HelpForm, self).__init__(parent)
-        self.setAttribute(Qt.WA_DeleteOnClose)
-        self.setAttribute(Qt.WA_GroupLeader)
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        self.setWindowModality(QtCore.Qt.WindowModal)
 
-        backAction = QAction(QIcon(":/back.png"), self.tr("&Back"), self)
-        backAction.setShortcut(QKeySequence.Back)
-        homeAction = QAction(QIcon(":/home.png"), self.tr("&Home"), self)
+        backAction = QtGui.QAction(QtGui.QIcon("resources:back.png"), self.tr("&Back"), self)
+        backAction.setShortcut(QtGui.QKeySequence.Back)
+        homeAction = QtGui.QAction(QtGui.QIcon("resources:home.png"), self.tr("&Home"), self)
         homeAction.setShortcut(self.tr("Home"))
-        self.pageLabel = QLabel()
+        self.pageLabel = QtWidgets.QLabel()
 
-        toolBar = QToolBar()
+        toolBar = QtWidgets.QToolBar()
         toolBar.addAction(backAction)
         toolBar.addAction(homeAction)
         toolBar.addWidget(self.pageLabel)
-        self.textBrowser = QTextBrowser()
+        self.textBrowser = QtWidgets.QTextBrowser()
 
-        layout = QVBoxLayout()
+        layout = QtWidgets.QVBoxLayout()
         layout.addWidget(toolBar)
         layout.addWidget(self.textBrowser, 1)
         self.setLayout(layout)
 
         self.connect(
-            backAction, SIGNAL("triggered()"), self.textBrowser, SLOT("backward()")
+            backAction, QtCore.SIGNAL("triggered()"), self.textBrowser, QtCore.SLOT("backward()")
         )
         self.connect(
-            homeAction, SIGNAL("triggered()"), self.textBrowser, SLOT("home()")
+            homeAction, QtCore.SIGNAL("triggered()"), self.textBrowser, QtCore.SLOT("home()")
         )
         self.connect(
-            self.textBrowser, SIGNAL("sourceChanged(QUrl)"), self.updatePageTitle
+            self.textBrowser, QtCore.SIGNAL("sourceChanged(QUrl)"), self.updatePageTitle
         )
 
         self.textBrowser.setSearchPaths([":/"])
-        self.textBrowser.setSource(QUrl(page))
+        self.textBrowser.setSource(QtCore.QUrl(page))
         self.resize(400, 600)
-        self.setWindowTitle(self.tr("{} Help").format(QApplication.applicationName()))
+        self.setWindowTitle(self.tr("{} Help").format(QtWidgets.QApplication.applicationName()))
 
     def updatePageTitle(self):
         self.pageLabel.setText(self.textBrowser.documentTitle())
@@ -59,7 +64,7 @@ class HelpForm(QDialog):
 if __name__ == "__main__":
     import sys
 
-    app = QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     form = HelpForm("index.html")
     form.show()
-    app.exec_()
+    app.exec()
