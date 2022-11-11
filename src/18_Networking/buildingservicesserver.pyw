@@ -12,9 +12,7 @@
 import bisect
 import collections
 import sys
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from PyQt4.QtNetwork import *
+from PySide6 import QtWidgets, QtCore, QtNetwork
 
 PORT = 9407
 SIZEOF_UINT16 = 2
@@ -23,24 +21,23 @@ MAX_BOOKINGS_PER_DAY = 5
 # Key = date, value = list of room IDs
 Bookings = collections.defaultdict(list)
 
+
 def printBookings():
     for key in sorted(Bookings):
         print(key, Bookings[key])
     print()
 
 
-class Socket(QTcpSocket):
-
+class Socket(QtNetwork.QTcpSocket):
     def __init__(self, parent=None):
         super(Socket, self).__init__(parent)
-        self.connect(self, SIGNAL("readyRead()"), self.readRequest)
-        self.connect(self, SIGNAL("disconnected()"), self.deleteLater)
+        self.connect(self, QtCore.SIGNAL("readyRead()"), self.readRequest)
+        self.connect(self, QtCore.SIGNAL("disconnected()"), self.deleteLater)
         self.nextBlockSize = 0
 
-
     def readRequest(self):
-        stream = QDataStream(self)
-        stream.setVersion(QDataStream.Qt_4_2)
+        stream = QtCore.QDataStream(self)
+        stream.setVersion(QtCore.QDataStream.Qt_4_2)
 
         if self.nextBlockSize == 0:
             if self.bytesAvailable() < SIZEOF_UINT16:
@@ -50,7 +47,7 @@ class Socket(QTcpSocket):
             return
 
         action = stream.readQString()
-        date = QDate()
+        date = QtCore.QDate()
         if action in ("BOOK", "UNBOOK"):
             room = stream.readQString()
             stream >> date
@@ -66,8 +63,7 @@ class Socket(QTcpSocket):
                     bisect.insort(bookings, uroom)
                     self.sendReply(action, room, date)
             else:
-                self.sendError("{} is fully booked".format(
-                               date.toString(Qt.ISODate)))
+                self.sendError("{} is fully booked".format(date.toString(QtCore.Qt.ISODate)))
         elif action == "UNBOOK":
             if bookings is None or uroom not in bookings:
                 self.sendError("Cannot unbook nonexistent booking")
@@ -78,11 +74,10 @@ class Socket(QTcpSocket):
             self.sendError("Unrecognized request")
         printBookings()
 
-
     def sendError(self, msg):
-        reply = QByteArray()
-        stream = QDataStream(reply, QIODevice.WriteOnly)
-        stream.setVersion(QDataStream.Qt_4_2)
+        reply = QtCore.QByteArray()
+        stream = QtCore.QDataStream(reply, QIODevice.WriteOnly)
+        stream.setVersion(QtCore.QDataStream.Qt_4_2)
         stream.writeUInt16(0)
         stream.writeQString("ERROR")
         stream.writeQString(msg)
@@ -90,11 +85,10 @@ class Socket(QTcpSocket):
         stream.writeUInt16(reply.size() - SIZEOF_UINT16)
         self.write(reply)
 
-
     def sendReply(self, action, room, date):
-        reply = QByteArray()
-        stream = QDataStream(reply, QIODevice.WriteOnly)
-        stream.setVersion(QDataStream.Qt_4_2)
+        reply = QtCore.QByteArray()
+        stream = QtCore.QDataStream(reply, QIODevice.WriteOnly)
+        stream.setVersion(QtCore.QDataStream.Qt_4_2)
         stream.writeUInt16(0)
         stream.writeQString(action)
         stream.writeQString(room)
@@ -104,45 +98,42 @@ class Socket(QTcpSocket):
         self.write(reply)
 
 
-class TcpServer(QTcpServer):
-
+class TcpServer(QtNetwork.QTcpServer):
     def __init__(self, parent=None):
         super(TcpServer, self).__init__(parent)
-
 
     def incomingConnection(self, socketId):
         socket = Socket(self)
         socket.setSocketDescriptor(socketId)
-        
 
-class BuildingServicesDlg(QPushButton):
 
+class BuildingServicesDlg(QtWidgets.QPushButton):
     def __init__(self, parent=None):
-        super(BuildingServicesDlg, self).__init__(
-                "&Close Server", parent)
-        self.setWindowFlags(Qt.WindowStaysOnTopHint)
+        super(BuildingServicesDlg, self).__init__("&Close Server", parent)
+        self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
 
         self.loadBookings()
         self.tcpServer = TcpServer(self)
-        if not self.tcpServer.listen(QHostAddress("0.0.0.0"), PORT):
-            QMessageBox.critical(self, "Building Services Server",
-                    "Failed to start server: {}".format(
-                    self.tcpServer.errorString()))
+        if not self.tcpServer.listen(QtNetwork.QHostAddress("0.0.0.0"), PORT):
+            QtWidgets.QMessageBox.critical(
+                self,
+                "Building Services Server",
+                "Failed to start server: {}".format(self.tcpServer.errorString()),
+            )
             self.close()
             return
 
-        self.connect(self, SIGNAL("clicked()"), self.close)
+        self.connect(self, QtCore.SIGNAL("clicked()"), self.close)
         font = self.font()
         font.setPointSize(24)
         self.setFont(font)
         self.setWindowTitle("Building Services Server")
 
-
     def loadBookings(self):
         # Generate fake data
         import random
 
-        today = QDate.currentDate()
+        today = QtCore.QDate.currentDate()
         for i in range(10):
             date = today.addDays(random.randint(7, 60))
             for j in range(random.randint(1, MAX_BOOKINGS_PER_DAY)):
@@ -152,14 +143,12 @@ class BuildingServicesDlg(QPushButton):
                 bookings = Bookings[date.toPyDate()]
                 if len(bookings) >= MAX_BOOKINGS_PER_DAY:
                     continue
-                bisect.insort(bookings, "{0:1d}{1:02d}".format(
-                              floor, room))
+                bisect.insort(bookings, "{0:1d}{1:02d}".format(floor, room))
         printBookings()
 
 
-app = QApplication(sys.argv)
+app = QtWidgets.QApplication(sys.argv)
 form = BuildingServicesDlg()
 form.show()
 form.move(0, 0)
-app.exec_()
-
+app.exec()
