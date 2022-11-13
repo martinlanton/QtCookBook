@@ -76,7 +76,7 @@ class Socket(QtNetwork.QTcpSocket):
 
     def sendError(self, msg):
         reply = QtCore.QByteArray()
-        stream = QtCore.QDataStream(reply, QIODevice.WriteOnly)
+        stream = QtCore.QDataStream(reply, QtCore.QIODevice.WriteOnly)
         stream.setVersion(QtCore.QDataStream.Qt_4_2)
         stream.writeUInt16(0)
         stream.writeQString("ERROR")
@@ -87,7 +87,7 @@ class Socket(QtNetwork.QTcpSocket):
 
     def sendReply(self, action, room, date):
         reply = QtCore.QByteArray()
-        stream = QtCore.QDataStream(reply, QIODevice.WriteOnly)
+        stream = QtCore.QDataStream(reply, QtCore.QIODevice.WriteOnly)
         stream.setVersion(QtCore.QDataStream.Qt_4_2)
         stream.writeUInt16(0)
         stream.writeQString(action)
