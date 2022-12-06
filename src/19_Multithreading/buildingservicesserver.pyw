@@ -12,9 +12,7 @@
 import bisect
 import collections
 import sys
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from PyQt4.QtNetwork import *
+from PySide6 import QtWidgets, QtCore, QtGui, QtNetwork
 
 PORT = 9407
 SIZEOF_UINT16 = 2
@@ -23,43 +21,44 @@ MAX_BOOKINGS_PER_DAY = 5
 # Key = date, value = list of room IDs
 Bookings = collections.defaultdict(list)
 
+
 def printBookings():
     for key in sorted(Bookings):
         print(key, Bookings[key])
     print()
 
 
-class Thread(QThread):
+class Thread(QtCore.QThread):
 
-    lock = QReadWriteLock()
+    lock = QtCore.QReadWriteLock()
 
     def __init__(self, socketId, parent):
         super(Thread, self).__init__(parent)
         self.socketId = socketId
 
-        
     def run(self):
-        socket = QTcpSocket()
+        socket = QtNetwork.QTcpSocket()
         if not socket.setSocketDescriptor(self.socketId):
-            self.emit(SIGNAL("error(int)"), socket.error())
+            self.emit(QtCore.SIGNAL("error(int)"), socket.error())
             return
-        while socket.state() == QAbstractSocket.ConnectedState:
+        while socket.state() == QtNetwork.QAbstractSocket.ConnectedState:
             nextBlockSize = 0
-            stream = QDataStream(socket)
-            stream.setVersion(QDataStream.Qt_4_2)
-            if (socket.waitForReadyRead() and
-                socket.bytesAvailable() >= SIZEOF_UINT16):
+            stream = QtCore.QDataStream(socket)
+            stream.setVersion(QtCore.QDataStream.Qt_4_2)
+            if socket.waitForReadyRead() and socket.bytesAvailable() >= SIZEOF_UINT16:
                 nextBlockSize = stream.readUInt16()
             else:
                 self.sendError(socket, "Cannot read client request")
                 return
             if socket.bytesAvailable() < nextBlockSize:
-                if (not socket.waitForReadyRead(60000) or
-                    socket.bytesAvailable() < nextBlockSize):
+                if (
+                    not socket.waitForReadyRead(60000)
+                    or socket.bytesAvailable() < nextBlockSize
+                ):
                     self.sendError(socket, "Cannot read client data")
                     return
             action = stream.readQString()
-            date = QDate()
+            date = QtCore.QDate()
             if action in ("BOOK", "UNBOOK"):
                 room = stream.readQString()
                 stream >> date
@@ -94,7 +93,8 @@ class Thread(QThread):
                             insert = True
                     else:
                         error = "{} is fully booked".format(
-                                date.toString(Qt.ISODate))
+                            date.toString(QtCore.Qt.ISODate)
+                        )
                 finally:
                     Thread.lock.unlock()
                 if insert:
@@ -135,11 +135,10 @@ class Thread(QThread):
             finally:
                 Thread.lock.unlock()
 
-
     def sendError(self, socket, msg):
-        reply = QByteArray()
-        stream = QDataStream(reply, QIODevice.WriteOnly)
-        stream.setVersion(QDataStream.Qt_4_2)
+        reply = QtCore.QByteArray()
+        stream = QtCore.QDataStream(reply, QtCore.QIODevice.WriteOnly)
+        stream.setVersion(QtCore.QDataStream.Qt_4_2)
         stream.writeUInt16(0)
         stream.writeQString("ERROR")
         stream.writeQString(msg)
@@ -147,11 +146,10 @@ class Thread(QThread):
         stream.writeUInt16(reply.size() - SIZEOF_UINT16)
         socket.write(reply)
 
-
     def sendReply(self, socket, action, room, date):
-        reply = QByteArray()
-        stream = QDataStream(reply, QIODevice.WriteOnly)
-        stream.setVersion(QDataStream.Qt_4_2)
+        reply = QtCore.QByteArray()
+        stream = QtCore.QDataStream(reply, QtCore.QIODevice.WriteOnly)
+        stream.setVersion(QtCore.QDataStream.Qt_4_2)
         stream.writeUInt16(0)
         stream.writeQString(action)
         stream.writeQString(room)
@@ -161,47 +159,45 @@ class Thread(QThread):
         socket.write(reply)
 
 
-class TcpServer(QTcpServer):
-
+class TcpServer(QtNetwork.QTcpServer):
     def __init__(self, parent=None):
         super(TcpServer, self).__init__(parent)
 
-
     def incomingConnection(self, socketId):
         thread = Thread(socketId, self)
-        self.connect(thread, SIGNAL("finished()"),
-                     thread, SLOT("deleteLater()"))
+        self.connect(
+            thread, QtCore.SIGNAL("finished()"), thread, QtCore.SLOT("deleteLater()")
+        )
         thread.start()
-        
 
-class BuildingServicesDlg(QPushButton):
 
+class BuildingServicesDlg(QtWidgets.QPushButton):
     def __init__(self, parent=None):
-        super(BuildingServicesDlg, self).__init__(
-                "&Close Server", parent)
-        self.setWindowFlags(Qt.WindowStaysOnTopHint)
+        super(BuildingServicesDlg, self).__init__("&Close Server", parent)
+        self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
 
         self.loadBookings()
         self.tcpServer = TcpServer(self)
-        if not self.tcpServer.listen(QHostAddress("0.0.0.0"), PORT):
-            QMessageBox.critical(self, "Building Services Server",
-                    "Failed to start server: {}".format(
-                    self.tcpServer.errorString()))
+        if not self.tcpServer.listen(QtNetwork.QHostAddress("0.0.0.0"), PORT):
+            QtWidgets.QMessageBox.critical(
+                self,
+                "Building Services Server",
+                "Failed to start server: {}".format(self.tcpServer.errorString()),
+            )
             self.close()
             return
 
-        self.connect(self, SIGNAL("clicked()"), self.close)
+        self.connect(self, QtCore.SIGNAL("clicked()"), self.close)
         font = self.font()
         font.setPointSize(24)
         self.setFont(font)
         self.setWindowTitle("Building Services Server")
 
-
     def loadBookings(self):
         # Generate fake data
         import random
 
-        today = QDate.currentDate()
+        today = QtCore.QDate.currentDate()
         for i in range(10):
             date = today.addDays(random.randint(7, 60))
             for j in range(random.randint(1, MAX_BOOKINGS_PER_DAY)):
@@ -211,14 +207,12 @@ class BuildingServicesDlg(QPushButton):
                 bookings = Bookings[date.toPyDate()]
                 if len(bookings) >= MAX_BOOKINGS_PER_DAY:
                     continue
-                bisect.insort(bookings, "{0:1d}{1:02d}".format(
-                              floor, room))
+                bisect.insort(bookings, "{0:1d}{1:02d}".format(floor, room))
         printBookings()
 
 
-app = QApplication(sys.argv)
+app = QtWidgets.QApplication(sys.argv)
 form = BuildingServicesDlg()
 form.show()
 form.move(0, 0)
 app.exec_()
-
