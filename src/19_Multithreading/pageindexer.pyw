@@ -11,7 +11,7 @@
 
 import collections
 import sys
-from PySide6 import QtWidgets, QtCore, QtNetwork
+from PySide6 import QtWidgets, QtCore
 import walker
 
 
