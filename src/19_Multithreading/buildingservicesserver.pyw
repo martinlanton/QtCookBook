@@ -12,7 +12,7 @@
 import bisect
 import collections
 import sys
-from PySide6 import QtWidgets, QtCore, QtGui, QtNetwork
+from PySide6 import QtWidgets, QtCore, QtNetwork
 
 PORT = 9407
 SIZEOF_UINT16 = 2
