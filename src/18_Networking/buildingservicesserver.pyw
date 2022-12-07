@@ -51,11 +51,11 @@ class Socket(QtNetwork.QTcpSocket):
         if action in ("BOOK", "UNBOOK"):
             room = stream.readQString()
             stream >> date
-            bookings = Bookings.get(date.toPyDate())
+            bookings = Bookings.get(date.toPython())
             uroom = room
         if action == "BOOK":
             if bookings is None:
-                bookings = Bookings[date.toPyDate()]
+                bookings = Bookings[date.toPython()]
             if len(bookings) < MAX_BOOKINGS_PER_DAY:
                 if uroom in bookings:
                     self.sendError("Cannot accept duplicate booking")
