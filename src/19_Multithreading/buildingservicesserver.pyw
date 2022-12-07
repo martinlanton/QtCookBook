@@ -64,7 +64,7 @@ class Thread(QtCore.QThread):
                 stream >> date
                 try:
                     Thread.lock.lockForRead()
-                    bookings = Bookings.get(date.toPyDate())
+                    bookings = Bookings.get(date.toPython())
                 finally:
                     Thread.lock.unlock()
                 uroom = room
@@ -79,7 +79,7 @@ class Thread(QtCore.QThread):
                 if newlist:
                     try:
                         Thread.lock.lockForWrite()
-                        bookings = Bookings[date.toPyDate()]
+                        bookings = Bookings[date.toPython()]
                     finally:
                         Thread.lock.unlock()
                 error = None
@@ -204,7 +204,7 @@ class BuildingServicesDlg(QtWidgets.QPushButton):
                 # Rooms are 001..534 excl. 100, 200, ..., 500
                 floor = random.randint(0, 5)
                 room = random.randint(1, 34)
-                bookings = Bookings[date.toPyDate()]
+                bookings = Bookings[date.toPython()]
                 if len(bookings) >= MAX_BOOKINGS_PER_DAY:
                     continue
                 bisect.insort(bookings, "{0:1d}{1:02d}".format(floor, room))
