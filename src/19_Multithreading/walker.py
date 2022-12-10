@@ -13,27 +13,26 @@ import html.entities
 import os
 import re
 import sys
-from PyQt4.QtCore import *
+from PySide6 import QtCore
 
 
-class Walker(QThread):
+class Walker(QtCore.QThread):
 
     COMMON_WORDS_THRESHOLD = 250
     MIN_WORD_LEN = 3
     MAX_WORD_LEN = 25
     INVALID_FIRST_OR_LAST = frozenset("0123456789_")
-    STRIPHTML_RE = re.compile(r"<[^>]*?>", re.IGNORECASE|re.MULTILINE)
+    STRIPHTML_RE = re.compile(r"<[^>]*?>", re.IGNORECASE | re.MULTILINE)
     ENTITY_RE = re.compile(r"&(\w+?);|&#(\d+?);")
-    SPLIT_RE = re.compile(r"\W+", re.IGNORECASE|re.MULTILINE)
+    SPLIT_RE = re.compile(r"\W+", re.IGNORECASE | re.MULTILINE)
 
     def __init__(self, lock, parent=None):
         super(Walker, self).__init__(parent)
         self.lock = lock
         self.stopped = False
-        self.mutex = QMutex()
+        self.mutex = QtCore.QMutex()
         self.path = None
         self.completed = False
-
 
     def initialize(self, path, filenamesForWords, commonWords):
         self.stopped = False
@@ -42,14 +41,12 @@ class Walker(QThread):
         self.commonWords = commonWords
         self.completed = False
 
-
     def stop(self):
         try:
             self.mutex.lock()
             self.stopped = True
         finally:
             self.mutex.unlock()
-
 
     def isStopped(self):
         try:
@@ -58,12 +55,10 @@ class Walker(QThread):
         finally:
             self.mutex.unlock()
 
-
     def run(self):
         self.processFiles(self.path)
         self.stop()
-        self.emit(SIGNAL("finished(bool)"), self.completed)
-
+        self.emit(QtCore.SIGNAL("finished(bool)"), self.completed)
 
     def processFiles(self, path):
         def unichrFromEntity(match):
@@ -76,16 +71,14 @@ class Walker(QThread):
         for root, dirs, files in os.walk(path):
             if self.isStopped():
                 return
-            for name in [name for name in files
-                         if name.endswith((".htm", ".html"))]:
+            for name in [name for name in files if name.endswith((".htm", ".html"))]:
                 fname = os.path.join(root, name)
                 if self.isStopped():
                     return
                 words = set()
                 fh = None
                 try:
-                    fh = open(fname, "r", encoding="utf-8",
-                              errors="ignore")
+                    fh = open(fname, "r", encoding="utf-8", errors="ignore")
                     text = fh.read()
                 except EnvironmentError as e:
                     sys.stderr.write("Error: {}\n".format(e))
@@ -99,10 +92,11 @@ class Walker(QThread):
                 text = self.ENTITY_RE.sub(unichrFromEntity, text)
                 text = text.lower()
                 for word in self.SPLIT_RE.split(text):
-                    if (self.MIN_WORD_LEN <= len(word) <=
-                        self.MAX_WORD_LEN and
-                        word[0] not in self.INVALID_FIRST_OR_LAST and
-                        word[-1] not in self.INVALID_FIRST_OR_LAST):
+                    if (
+                        self.MIN_WORD_LEN <= len(word) <= self.MAX_WORD_LEN
+                        and word[0] not in self.INVALID_FIRST_OR_LAST
+                        and word[-1] not in self.INVALID_FIRST_OR_LAST
+                    ):
                         try:
                             self.lock.lockForRead()
                             new = word not in self.commonWords
@@ -123,6 +117,5 @@ class Walker(QThread):
                             files.add(fname)
                     finally:
                         self.lock.unlock()
-                self.emit(SIGNAL("indexed(QString)"), fname)
+                self.emit(QtCore.SIGNAL("indexed(QString)"), fname)
         self.completed = True
-
