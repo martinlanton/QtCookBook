@@ -302,4 +302,4 @@ class Form(QtWidgets.QDialog):
 app = QtWidgets.QApplication(sys.argv)
 form = Form()
 form.show()
-app.exec_()
+app.exec()
