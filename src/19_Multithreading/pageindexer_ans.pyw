@@ -17,6 +17,8 @@ import walker_ans as walker
 
 
 def isAlive(qobj):
+    # TODO : remove call to sip.unwrapinstance and find a better alternative
+    #  here : https://realpython.com/python-pyqt-qthread/
     import sip
 
     try:
