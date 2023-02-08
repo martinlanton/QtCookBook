@@ -107,6 +107,7 @@ class Form(QtWidgets.QDialog):
         self.setWindowTitle("Page Indexer")
 
     def stopWalkers(self):
+        # TODO : should we connect the walkers to make them remove themselves once they finish?
         for walker in self.walkers:
             if isAlive(walker) and walker.isRunning():
                 walker.stop()
