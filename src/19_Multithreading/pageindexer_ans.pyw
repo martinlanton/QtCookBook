@@ -17,12 +17,15 @@ import walker_ans as walker
 
 
 def isAlive(qobj):
-    # TODO : remove call to sip.unwrapinstance and find a better alternative
-    #  here : https://realpython.com/python-pyqt-qthread/
-    import sip
-
     try:
-        sip.unwrapinstance(qobj)
+        # Trying to use shiboken6.getCppPointer(qobj) unfortunately causes python to segfault if the
+        # cpp object has already been deleted, thus making impossible to use as an equivalent of
+        # sip.unwrapinstance(qobj) from the original example.
+        # However, it appears in python 3 trying to print a QObject is enough to have python tell
+        # use whether the cpp object has already been deleted.
+        # This means that just printing and catching the error is good enough for us to return a
+        # boolean that tells the state of the walker.
+        print(qobj)
     except RuntimeError:
         return False
     return True
@@ -107,7 +110,6 @@ class Form(QtWidgets.QDialog):
         self.setWindowTitle("Page Indexer")
 
     def stopWalkers(self):
-        # TODO : should we connect the walkers to make them remove themselves once they finish?
         for walker in self.walkers:
             if isAlive(walker) and walker.isRunning():
                 walker.stop()
