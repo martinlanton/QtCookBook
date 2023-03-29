@@ -9,7 +9,7 @@
 # the GNU General Public License for more details.
 
 import sys
-from PySide6 import QtWidgets, QtCore, QtGui
+from PySide6 import QtWidgets, QtCore
 import ships
 
 MAC = "qt_mac_set_native_menubar" in dir()
