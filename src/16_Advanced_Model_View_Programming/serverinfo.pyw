@@ -89,7 +89,7 @@ class MainForm(QtWidgets.QMainWindow):
         QtGui.QShortcut(QtGui.QKeySequence("Escape"), self, self.close)
         QtGui.QShortcut(QtGui.QKeySequence("Ctrl+Q"), self, self.close)
 
-        self.connect(self.treeWidget, QtCore.SIGNAL("activated"), self.activated)
+        self.treeWidget.activated.connect(self.activated)
 
         self.setWindowTitle("Server Info")
         self.statusBar().showMessage("Ready...", 5000)
