@@ -112,6 +112,7 @@ class TreeOfTableModel(QtCore.QAbstractItemModel):
         exception = None
         fh = None
         try:
+            self.beginResetModel()
             for line in open(filename, "rU", encoding="utf-8"):
                 if not line:
                     continue
@@ -121,7 +122,7 @@ class TreeOfTableModel(QtCore.QAbstractItemModel):
         finally:
             if fh is not None:
                 fh.close()
-            self.reset()
+            self.endResetModel()
             for i in range(self.columns):
                 self.headers.append("Column #{}".format(i))
             if exception is not None:

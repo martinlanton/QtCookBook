@@ -89,6 +89,7 @@ class ShipTableModel(QtCore.QAbstractTableModel):
             if column == TEU:
                 return int(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
             return int(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
+        # QtCore.Qt.TextColorRole no longer exist, replace with QtCore.Qt.ForegroundRole
         elif role == QtCore.Qt.ForegroundRole and column == TEU:
             if ship.teu < 80000:
                 return QtGui.QColor(QtCore.Qt.black)

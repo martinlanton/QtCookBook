@@ -42,6 +42,7 @@ class WaterQualityModel(QtCore.QAbstractTableModel):
         try:
             if not self.filename:
                 raise IOError("no filename specified for loading")
+            self.beginResetModel()
             self.results = []
             line_data = gzip.open(self.filename).read()
             for line in line_data.decode("utf-8").splitlines():
@@ -56,7 +57,7 @@ class WaterQualityModel(QtCore.QAbstractTableModel):
         finally:
             if fh is not None:
                 fh.close()
-            self.reset()
+            self.endResetModel()
             if exception is not None:
                 raise exception
 
@@ -68,7 +69,6 @@ class WaterQualityModel(QtCore.QAbstractTableModel):
         if role == QtCore.Qt.DisplayRole:
             item = result[column]
             if column == TIMESTAMP:
-                # TODO set time format
                 item = item
             else:
                 item = "{:.2f}".format(item)
@@ -77,10 +77,12 @@ class WaterQualityModel(QtCore.QAbstractTableModel):
             if column != TIMESTAMP:
                 return int(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
             return int(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
-        elif role == QtCore.Qt.TextColorRole and column == INLETFLOW:
+        # QtCore.Qt.TextColorRole no longer exist, replace with QtCore.Qt.ForegroundRole
+        elif role == QtCore.Qt.ForegroundRole and column == INLETFLOW:
             if result[column] < 0:
                 return QtGui.QColor(QtCore.Qt.red)
-        elif role == QtCore.Qt.TextColorRole and column in (RAWPH, FLOCCULATEDPH):
+        # QtCore.Qt.TextColorRole no longer exist, replace with QtCore.Qt.ForegroundRole
+        elif role == QtCore.Qt.ForegroundRole and column in (RAWPH, FLOCCULATEDPH):
             ph = result[column]
             if ph < 7:
                 return QtGui.QColor(QtCore.Qt.red)
@@ -136,9 +138,10 @@ class WaterQualityView(QtWidgets.QWidget):
         self.flowfont = self.font()
         size = self.font().pointSize()
         if platform.system() == "Windows":
-            fontDb = QtGui.QtGui.QFontDatabase()
-            for face in [face.lower() for face in fontDb.families()]:
-                if face.contains("unicode"):
+            # The constructor for QtGui.QFontDatabase is deprecated, the methods should
+            # be called as classmethods instead, as follows
+            for face in [face.lower() for face in QtGui.QFontDatabase.families()]:
+                if face.find("unicode") >= 0:
                     self.flowfont = QtGui.QFont(face, size)
                     break
             else:
@@ -170,7 +173,7 @@ class WaterQualityView(QtWidgets.QWidget):
         fm = QtGui.QFontMetrics(self.font())
         size = fm.height()
         return QtCore.QSize(
-            fm.width("9999-99-99 99:99 ") + (size * 4),
+            fm.horizontalAdvance("9999-99-99 99:99 ") + (size * 4),
             (size / 4) + (size * self.model.rowCount()),
         )
 
@@ -178,7 +181,7 @@ class WaterQualityView(QtWidgets.QWidget):
         if self.model is None:
             return
         fm = QtGui.QFontMetrics(self.font())
-        timestampWidth = fm.width("9999-99-99 99:99 ")
+        timestampWidth = fm.horizontalAdvance("9999-99-99 99:99 ")
         size = fm.height()
         indicatorSize = int(size * 0.8)
         offset = int(1.5 * (size - indicatorSize))
@@ -257,7 +260,7 @@ class WaterQualityView(QtWidgets.QWidget):
 
     def mousePressEvent(self, event):
         fm = QtGui.QFontMetrics(self.font())
-        self.selectedRow = event.y() // fm.height()
+        self.selectedRow = event.position().y() // fm.height()
         self.update()
         self.emit(
             QtCore.SIGNAL("clicked(QtCore.QModelIndex)"),

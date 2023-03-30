@@ -162,4 +162,4 @@ class MainForm(QtWidgets.QDialog):
 app = QtWidgets.QApplication(sys.argv)
 form = MainForm()
 form.show()
-app.exec_()
+app.exec()
