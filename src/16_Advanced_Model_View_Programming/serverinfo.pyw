@@ -44,6 +44,8 @@ class ServerModel(treeoftable.TreeOfTableModel):
 
 
 class TreeOfTableWidget(QtWidgets.QTreeView):
+    activate = QtCore.Signal(list)
+
     def __init__(self, filename, nesting, separator, parent=None):
         super(TreeOfTableWidget, self).__init__(parent)
         self.setSelectionBehavior(QtWidgets.QTreeView.SelectItems)
@@ -54,17 +56,17 @@ class TreeOfTableWidget(QtWidgets.QTreeView):
             model.load(filename, nesting, separator)
         except IOError as e:
             QtWidgets.QMessageBox.warning(self, "Server Info - Error", e)
-        self.connect(self, QtCore.SIGNAL("activated(QtCore.QModelIndex)"), self.activated)
-        self.connect(self, QtCore.SIGNAL("expanded(QtCore.QModelIndex)"), self.expanded)
-        self.expanded()
+        self.activated.connect(self._activated)
+        self.expanded.connect(self._expanded)
+        self._expanded()
 
     def currentFields(self):
         return self.model().asRecord(self.currentIndex())
 
-    def activated(self, index):
-        self.emit(QtCore.SIGNAL("activated"), self.model().asRecord(index))
+    def _activated(self, index):
+        self.activate.emit(self.model().asRecord(index))
 
-    def expanded(self):
+    def _expanded(self):
         for column in range(self.model().columnCount(QtCore.QModelIndex())):
             self.resizeColumnToContents(column)
 
@@ -97,7 +99,11 @@ class MainForm(QtWidgets.QMainWindow):
     def picked(self):
         return self.treeWidget.currentFields()
 
-    def activated(self, fields):
+    def activated(self, index):
+        if isinstance(index.internalPointer(), treeoftable.LeafNode):
+            fields = index.internalPointer().asRecord()
+        else:
+            fields = []
         self.statusBar().showMessage("*".join(fields), 60000)
 
 
