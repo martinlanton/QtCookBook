@@ -130,6 +130,8 @@ class TreeOfTableModel(QtCore.QAbstractItemModel):
 
     def addRecord(self, fields, callReset=True):
         assert len(fields) > self.nesting
+        if callReset:
+            self.beginResetModel()
         root = self.root
         branch = None
         for i in range(self.nesting):
@@ -146,7 +148,7 @@ class TreeOfTableModel(QtCore.QAbstractItemModel):
         self.columns = max(self.columns, len(items))
         branch.insertChild(LeafNode(items, branch))
         if callReset:
-            self.reset()
+            self.endResetModel()
 
     def asRecord(self, index):
         leaf = self.nodeFromIndex(index)
