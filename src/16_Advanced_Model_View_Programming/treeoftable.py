@@ -110,10 +110,10 @@ class TreeOfTableModel(QtCore.QAbstractItemModel):
         self.nesting = nesting
         self.root = BranchNode("")
         exception = None
-        fh = None
+        fh = open(filename, "rU", encoding="utf-8")
         try:
             self.beginResetModel()
-            for line in open(filename, "rU", encoding="utf-8"):
+            for line in fh:
                 if not line:
                     continue
                 self.addRecord(line.split(separator), False)
