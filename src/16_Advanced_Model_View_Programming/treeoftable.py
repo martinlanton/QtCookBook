@@ -144,7 +144,7 @@ class TreeOfTableModel(QtCore.QAbstractItemModel):
                 root.insertChild(branch)
                 root = branch
         assert branch is not None
-        items = fields[self.nesting :]
+        items = fields[self.nesting:]
         self.columns = max(self.columns, len(items))
         branch.insertChild(LeafNode(items, branch))
         if callReset:
