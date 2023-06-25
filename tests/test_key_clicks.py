@@ -1,6 +1,8 @@
 from PySide6 import QtTest, QtWidgets
 import sys
 
+from TwentyOne_QtTest import line_edits
+
 
 class TestKeyClicks:
     def setup_class(self):
@@ -24,6 +26,10 @@ class TestKeyClicks:
             del child
 
     def test_key_clicks(self):
-        lineEdit = QtWidgets.QLineEdit(self.dialog)
-        QtTest.QTest.keyClicks(lineEdit, "hello world")
-        assert lineEdit.text() == "hello world"
+        layout = line_edits.Layout()
+        QtTest.QTest.keyClicks(layout.line_edit_1, "Hello")
+        QtTest.QTest.keyClicks(layout.line_edit_2, "World")
+
+
+        assert layout.line_edit_1.text() == "Hello"
+        assert layout.line_edit_2.text() == "World"
