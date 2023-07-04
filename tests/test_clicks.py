@@ -14,3 +14,24 @@ class TestMouseActions(TestBase):
 
         assert "Hello" in caplog.text
         assert "World" in caplog.text
+
+    def test_mouse_pressed(self, caplog):
+        layout = buttons.Layout()
+        with caplog.at_level(logging.INFO):
+            QtTest.QTest.mousePress(layout.button_1, QtCore.Qt.LeftButton)
+            QtTest.QTest.mousePress(layout.button_2, QtCore.Qt.LeftButton)
+
+        assert "Tralala" in caplog.text
+        assert "Pouetpouet" in caplog.text
+
+    def test_mouse_released(self, caplog):
+        layout = buttons.Layout()
+        QtTest.QTest.mousePress(layout.button_1, QtCore.Qt.LeftButton)
+        QtTest.QTest.mousePress(layout.button_2, QtCore.Qt.LeftButton)
+        with caplog.at_level(logging.INFO):
+            QtTest.QTest.mouseRelease(layout.button_1, QtCore.Qt.LeftButton)
+            QtTest.QTest.mouseRelease(layout.button_2, QtCore.Qt.LeftButton)
+
+        assert "Foo" in caplog.text
+        assert "Bar" in caplog.text
+
