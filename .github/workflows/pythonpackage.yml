@@ -22,5 +22,5 @@ jobs:
         PYTHONPATH: src
       run: |
         pip install --upgrade -vv setuptools
-        python setup.py develop -r requirements.txt
+        pip install -e -r requirements.txt
         python -m pytest
