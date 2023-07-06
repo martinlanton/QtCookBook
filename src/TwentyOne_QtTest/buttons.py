@@ -1,5 +1,5 @@
 import logging
-from PySide6 import QtWidgets
+from PySide6 import QtWidgets, QtGui
 
 
 log = logging.getLogger(__name__)
@@ -7,10 +7,10 @@ log = logging.getLogger(__name__)
 
 class Layout(QtWidgets.QVBoxLayout):
     def __init__(self, parent=None):
-        super().__init__(parent=parent)
-        self.button_1 = QtWidgets.QPushButton()
+        super(Layout, self).__init__(parent)
+        self.button_1 = ButtonOne("one")
         self.addWidget(self.button_1)
-        self.button_2 = QtWidgets.QPushButton()
+        self.button_2 = QtWidgets.QPushButton("two")
         self.addWidget(self.button_2)
 
         self.button_1.clicked.connect(self.print_click_1)
@@ -39,3 +39,22 @@ class Layout(QtWidgets.QVBoxLayout):
 
     def print_released_2(self):
         log.info("Bar")
+
+
+class ButtonOne(QtWidgets.QPushButton):
+    def mouseMoveEvent(self, event) -> None:
+        log.info("Moving from button 1")
+        return
+
+
+class ButtonTwo(QtWidgets.QPushButton):
+    def __init__(self, parent=None):
+        super(ButtonTwo, self).__init__(parent)
+
+    def mouseMoveEvent(self, arg__1: QtGui.QMouseEvent) -> None:
+        log.info("Moving to button 2")
+        return
+
+    def mouseReleaseEvent(self, e: QtGui.QMouseEvent) -> None:
+        log.info("Releasing on button 2")
+        return
