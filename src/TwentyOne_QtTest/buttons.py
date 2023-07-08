@@ -1,5 +1,5 @@
 import logging
-from PySide6 import QtWidgets, QtGui
+from PySide6 import QtWidgets, QtGui, QtCore
 
 
 log = logging.getLogger(__name__)
@@ -8,9 +8,9 @@ log = logging.getLogger(__name__)
 class Layout(QtWidgets.QVBoxLayout):
     def __init__(self, parent=None):
         super(Layout, self).__init__(parent)
-        self.button_1 = ButtonOne("one")
+        self.button_1 = Button("one")
         self.addWidget(self.button_1)
-        self.button_2 = QtWidgets.QPushButton("two")
+        self.button_2 = Button("two")
         self.addWidget(self.button_2)
 
         self.button_1.clicked.connect(self.print_click_1)
@@ -41,20 +41,35 @@ class Layout(QtWidgets.QVBoxLayout):
         log.info("Bar")
 
 
-class ButtonOne(QtWidgets.QPushButton):
-    def mouseMoveEvent(self, event) -> None:
-        log.info("Moving from button 1")
+class Button(QtWidgets.QPushButton):
+    def __init__(self, name, parent=None):
+        super(Button, self).__init__(name, parent)
+        self.name = name
+        self.setAcceptDrops(True)
+
+    def dragEnterEvent(self, event: QtGui.QDragEnterEvent) -> None:
+        log.info("Moving to button %s", self.name)
+        event.accept()
+
+    def dragMoveEvent(self, event: QtGui.QDragMoveEvent) -> None:
+        log.info("Moving on button %s", self.name)
+        event.accept()
+
+    def dropEvent(self, event: QtGui.QDropEvent) -> None:
+        log.info("Releasing on button %s", self.name)
+        event.accept()
+
+    def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
+        log.debug("Moving from button %s", self.name)
+
+        if event.buttons() == QtCore.Qt.LeftButton:
+            drag = QtGui.QDrag(self)
+            mime = QtCore.QMimeData()
+            drag.setMimeData(mime)
+            drag.exec_(QtCore.Qt.MoveAction)
         return
 
-
-class ButtonTwo(QtWidgets.QPushButton):
-    def __init__(self, parent=None):
-        super(ButtonTwo, self).__init__(parent)
-
-    def mouseMoveEvent(self, arg__1: QtGui.QMouseEvent) -> None:
-        log.info("Moving to button 2")
-        return
-
-    def mouseReleaseEvent(self, e: QtGui.QMouseEvent) -> None:
-        log.info("Releasing on button 2")
+    def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
+        log.info("Releasing on button %s", self.name)
+        event.accept()
         return

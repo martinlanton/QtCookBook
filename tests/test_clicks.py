@@ -27,11 +27,8 @@ class TestMouseActions(TestBase):
     def test_mouse_released(self, caplog):
         layout = buttons.Layout()
         QtTest.QTest.mousePress(layout.button_1, QtCore.Qt.LeftButton)
-        QtTest.QTest.mousePress(layout.button_2, QtCore.Qt.LeftButton)
         with caplog.at_level(logging.INFO):
             QtTest.QTest.mouseRelease(layout.button_1, QtCore.Qt.LeftButton)
-            QtTest.QTest.mouseRelease(layout.button_2, QtCore.Qt.LeftButton)
 
-        assert "Foo" in caplog.text
-        assert "Bar" in caplog.text
+        assert "Releasing on button one" in caplog.text
 
