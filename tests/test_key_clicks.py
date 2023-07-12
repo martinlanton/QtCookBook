@@ -5,10 +5,11 @@ from tests.fixtures import TestBase
 
 
 class TestKeyActions(TestBase):
-    def test_key_clicks(self):
-        layout = line_edits.Layout()
-        QtTest.QTest.keyClicks(layout.line_edit_1, "Hello")
-        QtTest.QTest.keyClicks(layout.line_edit_2, "World")
+    gui_to_test = line_edits.Layout
 
-        assert layout.line_edit_1.text() == "Hello"
-        assert layout.line_edit_2.text() == "World"
+    def test_key_clicks(self):
+        QtTest.QTest.keyClicks(self.layout.line_edit_1, "Hello")
+        QtTest.QTest.keyClicks(self.layout.line_edit_2, "World")
+
+        assert self.layout.line_edit_1.text() == "Hello"
+        assert self.layout.line_edit_2.text() == "World"

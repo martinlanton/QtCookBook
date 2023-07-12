@@ -1,4 +1,5 @@
 import logging
+
 from PySide6 import QtWidgets, QtGui, QtCore
 
 
@@ -46,6 +47,7 @@ class Button(QtWidgets.QPushButton):
         super(Button, self).__init__(name, parent)
         self.name = name
         self.setAcceptDrops(True)
+        self.has_been_pressed = False
 
     def dragEnterEvent(self, event: QtGui.QDragEnterEvent) -> None:
         log.info("Moving to button %s", self.name)
@@ -69,7 +71,19 @@ class Button(QtWidgets.QPushButton):
             drag.exec_(QtCore.Qt.MoveAction)
         return
 
+    def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
+        self.has_been_pressed = True
+        self.pressed.emit()
+        QtWidgets.QWidget.mousePressEvent(self, event)
+
+    def leaveEvent(self, event: QtCore.QEvent) -> None:
+        self.has_been_pressed = False
+        QtWidgets.QWidget.leaveEvent(self, event)
+
     def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
         log.info("Releasing on button %s", self.name)
-        event.accept()
-        return
+        self.released.emit()
+        if self.has_been_pressed:
+            self.clicked.emit()
+            self.has_been_pressed = False
+        QtWidgets.QWidget.mouseReleaseEvent(self, event)
