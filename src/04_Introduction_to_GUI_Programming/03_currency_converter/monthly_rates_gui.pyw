@@ -9,7 +9,8 @@ class Form(QtWidgets.QDialog):
     def __init__(self, parent=None):
         super(Form, self).__init__(parent)
         self.rates = Rates()
-        dateLabel = QtWidgets.QLabel(self.rates.date)
+        self.dateComboBox = QtWidgets.QComboBox()
+        self.dateComboBox.addItems([key for key in self.rates.rates.keys() if key != "CAD"])
         self.fromComboBox = QtWidgets.QComboBox()
         self.fromComboBox.addItems(self.rates.currencies)
         self.fromSpinBox = QtWidgets.QDoubleSpinBox()
@@ -20,26 +21,26 @@ class Form(QtWidgets.QDialog):
         self.toLabel = QtWidgets.QLabel("1.00")
 
         grid = QtWidgets.QGridLayout()
-        grid.addWidget(dateLabel, 0, 0)
+        grid.addWidget(self.dateComboBox, 0, 0)
         grid.addWidget(self.fromComboBox, 1, 0)
         grid.addWidget(self.fromSpinBox, 1, 1)
         grid.addWidget(self.toComboBox, 2, 0)
         grid.addWidget(self.toLabel, 2, 1)
         self.setLayout(grid)
 
-        self.connect(self.fromComboBox,
-                     QtCore.SIGNAL("currentIndexChanged(int)"), self.updateUi)
-        self.connect(self.toComboBox,
-                     QtCore.SIGNAL("currentIndexChanged(int)"), self.updateUi)
-        self.connect(self.fromSpinBox,
-                     QtCore.SIGNAL("valueChanged(double)"), self.updateUi)
+        self.dateComboBox.currentIndexChanged.connect(self.updateUi)
+        self.fromComboBox.currentIndexChanged.connect(self.updateUi)
+        self.toComboBox.currentIndexChanged.connect(self.updateUi)
+        self.fromSpinBox.valueChanged.connect(self.updateUi)
         self.setWindowTitle("Currency")
 
     def updateUi(self):
         to = str(self.toComboBox.currentText())
         from_ = str(self.fromComboBox.currentText())
-        origin_currency_rate = self.rates.rates[from_]
-        destination_currency_rate = self.rates.rates[to]
+        date = str(self.dateComboBox.currentText())
+        rates_for_date = self.rates.rates[date]
+        origin_currency_rate = rates_for_date[from_]
+        destination_currency_rate = rates_for_date[to]
 
         if any([origin_currency_rate == "N/A", destination_currency_rate == "N/A"]):
             message = "Currency conversion not available for these currencies."
@@ -51,9 +52,10 @@ class Form(QtWidgets.QDialog):
 
 class Rates(object):
     def __init__(self):
-        self.url = "https://www.bankofcanada.ca/valet/observations/group/FX_RATES_DAILY/csv?start_date={}"
+        # self.url = "https://www.bankofcanada.ca/valet/observations/group/FX_RATES_MONTHLY/csv?start_date={}"
+        self.url = "https://www.bankofcanada.ca/valet/observations/group/FX_RATES_MONTHLY/csv?start_date=2017-01-01"
         self.date = "Unknown"
-        self.rates = {"CAD": 1}
+        self.rates = {}
         self.data = self.download_file()
         self.currencies = list()
         self.sort_data()
@@ -71,9 +73,8 @@ class Rates(object):
         return data
 
     def sort_data(self):
-        rates = list()
         got_date = False
-        for line in self.data:
+        for i, line in enumerate(self.data):
             line_data = line.replace('"', '')
             if got_date and not line_data:
                 break
@@ -89,12 +90,20 @@ class Rates(object):
             elif got_date:
                 print(type(line_data), line_data)
                 splitted_line = line_data.split(",")
-                self.date = splitted_line.pop(0)
-                rates = [float(rate) if rate.strip() else "N/A" for rate in splitted_line]
-                break
+                print(type(splitted_line), splitted_line)
+                date = splitted_line.pop(0)
+                rates = []
+                # rates = [float(rate) if rate else "N/A" for rate in splitted_line]
+                for rate in splitted_line:
+                    if rate and not rate.strip():
+                        rates.append("N/A")
+                    elif rate:
+                        rates.append(float(rate))
+                    else:
+                        rates.append("N/A")
 
-        for i, rate in enumerate(rates):
-            self.rates[self.currencies[i]] = rate
+                self.rates[date] = {self.currencies[i]: rate for i, rate in enumerate(rates)}
+                self.rates[date]["CAD"] = 1
 
 
 app = QtWidgets.QApplication(sys.argv)
