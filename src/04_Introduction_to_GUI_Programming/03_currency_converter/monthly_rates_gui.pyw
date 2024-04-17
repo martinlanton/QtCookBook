@@ -88,12 +88,9 @@ class Rates(object):
             elif line_data.startswith("date"):
                 got_date = True
             elif got_date:
-                print(type(line_data), line_data)
                 splitted_line = line_data.split(",")
-                print(type(splitted_line), splitted_line)
                 date = splitted_line.pop(0)
                 rates = []
-                # rates = [float(rate) if rate else "N/A" for rate in splitted_line]
                 for rate in splitted_line:
                     if rate and not rate.strip():
                         rates.append("N/A")
